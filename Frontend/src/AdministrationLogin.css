@@ -1,0 +1,578 @@
+
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+/* =========================
+   VARIABLES
+========================= */
+
+.admin-login-page {
+  --maroon: #a0080f;
+  --dark: #7d050b;
+  --gold: #d99a1b;
+  --ink: #303746;
+  --muted: #687080;
+  --line: #dfe2e8;
+  --danger: #b4232f;
+
+  min-width: 320px;
+  min-height: 100vh;
+
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      #fff 0 28%,
+      transparent 65%
+    ),
+    radial-gradient(
+      circle at 10% 20%,
+      rgba(141, 14, 18, 0.06),
+      transparent 35%
+    ),
+    #faf8f8;
+
+  color: var(--ink);
+
+  font-family: "Poppins", sans-serif;
+}
+
+/* =========================
+   TOP BAR
+========================= */
+
+.admin-top-bar {
+  width: 100%;
+  height: 8px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #7d050b,
+      #b40b13,
+      #7d050b
+    );
+}
+
+/* =========================
+   MAIN
+========================= */
+
+.admin-login-main {
+  min-height: calc(100vh - 8px);
+
+  display: grid;
+  place-items: center;
+
+  padding: 32px 16px;
+}
+
+/* =========================
+   LOGIN CARD
+========================= */
+
+.admin-login-card {
+  width: min(100%, 680px);
+
+  padding: 28px 42px 24px;
+
+  border: 1px solid rgba(255, 255, 255, 0.9);
+
+  border-radius: 19px;
+
+  background: rgba(255, 255, 255, 0.97);
+
+  box-shadow:
+    0 20px 55px rgba(59, 37, 40, 0.14);
+
+  text-align: center;
+}
+
+/* =========================
+   LOGO
+========================= */
+
+.admin-logo {
+  display: block;
+
+  width: 105px;
+  height: 105px;
+
+  margin: 0 auto 10px;
+
+  border-radius: 50%;
+
+  object-fit: contain;
+
+  filter:
+    drop-shadow(
+      0 5px 8px rgba(61, 28, 31, 0.16)
+    );
+}
+
+/* =========================
+   SCHOOL NAME
+========================= */
+
+.admin-school-name {
+  margin: 0;
+
+  color: var(--maroon);
+
+  font-size: clamp(16px, 2vw, 20px);
+
+  font-weight: 700;
+
+  line-height: 1.38;
+
+  text-transform: uppercase;
+}
+
+/* =========================
+   DIVIDER
+========================= */
+
+.admin-divider {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 12px;
+
+  margin: 11px auto 6px;
+
+  color: var(--gold);
+}
+
+.admin-divider span {
+  width: 100px;
+  height: 1px;
+
+  background: var(--gold);
+}
+
+.admin-divider i {
+  font-size: 11px;
+
+  font-style: normal;
+}
+
+/* =========================
+   BRAND
+========================= */
+
+.admin-brand {
+  margin: 0;
+
+  color: var(--maroon);
+
+  font-size: 20px;
+
+  font-weight: 700;
+}
+
+.admin-subtitle {
+  margin: 0;
+
+  color: var(--muted);
+
+  font-size: 14px;
+}
+
+/* =========================
+   ROLE BANNER
+========================= */
+
+.admin-role-banner {
+  display: flex;
+
+  min-height: 62px;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 18px;
+
+  margin-top: 24px;
+
+  border-radius: 10px;
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--dark),
+      #b40b13
+    );
+
+  color: #fff;
+}
+
+.admin-role-banner i {
+  font-size: 27px;
+}
+
+.admin-role-banner h2 {
+  margin: 0;
+
+  font-size: 24px;
+
+  font-weight: 700;
+}
+
+/* =========================
+   FORM
+========================= */
+
+.admin-login-form {
+  margin-top: 20px;
+
+  text-align: left;
+}
+
+/* =========================
+   FIELD
+========================= */
+
+.admin-field {
+  position: relative;
+
+  margin-bottom: 14px;
+}
+
+.admin-field > i {
+  position: absolute;
+
+  top: 50%;
+  left: 20px;
+
+  color: var(--maroon);
+
+  font-size: 20px;
+
+  transform: translateY(-50%);
+
+  z-index: 2;
+}
+
+.admin-field label {
+  position: absolute;
+
+  top: 10px;
+  left: 63px;
+
+  color: var(--ink);
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+  pointer-events: none;
+
+  z-index: 2;
+}
+
+.admin-field input {
+  width: 100%;
+  height: 72px;
+
+  padding: 28px 55px 8px 63px;
+
+  border: 1px solid #d7dbe2;
+
+  border-radius: 10px;
+
+  outline: none;
+
+  background: #fff;
+
+  color: var(--ink);
+
+  font-size: 15px;
+
+  font-family: "Poppins", sans-serif;
+
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.admin-field input::placeholder {
+  color: #9aa0aa;
+}
+
+.admin-field input:focus {
+  border-color: var(--maroon);
+
+  box-shadow:
+    0 0 0 3px rgba(160, 8, 15, 0.1);
+}
+
+/* =========================
+   PASSWORD TOGGLE
+========================= */
+
+.admin-toggle-password {
+  position: absolute;
+
+  top: 50%;
+  right: 13px;
+
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border: 0;
+
+  background: transparent;
+
+  color: var(--ink);
+
+  cursor: pointer;
+
+  transform: translateY(-50%);
+}
+
+.admin-toggle-password:hover {
+  color: var(--maroon);
+}
+
+.admin-toggle-password i {
+  position: static;
+
+  color: inherit;
+
+  font-size: 16px;
+
+  transform: none;
+}
+
+/* =========================
+   FORGOT PASSWORD
+========================= */
+
+.admin-forgot-row {
+  display: flex;
+
+  justify-content: flex-end;
+
+  margin: -2px 2px 15px;
+}
+
+.admin-forgot-link {
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: var(--maroon);
+
+  font-family: "Poppins", sans-serif;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.admin-forgot-link:hover {
+  text-decoration: underline;
+}
+
+/* =========================
+   ERROR
+========================= */
+
+.admin-error {
+  margin-bottom: 13px;
+
+  padding: 11px 13px;
+
+  border-radius: 9px;
+
+  background: #fdebed;
+
+  color: var(--danger);
+
+  font-size: 12px;
+
+  font-weight: 500;
+}
+
+/* =========================
+   LOGIN BUTTON
+========================= */
+
+.admin-login-button {
+  display: flex;
+
+  width: 100%;
+
+  min-height: 58px;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 11px;
+
+  border: 0;
+
+  border-radius: 10px;
+
+  background: var(--maroon);
+
+  box-shadow:
+    0 9px 20px rgba(141, 14, 18, 0.2);
+
+  color: #fff;
+
+  font-family: "Poppins", sans-serif;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.18s ease,
+    transform 0.18s ease;
+}
+
+.admin-login-button:hover {
+  background: var(--dark);
+
+  transform: translateY(-1px);
+}
+
+.admin-login-button:active {
+  transform: translateY(0);
+}
+
+.admin-login-button:disabled {
+  cursor: wait;
+
+  opacity: 0.75;
+
+  transform: none;
+}
+
+/* =========================
+   BACK LINK
+========================= */
+
+.admin-back-link {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  margin-top: 15px;
+
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: var(--maroon);
+
+  font-family: "Poppins", sans-serif;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  text-decoration: none;
+
+  cursor: pointer;
+}
+
+.admin-back-link:hover {
+  text-decoration: underline;
+}
+
+/* =========================
+   SECURITY
+========================= */
+
+.admin-security {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 10px;
+
+  margin-top: 20px;
+
+  padding-top: 18px;
+
+  border-top: 1px solid var(--line);
+
+  color: var(--muted);
+
+  font-size: 13px;
+}
+
+.admin-security i {
+  color: var(--gold);
+
+  font-size: 20px;
+}
+
+/* =========================
+   FOOTER
+========================= */
+
+.admin-footer {
+  margin-top: 11px;
+
+  color: var(--muted);
+
+  font-size: 12px;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 620px) {
+  .admin-login-main {
+    align-items: start;
+
+    padding: 18px 11px;
+  }
+
+  .admin-login-card {
+    padding: 22px 16px 20px;
+  }
+
+  .admin-logo {
+    width: 88px;
+    height: 88px;
+  }
+
+  .admin-school-name {
+    font-size: 14px;
+  }
+
+  .admin-subtitle {
+    font-size: 11px;
+  }
+
+  .admin-role-banner h2 {
+    font-size: 18px;
+  }
+
+  .admin-role-banner i {
+    font-size: 22px;
+  }
+}
