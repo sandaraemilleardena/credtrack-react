@@ -1,11 +1,15 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-// Login
+// =========================================================
+// LOGIN
+// =========================================================
 import Login from "./login";
 import AdministrationLogin from "./AdministrationLogin";
 import PrincipalLogin from "./PrincipalLogin";
 
-// Administration
+// =========================================================
+// ADMINISTRATION
+// =========================================================
 import AdministrationDashboard from "./AdministrationDashboard";
 import AdministrationCredManagement from "./AdministrationCredManagement";
 import AdministrationStudRecord from "./AdministrationStudRecord";
@@ -13,10 +17,22 @@ import AdministrationReports from "./AdministrationReports";
 import AdministrationActLogs from "./AdministrationActLogs";
 import AdministrationSettings from "./AdministrationSettings";
 
+// =========================================================
+// PRINCIPAL
+// =========================================================
+import PrincipalDashboard from "./PrincipalDashboard";
+import PrincipalApprovals from "./PrincipalApprovals";
+import PrincipalReports from "./PrincipalReports";
+import PrincipalActivity from "./PrincipalActivity";
+
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+
+        {/* =========================
+            LOGIN
+        ========================= */}
         <Route path="/" element={<Login />} />
 
         <Route
@@ -29,6 +45,9 @@ function App() {
           element={<PrincipalLogin />}
         />
 
+        {/* =========================
+            ADMINISTRATION
+        ========================= */}
         <Route
           path="/admin-dashboard"
           element={<AdministrationDashboard />}
@@ -58,6 +77,31 @@ function App() {
           path="/admin-settings"
           element={<AdministrationSettings />}
         />
+
+        {/* =========================
+            PRINCIPAL
+        ========================= */}
+
+        <Route
+          path="/principal-dashboard"
+          element={<PrincipalDashboard />}
+        />
+
+        <Route
+          path="/principal-approvals"
+          element={<PrincipalApprovals />}
+        />
+
+        <Route
+          path="/principal-reports"
+          element={<PrincipalReports />}
+        />
+
+        <Route
+          path="/principal-activity"
+          element={<PrincipalActivity />}
+        />
+
       </Routes>
     </BrowserRouter>
   );

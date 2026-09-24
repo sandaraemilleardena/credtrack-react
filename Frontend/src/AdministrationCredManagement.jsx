@@ -385,10 +385,6 @@ function AdministrationCredManagement() {
           </button>
         </div>
 
-        <div className="sidebar-system-card">
-        
-        </div>
-
         <nav className="sidebar-navigation" aria-label="Administrator navigation">
           <ul className="menu">
             {navigationItems.map((item) => (
@@ -402,10 +398,6 @@ function AdministrationCredManagement() {
             ))}
           </ul>
         </nav>
-
-        <div className="sidebar-profile">
-  
-        </div>
       </aside>
 
       {/* Keep the existing overlay for the request drawer only. */}
@@ -493,10 +485,7 @@ function AdministrationCredManagement() {
                     </div>
                   </div>
 
-                  <div className="dropdown-account-status">
-                    <span className="online-dot"></span>
-                    <span>Account active</span>
-                  </div>
+          
 
                   <div className="dropdown-divider"></div>
 
@@ -510,7 +499,6 @@ function AdministrationCredManagement() {
 
                     <span>
                       <strong>Logout</strong>
-                      <small>Sign out of CredTrack</small>
                     </span>
                   </button>
                 </div>

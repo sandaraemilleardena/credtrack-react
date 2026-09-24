@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./AdministrationActLogs.css";
 
@@ -155,6 +156,36 @@ const logs = [
   },
 ];
 
+const notifications = [
+  {
+    id: 1,
+    title: "New credential request",
+    message:
+      "A new Certificate of Enrollment request is waiting for review.",
+    time: "5 minutes ago",
+    icon: "fa-file-circle-plus",
+    type: "request",
+  },
+  {
+    id: 2,
+    title: "Credential approved",
+    message:
+      "An SF10 credential request has been approved by the Principal.",
+    time: "18 minutes ago",
+    icon: "fa-circle-check",
+    type: "success",
+  },
+  {
+    id: 3,
+    title: "Security alert",
+    message:
+      "Multiple unsuccessful login attempts were detected.",
+    time: "32 minutes ago",
+    icon: "fa-shield-halved",
+    type: "warning",
+  },
+];
+
 const getRoleClass = (role) => {
   if (role === "Administrator") return "admin";
   if (role === "Principal") return "principal";
@@ -173,9 +204,16 @@ const getInitials = (name) => {
 function AdministrationActLogs() {
   const navigate = useNavigate();
 
+  const notificationRef = useRef(null);
+  const adminMenuRef = useRef(null);
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedLog, setSelectedLog] = useState(null);
+
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [adminMenuOpen, setAdminMenuOpen] = useState(false);
+  const [readNotifications, setReadNotifications] = useState([]);
 
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
@@ -184,6 +222,9 @@ function AdministrationActLogs() {
   const [dateFilter, setDateFilter] = useState("2026-07-21");
 
   const [toast, setToast] = useState("");
+
+  const unreadCount =
+    notifications.length - readNotifications.length;
 
   const filteredLogs = useMemo(() => {
     const query = search.toLowerCase().trim();
@@ -215,7 +256,13 @@ function AdministrationActLogs() {
         matchesDate
       );
     });
-  }, [search, roleFilter, moduleFilter, levelFilter, dateFilter]);
+  }, [
+    search,
+    roleFilter,
+    moduleFilter,
+    levelFilter,
+    dateFilter,
+  ]);
 
   const showToast = (message) => {
     setToast(message);
@@ -230,6 +277,33 @@ function AdministrationActLogs() {
 
     return () => clearTimeout(timer);
   }, [toast]);
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target)
+      ) {
+        setNotificationOpen(false);
+      }
+
+      if (
+        adminMenuRef.current &&
+        !adminMenuRef.current.contains(event.target)
+      ) {
+        setAdminMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+
+    return () => {
+      document.removeEventListener(
+        "mousedown",
+        handleOutsideClick
+      );
+    };
+  }, []);
 
   const openDetail = (log) => {
     setSelectedLog(log);
@@ -266,18 +340,55 @@ function AdministrationActLogs() {
     navigate(path);
   };
 
+  const toggleNotifications = () => {
+    setNotificationOpen((previous) => !previous);
+    setAdminMenuOpen(false);
+  };
+
+  const toggleAdminMenu = () => {
+    setAdminMenuOpen((previous) => !previous);
+    setNotificationOpen(false);
+  };
+
+  const markNotificationRead = (id) => {
+    setReadNotifications((previous) => {
+      if (previous.includes(id)) {
+        return previous;
+      }
+
+      return [...previous, id];
+    });
+  };
+
+  const markAllNotificationsRead = () => {
+    setReadNotifications(
+      notifications.map((notification) => notification.id)
+    );
+
+    showToast("All notifications marked as read");
+  };
+
   return (
     <div className="activity-logs-page">
       {/* Mobile sidebar overlay */}
       <div
-        className={`sidebar-screen ${sidebarOpen ? "show" : ""}`}
+        className={`sidebar-screen ${
+          sidebarOpen ? "show" : ""
+        }`}
         onClick={() => setSidebarOpen(false)}
       />
 
       {/* Sidebar */}
-      <aside className={`sidebar ${sidebarOpen ? "show" : ""}`}>
+      <aside
+        className={`sidebar ${
+          sidebarOpen ? "show" : ""
+        }`}
+      >
         <div className="brand">
-          <img src="/logo.png" alt="PMRMIS-South school seal" />
+          <img
+            src="/logo.png"
+            alt="PMRMIS-South school seal"
+          />
 
           <div>
             <h2>CredTrack</h2>
@@ -297,7 +408,9 @@ function AdministrationActLogs() {
           <li>
             <button
               type="button"
-              onClick={() => navigatePage("/admin-dashboard")}
+              onClick={() =>
+                navigatePage("/admin-dashboard")
+              }
             >
               <i className="fas fa-table-columns"></i>
               <span>Dashboard</span>
@@ -308,7 +421,9 @@ function AdministrationActLogs() {
             <button
               type="button"
               onClick={() =>
-                navigatePage("/admin-credential-management")
+                navigatePage(
+                  "/admin-credential-management"
+                )
               }
             >
               <i className="fas fa-folder-open"></i>
@@ -332,18 +447,8 @@ function AdministrationActLogs() {
             <button
               type="button"
               onClick={() =>
-                navigatePage("/admin-user-management")
+                navigatePage("/admin-reports")
               }
-            >
-              <i className="fas fa-users"></i>
-              <span>User Management</span>
-            </button>
-          </li>
-
-          <li>
-            <button
-              type="button"
-              onClick={() => navigatePage("/admin-reports")}
             >
               <i className="fas fa-chart-line"></i>
               <span>Reports</span>
@@ -365,17 +470,12 @@ function AdministrationActLogs() {
           <li>
             <button
               type="button"
-              onClick={() => navigatePage("/admin-settings")}
+              onClick={() =>
+                navigatePage("/admin-settings")
+              }
             >
               <i className="fas fa-gear"></i>
               <span>System Settings</span>
-            </button>
-          </li>
-
-          <li>
-            <button type="button" onClick={logout}>
-              <i className="fas fa-right-from-bracket"></i>
-              <span>Logout</span>
             </button>
           </li>
         </ul>
@@ -401,7 +501,8 @@ function AdministrationActLogs() {
 
             <div className="school">
               <strong>
-                President Manuel Roxas Memorial Integrated School – South
+                President Manuel Roxas Memorial Integrated
+                School – South
               </strong>
 
               <span>
@@ -411,25 +512,205 @@ function AdministrationActLogs() {
           </div>
 
           <div className="top-right">
-            <div className="year">
-              ACADEMIC YEAR
-              <strong>2026–2027</strong>
+            {/* Notifications */}
+            <div
+              className="notification-wrapper"
+              ref={notificationRef}
+            >
+              <button
+                type="button"
+                className={`bell ${
+                  notificationOpen ? "active" : ""
+                }`}
+                onClick={toggleNotifications}
+                aria-label="Notifications"
+                title="Notifications"
+              >
+                <i className="far fa-bell"></i>
+
+                {unreadCount > 0 && (
+                  <b>{unreadCount}</b>
+                )}
+              </button>
+
+              {notificationOpen && (
+                <div className="notification-panel">
+                  <div className="notification-head">
+                    <div>
+                      <h3>Notifications</h3>
+
+                      <span>
+                        {unreadCount > 0
+                          ? `${unreadCount} unread notification${
+                              unreadCount > 1 ? "s" : ""
+                            }`
+                          : "You're all caught up"}
+                      </span>
+                    </div>
+
+                    {unreadCount > 0 && (
+                      <button
+                        type="button"
+                        onClick={markAllNotificationsRead}
+                      >
+                        Mark all read
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="notification-list">
+                    {notifications.map(
+                      (notification) => {
+                        const isRead =
+                          readNotifications.includes(
+                            notification.id
+                          );
+
+                        return (
+                          <button
+                            type="button"
+                            key={notification.id}
+                            className={`notification-item ${
+                              isRead ? "read" : "unread"
+                            }`}
+                            onClick={() =>
+                              markNotificationRead(
+                                notification.id
+                              )
+                            }
+                          >
+                            <span
+                              className={`notification-icon ${notification.type}`}
+                            >
+                              <i
+                                className={`fas ${notification.icon}`}
+                              ></i>
+                            </span>
+
+                            <span className="notification-content">
+                              <strong>
+                                {notification.title}
+                              </strong>
+
+                              <span>
+                                {notification.message}
+                              </span>
+
+                              <small>
+                                {notification.time}
+                              </small>
+                            </span>
+
+                            {!isRead && (
+                              <span className="unread-dot"></span>
+                            )}
+                          </button>
+                        );
+                      }
+                    )}
+                  </div>
+
+                  <div className="notification-footer">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNotificationOpen(false);
+                        showToast(
+                          "Notifications are up to date"
+                        );
+                      }}
+                    >
+                      View all notifications
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
-            <button type="button" className="bell">
-              <i className="far fa-bell"></i>
-              <b>3</b>
-            </button>
+            {/* Administrator Menu */}
+            <div
+              className="profile-wrapper"
+              ref={adminMenuRef}
+            >
+              <button
+                type="button"
+                className={`profile ${
+                  adminMenuOpen ? "active" : ""
+                }`}
+                onClick={toggleAdminMenu}
+                aria-label="Administrator menu"
+              >
+                <img
+                  src="/logo.png"
+                  alt="Administrator"
+                />
 
-            <div className="profile">
-              <img src="/logo.png" alt="Administrator" />
+                <div>
+                  <strong>Administrator</strong>
+                  <small>System Administrator</small>
+                </div>
 
-              <div>
-                <strong>Administrator</strong>
-                <small>System Administrator</small>
-              </div>
+                <i
+                  className={`fas ${
+                    adminMenuOpen
+                      ? "fa-chevron-up"
+                      : "fa-chevron-down"
+                  }`}
+                ></i>
+              </button>
 
-              <i className="fas fa-chevron-down"></i>
+              {adminMenuOpen && (
+                <div className="admin-menu">
+                  <div className="admin-menu-header">
+                    <img
+                      src="/logo.png"
+                      alt="Administrator"
+                    />
+
+                    <div>
+                      <strong>Administrator</strong>
+                      <span>
+                        System Administrator
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="admin-menu-divider"></div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAdminMenuOpen(false);
+                      navigatePage("/admin-settings");
+                    }}
+                  >
+                    <i className="fas fa-user-gear"></i>
+                    <span>Account Settings</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAdminMenuOpen(false);
+                      navigatePage("/admin-settings");
+                    }}
+                  >
+                    <i className="fas fa-gear"></i>
+                    <span>System Settings</span>
+                  </button>
+
+                  <div className="admin-menu-divider"></div>
+
+                  <button
+                    type="button"
+                    className="logout-menu-item"
+                    onClick={logout}
+                  >
+                    <i className="fas fa-right-from-bracket"></i>
+                    <span>Logout</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </header>
@@ -439,9 +720,11 @@ function AdministrationActLogs() {
           <section className="page-head">
             <div>
               <h1>Activity Logs</h1>
+
               <p>
-                Review immutable audit events, user activity, and
-                security-relevant system changes.
+                Review immutable audit events, user
+                activity, and security-relevant system
+                changes.
               </p>
             </div>
 
@@ -500,7 +783,9 @@ function AdministrationActLogs() {
 
               <div>
                 <span>System Status</span>
-                <strong className="healthy">Healthy</strong>
+                <strong className="healthy">
+                  Healthy
+                </strong>
               </div>
             </article>
           </section>
@@ -533,28 +818,46 @@ function AdministrationActLogs() {
                   type="search"
                   placeholder="Search actor, action, target, or event ID..."
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={(e) =>
+                    setSearch(e.target.value)
+                  }
                 />
               </div>
 
               <select
                 value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value)}
+                onChange={(e) =>
+                  setRoleFilter(e.target.value)
+                }
               >
                 <option value="all">All Roles</option>
-                <option value="Administrator">Administrator</option>
-                <option value="Principal">Principal</option>
-                <option value="ICT Personnel">ICT Personnel</option>
+                <option value="Administrator">
+                  Administrator
+                </option>
+                <option value="Principal">
+                  Principal
+                </option>
+                <option value="ICT Personnel">
+                  ICT Personnel
+                </option>
               </select>
 
               <select
                 value={moduleFilter}
-                onChange={(e) => setModuleFilter(e.target.value)}
+                onChange={(e) =>
+                  setModuleFilter(e.target.value)
+                }
               >
                 <option value="all">All Modules</option>
-                <option value="Authentication">Authentication</option>
-                <option value="Credentials">Credentials</option>
-                <option value="Student Records">Student Records</option>
+                <option value="Authentication">
+                  Authentication
+                </option>
+                <option value="Credentials">
+                  Credentials
+                </option>
+                <option value="Student Records">
+                  Student Records
+                </option>
                 <option value="User Management">
                   User Management
                 </option>
@@ -563,7 +866,9 @@ function AdministrationActLogs() {
 
               <select
                 value={levelFilter}
-                onChange={(e) => setLevelFilter(e.target.value)}
+                onChange={(e) =>
+                  setLevelFilter(e.target.value)
+                }
               >
                 <option value="all">All Levels</option>
                 <option value="Info">Info</option>
@@ -575,7 +880,9 @@ function AdministrationActLogs() {
               <input
                 type="date"
                 value={dateFilter}
-                onChange={(e) => setDateFilter(e.target.value)}
+                onChange={(e) =>
+                  setDateFilter(e.target.value)
+                }
               />
 
               <button
@@ -646,8 +953,13 @@ function AdministrationActLogs() {
                             </span>
 
                             <div>
-                              <strong>{log.action}</strong>
-                              <small>{log.description}</small>
+                              <strong>
+                                {log.action}
+                              </strong>
+
+                              <small>
+                                {log.description}
+                              </small>
                             </div>
                           </div>
                         </td>
@@ -668,7 +980,9 @@ function AdministrationActLogs() {
                           <button
                             type="button"
                             className="view-btn"
-                            onClick={() => openDetail(log)}
+                            onClick={() =>
+                              openDetail(log)
+                            }
                             title="View details"
                           >
                             <i className="fas fa-eye"></i>
@@ -678,11 +992,19 @@ function AdministrationActLogs() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="8" className="empty-state">
+                      <td
+                        colSpan="8"
+                        className="empty-state"
+                      >
                         <i className="fas fa-magnifying-glass"></i>
-                        <strong>No activity logs found</strong>
+
+                        <strong>
+                          No activity logs found
+                        </strong>
+
                         <span>
-                          Try changing your search or filters.
+                          Try changing your search or
+                          filters.
                         </span>
                       </td>
                     </tr>
@@ -695,7 +1017,8 @@ function AdministrationActLogs() {
             <div className="table-foot">
               <span>
                 {filteredLogs.length} event
-                {filteredLogs.length === 1 ? "" : "s"} shown
+                {filteredLogs.length === 1 ? "" : "s"}{" "}
+                shown
               </span>
 
               <div className="pages">
@@ -703,7 +1026,10 @@ function AdministrationActLogs() {
                   <i className="fas fa-chevron-left"></i>
                 </button>
 
-                <button type="button" className="current">
+                <button
+                  type="button"
+                  className="current"
+                >
                   1
                 </button>
 
@@ -721,12 +1047,18 @@ function AdministrationActLogs() {
 
       {/* Drawer Overlay */}
       <div
-        className={`drawer-overlay ${drawerOpen ? "show" : ""}`}
+        className={`drawer-overlay ${
+          drawerOpen ? "show" : ""
+        }`}
         onClick={closeDetail}
       ></div>
 
       {/* Event Details Drawer */}
-      <aside className={`drawer ${drawerOpen ? "show" : ""}`}>
+      <aside
+        className={`drawer ${
+          drawerOpen ? "show" : ""
+        }`}
+      >
         {selectedLog && (
           <>
             <div className="drawer-head">
@@ -753,7 +1085,8 @@ function AdministrationActLogs() {
                 <h3>{selectedLog.action}</h3>
 
                 <p>
-                  {selectedLog.date} at {selectedLog.time}
+                  {selectedLog.date} at{" "}
+                  {selectedLog.time}
                 </p>
               </div>
             </div>
@@ -781,20 +1114,25 @@ function AdministrationActLogs() {
 
               <div className="detail full">
                 <span>Description</span>
-                <strong>{selectedLog.description}</strong>
+                <strong>
+                  {selectedLog.description}
+                </strong>
               </div>
 
               <div className="detail full">
                 <span>Target Resource</span>
-                <strong>{selectedLog.target}</strong>
+                <strong>
+                  {selectedLog.target}
+                </strong>
               </div>
             </div>
 
             <div className="notice">
               <i className="fas fa-circle-info"></i>{" "}
-              Audit entries must not be edited or deleted through
-              the user interface. Retention and access should follow
-              school privacy and records policies.
+              Audit entries must not be edited or deleted
+              through the user interface. Retention and
+              access should follow school privacy and
+              records policies.
             </div>
           </>
         )}
@@ -809,3 +1147,5 @@ function AdministrationActLogs() {
 }
 
 export default AdministrationActLogs;
+
+

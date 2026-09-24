@@ -129,7 +129,6 @@ function AdministrationReports() {
     { label: "Dashboard", icon: "fa-table-columns", path: "/admin-dashboard" },
     { label: "Credential Management", icon: "fa-folder-open", path: "/admin-credential-management" },
     { label: "Student Records", icon: "fa-user-graduate", path: "/admin-student-records" },
-    { label: "User Management", icon: "fa-users", path: "/admin-user-management" },
     { label: "Reports", icon: "fa-chart-line", path: "/admin-reports" },
     { label: "Activity Logs", icon: "fa-clock-rotate-left", path: "/admin-activity-logs" },
     { label: "System Settings", icon: "fa-gear", path: "/admin-settings" },
@@ -266,9 +265,7 @@ function AdministrationReports() {
       <button type="button" className={`sidebar-overlay ${sidebarOpen ? "show" : ""}`} aria-label="Close navigation" onClick={closeSidebar} />
       <aside className={`sidebar ${sidebarOpen ? "open" : ""}`} aria-label="Administrator navigation">
         <div className="brand"><div className="brand-logo"><img src="/logo.png" alt="PMRMIS-South logo" /></div><div className="brand-copy"><h2>CredTrack</h2><span>PMRMIS–SOUTH</span></div><button type="button" className="close-sidebar" onClick={closeSidebar}><i className="fas fa-xmark" /></button></div>
-        <div className="sidebar-system-card"><div className="system-card-icon"><i className="fas fa-shield-halved" /></div><div><strong>Records Management</strong><span>Administrative Portal</span></div><span className="online-dot" /></div>
         <nav className="sidebar-navigation"><ul className="menu">{navigationItems.map((item) => <li className={`menu-item ${isActiveRoute(item.path) ? "active" : ""}`} key={item.path}><button type="button" className="menu-link" onClick={() => { navigate(item.path); closeSidebar(); }}><span className="menu-icon"><i className={`fas ${item.icon}`} /></span><span className="menu-text">{item.label}</span>{isActiveRoute(item.path) && <span className="active-indicator"><i className="fas fa-chevron-right" /></span>}</button></li>)}</ul></nav>
-        <div className="sidebar-profile"><div className="profile-avatar">AD</div><div className="profile-details"><strong>Administrator</strong><small>System Administrator</small></div><span className="profile-status"><i className="fas fa-circle" /></span></div>
       </aside>
       <div className="shell">
         <header className="topbar">

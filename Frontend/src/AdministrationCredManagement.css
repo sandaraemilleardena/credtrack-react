@@ -78,8 +78,6 @@ a {
   display: flex;
   align-items: center;
   min-height: var(--topbar-height);
-  gap: 12px;
-  padding: 15px 20px;
   border-bottom: 1px solid #ececf0;
 }
 
@@ -1183,8 +1181,7 @@ tbody tr:hover,tbody tr.selected {
   flex: 0 0 70px;
   overflow: visible;
   border: 0;
-  border-radius: 50%;
-  background: transparent;
+  
 }
 
 .seal img {
@@ -1268,7 +1265,6 @@ tbody tr:hover,tbody tr.selected {
   flex: 0 0 52px;
   place-items: center;
   overflow: hidden;
-  border-radius: 50%;
 }
 
 .school-seal img {
@@ -1276,7 +1272,7 @@ tbody tr:hover,tbody tr.selected {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  border-radius: 50%;
+  
 }
 
 .school {
@@ -2806,13 +2802,6 @@ tbody tr:hover,tbody tr.selected {
   box-shadow: none;
 }
 
-.credential-management-page .brand {
-  flex: 0 0 106px;
-  min-height: 106px;
-  gap: 13px;
-  padding: 17px 20px;
-}
-
 .credential-management-page .seal {
   width: 64px;
   height: 64px;
@@ -3137,7 +3126,13 @@ tbody tr:hover,tbody tr.selected {
   color: var(--ink-800); background: #ffffff; border-right: 1px solid #ececf0;
   color: var(--ink-800); background: #710b0e; border-right: 1px solid #ececf0;
 }
-:is(.administration-dashboard, .credential-management-page) .brand { position: relative; display: flex; align-items: center; min-height: var(--topbar-height); gap: 12px; padding: 15px 20px;  }
+:is(.administration-dashboard, .credential-management-page) .brand {:is(.administration-dashboard, .credential-management-page, .student-records-page) .brand { position: relative;
+    display: flex;
+    align-items: center;
+    min-height: var(--topbar-height);
+    gap: 12px;
+    padding: 15px 20px;
+    border-bottom: 1px solid #ececf0;}  }
 :is(.administration-dashboard, .credential-management-page) .brand-logo { display: grid; width: 44px; height: 44px; flex: 0 0 auto; place-items: center; overflow: hidden; ;  }
 :is(.administration-dashboard, .credential-management-page) .brand-logo img { width: 100%; height: 100%; object-fit: contain; }
 :is(.administration-dashboard, .credential-management-page) .brand-copy { min-width: 0; }

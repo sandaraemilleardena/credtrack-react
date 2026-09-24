@@ -557,15 +557,6 @@ function AdministrationDashboard() {
       submitText: "Upload Records",
     },
 
-    user: {
-      eyebrow: "USER MANAGEMENT",
-      title: "Add User",
-      description:
-        "Create a new system account.",
-      icon: "fa-user-plus",
-      submitText: "Add User",
-    },
-
     report: {
       eyebrow: "REPORTS",
       title: "Generate Report",
@@ -644,10 +635,6 @@ function AdministrationDashboard() {
 
         {/* SCHOOL IDENTITY */}
 
-        <div className="sidebar-system-card">
-
-        </div>
-
         {/* NAVIGATION */}
 
         <nav
@@ -723,10 +710,6 @@ function AdministrationDashboard() {
 
         {/* SIDEBAR PROFILE */}
 
-        <div className="sidebar-profile">
-
-        </div>
-
       </aside>
 
       {/* =====================================================
@@ -767,13 +750,11 @@ function AdministrationDashboard() {
             <div className="school-name">
 
               <div className="school-name-title">
-                President Manuel Roxas Memorial
-                Integrated School – South
+                President Manuel Roxas Memorial Integrated School – South
               </div>
 
               <div className="school-name-subtitle">
-                Digital Credentials Management
-                System
+                Digital Credentials Management System
               </div>
 
             </div>
@@ -931,18 +912,17 @@ function AdministrationDashboard() {
               >
 
                 <div className="admin-avatar">
-                  AD
+                  <img
+                src="/logo.png"
+                alt="PMRMIS-South school logo"
+              />
                 </div>
 
                 <div className="admin-menu-info">
 
                   <strong>
-                    Administrator
+                    ADMINISTRATOR
                   </strong>
-
-                  <small>
-                    System Administrator
-                  </small>
 
                 </div>
 
@@ -978,15 +958,6 @@ function AdministrationDashboard() {
 
                   </div>
 
-                  <div className="dropdown-account-status">
-
-                    <span className="online-dot"></span>
-
-                    <span>
-                      Account active
-                    </span>
-
-                  </div>
 
                   <div className="dropdown-divider"></div>
 

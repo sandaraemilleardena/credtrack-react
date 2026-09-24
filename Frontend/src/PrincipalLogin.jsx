@@ -21,24 +21,21 @@ function PrincipalLogin() {
       return;
     }
 
-    // DEMO ONLY
-    // Replace this with Django authentication later.
+    // DEMO ACCOUNT
     const principalAccount = {
       username: "principal",
       password: "principal123",
     };
 
-    const validUsername =
-      username.trim() === principalAccount.username;
-
-    const validPassword =
-      password === principalAccount.password;
-
-    if (!validUsername || !validPassword) {
+    if (
+      username.trim() !== principalAccount.username ||
+      password !== principalAccount.password
+    ) {
       setError("Incorrect username or password.");
       return;
     }
 
+    // Save login session
     sessionStorage.setItem(
       "credtrackSession",
       JSON.stringify({
@@ -50,10 +47,8 @@ function PrincipalLogin() {
 
     setLoading(true);
 
-    // Temporary dashboard navigation
-    setTimeout(() => {
-      navigate("/principal-dashboard");
-    }, 700);
+    // GO DIRECTLY TO PRINCIPAL DASHBOARD
+    navigate("/principal-dashboard");
   };
 
   const handleBack = () => {
@@ -62,6 +57,7 @@ function PrincipalLogin() {
 
   return (
     <div className="principal-login-page">
+
       {/* TOP BAR */}
       <div className="principal-top-bar"></div>
 
@@ -70,6 +66,7 @@ function PrincipalLogin() {
           className="principal-login-card"
           aria-labelledby="principal-login-title"
         >
+
           {/* LOGO */}
           <img
             className="principal-logo"
@@ -112,6 +109,7 @@ function PrincipalLogin() {
             onSubmit={handleSubmit}
             noValidate
           >
+
             {/* USERNAME */}
             <div className="principal-field">
               <i
@@ -167,7 +165,7 @@ function PrincipalLogin() {
                 className="principal-toggle-password"
                 type="button"
                 onClick={() =>
-                  setShowPassword(!showPassword)
+                  setShowPassword((prev) => !prev)
                 }
                 aria-label={
                   showPassword
@@ -225,11 +223,10 @@ function PrincipalLogin() {
               ></i>
 
               <span>
-                {loading
-                  ? "Signing in..."
-                  : "Login"}
+                {loading ? "Signing in..." : "Login"}
               </span>
             </button>
+
           </form>
 
           {/* BACK TO ROLE SELECTION */}
@@ -262,10 +259,11 @@ function PrincipalLogin() {
           <footer className="principal-footer">
             © 2026 PMRMIS–South
           </footer>
+
         </section>
       </main>
     </div>
   );
 }
 
-export default PrincipalLogin;
+export default PrincipalLogin; 

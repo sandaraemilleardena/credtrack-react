@@ -1,29 +1,62 @@
+
+/* =========================================================
+   CREDTRACK — ACTIVITY LOGS
+   Clean Reports-Style Layout
+   ========================================================= */
+
+
+/* =========================================================
+   ROOT VARIABLES
+   ========================================================= */
+
 :root {
   --maroon: #8d0e12;
-  --dark: #710b0e;
-  --soft: #fff0f0;
+  --maroon-dark: #710b0e;
+  --maroon-deep: #5e0b0f;
+  --maroon-light: #fff0f0;
+
   --ink: #263047;
   --muted: #7d8190;
   --line: #e8e9ee;
   --bg: #f5f6fa;
+
+  --white: #ffffff;
+
   --green: #29a94d;
-  --gold: #e3a008;
+  --gold: #ffb800;
   --blue: #176cf4;
   --red: #dc3545;
   --purple: #7652b5;
-  --shadow: 0 12px 30px rgba(31, 38, 57, 0.07);
-  --sidebar: 280px;
+
+  --sidebar-width: 276px;
+  --topbar-height: 78px;
+
+  --shadow:
+    0 10px 28px rgba(31, 38, 57, 0.06);
+
+  --ease:
+    220ms cubic-bezier(0.2, 0.75, 0.25, 1);
 }
+
+
+/* =========================================================
+   PAGE BASE
+   ========================================================= */
 
 .activity-logs-page {
   min-height: 100vh;
   overflow-x: hidden;
+
   background: var(--bg);
   color: var(--ink);
-  font-family: Poppins, sans-serif;
+
+  font-family: "Poppins", sans-serif;
+  font-size: 14px;
 }
 
-.activity-logs-page * {
+.activity-logs-page *,
+.activity-logs-page *::before,
+.activity-logs-page *::after {
   box-sizing: border-box;
 }
 
@@ -38,153 +71,384 @@
   cursor: pointer;
 }
 
-/* =========================
+
+/* =========================================================
    SIDEBAR
-========================= */
+   ========================================================= */
 
 .activity-logs-page .sidebar {
   position: fixed;
   inset: 0 auto 0 0;
   z-index: 50;
-  width: var(--sidebar);
+
+  display: flex;
+  flex-direction: column;
+
+  width: var(--sidebar-width);
   height: 100vh;
-  overflow: auto;
-  background: #fff;
-  border-right: 1px solid #ececf0;
-  transition: 0.25s;
+
+  overflow: hidden;
+
+  background: var(--maroon-dark);
+  color: #ffffff;
+
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+
+  transition:
+    transform 260ms var(--ease),
+    box-shadow 260ms var(--ease);
 }
+
+
+/* =========================================================
+   SIDEBAR BRAND
+   ========================================================= */
 
 .activity-logs-page .brand {
   display: flex;
-  min-height: 106px;
   align-items: center;
-  gap: 14px;
-  padding: 17px 22px;
-  border-bottom: 1px solid #ececf0;
+
+  width: 100%;
+  min-height: 78px;
+
+  gap: 13px;
+
+  padding: 15px 20px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .activity-logs-page .brand img {
-  width: 70px;
-  height: 70px;
-  flex: 0 0 70px;
-  border-radius: 50%;
+  display: block;
+
+  width: 45px;
+  height: 45px;
+
+  flex: 0 0 45px;
+
+  padding: 5px;
+
+  border: 0;
+  border-radius: 11px;
+
+  background: #ffffff;
+
   object-fit: contain;
-  filter: drop-shadow(0 3px 6px rgba(65, 25, 25, 0.12));
+
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.14),
+    0 7px 16px rgba(0, 0, 0, 0.16);
+}
+
+.activity-logs-page .brand div {
+  min-width: 0;
 }
 
 .activity-logs-page .brand h2 {
-  color: var(--maroon);
-  font-size: 23px;
-  line-height: 1.1;
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 1.08rem;
+  font-weight: 700;
+
+  line-height: 1.25;
+  letter-spacing: -0.02em;
 }
 
 .activity-logs-page .brand span {
   display: block;
-  margin-top: 5px;
-  color: #7b7d83;
-  font-size: 12px;
+
+  margin-top: 3px;
+
+  color: #efbcbc;
+
+  font-size: 0.68rem;
+  font-weight: 600;
+
+  line-height: 1.2;
+  letter-spacing: 0.12em;
 }
+
+
+/* =========================================================
+   MOBILE CLOSE
+   ========================================================= */
 
 .activity-logs-page .mobile-close {
   display: none;
+
+  width: 36px;
+  height: 36px;
+
   margin-left: auto;
-  background: none;
-  color: var(--maroon);
-  font-size: 21px;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 9px;
+
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+
+  font-size: 15px;
 }
+
+.activity-logs-page .mobile-close:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+
+/* =========================================================
+   SIDEBAR NAVIGATION
+   ========================================================= */
 
 .activity-logs-page .nav {
-  padding: 18px 16px;
-  list-style: none;
+  flex: 1;
+
+  width: 100%;
+
+  overflow-y: auto;
+
   margin: 0;
+  padding: 18px 13px 24px;
+
+  list-style: none;
+
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
 }
 
+.activity-logs-page .nav::-webkit-scrollbar {
+  width: 5px;
+}
+
+.activity-logs-page .nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.activity-logs-page .nav::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+
+/* =========================================================
+   NAV ITEM SPACING
+   ========================================================= */
+
 .activity-logs-page .nav li {
-  margin: 8px 0;
+  margin: 0 0 5px;
+}
+
+.activity-logs-page .nav li:last-child {
+  margin-bottom: 0;
 }
 
 .activity-logs-page .nav button {
-  display: flex;
+  position: relative;
+
+  display: grid;
+
   width: 100%;
-  min-height: 50px;
+  min-height: 46px;
+
+  grid-template-columns: 36px minmax(0, 1fr);
+
   align-items: center;
-  gap: 14px;
-  padding: 0 18px;
-  border-radius: 13px;
+
+  gap: 9px;
+
+  padding: 6px 10px;
+
+  border: 1px solid transparent;
+  border-radius: 11px;
+
   background: transparent;
-  color: #353c4b;
+
+  color: #f2c9c9;
+
   text-align: left;
-  transition: 0.2s;
+
+  transition:
+    color var(--ease),
+    background var(--ease),
+    transform var(--ease),
+    border-color var(--ease);
 }
 
 .activity-logs-page .nav button:hover {
-  background: #f8f2f2;
-  color: var(--maroon);
+  color: #ffffff;
+
+  background: rgba(255, 255, 255, 0.07);
+
+  transform: translateX(2px);
 }
 
 .activity-logs-page .nav .active button {
-  background: var(--maroon);
-  color: #fff;
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.23),
+      rgba(255, 255, 255, 0.1)
+    );
+
+  border-color: rgba(255, 205, 205, 0.28);
+
+  box-shadow:
+    inset 3px 0 #ffd0d0;
 }
 
 .activity-logs-page .nav i {
-  width: 20px;
-  text-align: center;
+  display: grid;
+
+  width: 32px;
+  height: 32px;
+
+  place-items: center;
+
+  border-radius: 9px;
+
+  background: rgba(255, 255, 255, 0.035);
+
+  font-size: 14px;
+}
+
+.activity-logs-page .nav .active i {
+  color: #ffe3e3;
+
+  background: rgba(255, 255, 255, 0.18);
 }
 
 .activity-logs-page .nav span {
-  font-size: 14px;
-  font-weight: 500;
+  min-width: 0;
+
+  overflow: hidden;
+
+  color: inherit;
+
+  font-size: 0.84rem;
+  font-weight: 600;
+
+  line-height: 1.3;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* =========================
-   SHELL / TOPBAR
-========================= */
+
+/* =========================================================
+   SIDEBAR SCREEN
+   ========================================================= */
+
+.activity-logs-page .sidebar-screen {
+  position: fixed;
+  inset: 0;
+
+  z-index: 40;
+
+  display: none;
+
+  border: 0;
+
+  background: rgba(3, 10, 21, 0.58);
+
+  backdrop-filter: blur(4px);
+}
+
+.activity-logs-page .sidebar-screen.show {
+  display: block;
+}
+
+
+/* =========================================================
+   MAIN SHELL
+   ========================================================= */
 
 .activity-logs-page .shell {
   min-height: 100vh;
-  margin-left: var(--sidebar);
+
+  margin-left: var(--sidebar-width);
 }
+
+
+/* =========================================================
+   TOPBAR
+   ========================================================= */
 
 .activity-logs-page .topbar {
   position: sticky;
+
   top: 0;
-  z-index: 40;
+
+  z-index: 30;
+
   display: flex;
-  min-height: 88px;
+
+  min-height: var(--topbar-height);
+
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+
+  gap: 24px;
+
   padding: 0 30px;
+
   border-bottom: 1px solid #ececf0;
+
   background: rgba(255, 255, 255, 0.98);
-  box-shadow: 0 5px 20px rgba(36, 42, 57, 0.035);
+
+  box-shadow:
+    0 5px 20px rgba(36, 42, 57, 0.035);
+
   backdrop-filter: blur(12px);
 }
 
+
+/* =========================================================
+   TOP LEFT
+   ========================================================= */
+
 .activity-logs-page .top-left {
   display: flex;
+
   min-width: 0;
+
   align-items: center;
-  gap: 13px;
+
+  gap: 14px;
 }
 
 .activity-logs-page .menu-btn {
   display: none;
+
   width: 40px;
   height: 40px;
+
   place-items: center;
+
   border: 1px solid #e5e5e9;
   border-radius: 10px;
-  background: #fff;
+
+  background: #ffffff;
+
   color: var(--maroon);
+
+  font-size: 17px;
+}
+
+.activity-logs-page .menu-btn:hover {
+  background: var(--maroon-light);
 }
 
 .activity-logs-page .school-seal {
-  width: 52px;
-  height: 52px;
-  flex: 0 0 52px;
-  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+
+  flex: 0 0 50px;
+
   object-fit: contain;
 }
 
@@ -194,221 +458,738 @@
 
 .activity-logs-page .school strong {
   display: block;
-  overflow: hidden;
+
   max-width: 760px;
+
+  overflow: hidden;
+
   color: var(--maroon);
-  font-size: 16px;
+
+  font-size: 15px;
+  font-weight: 700;
+
+  line-height: 1.3;
+
   text-transform: uppercase;
+
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .activity-logs-page .school span {
   display: block;
+
   margin-top: 3px;
+
   color: #85858b;
-  font-size: 12px;
+
+  font-size: 11px;
 }
+
+
+/* =========================================================
+   TOP RIGHT
+   ========================================================= */
 
 .activity-logs-page .top-right {
   display: flex;
+
   align-items: center;
-  gap: 18px;
+
+  gap: 14px;
 }
 
-.activity-logs-page .year {
-  padding-right: 18px;
-  border-right: 1px solid #e7e7eb;
-  color: #92949b;
-  font-size: 8px;
-  font-weight: 600;
-  letter-spacing: 1px;
-}
 
-.activity-logs-page .year strong {
-  display: block;
-  margin-top: 3px;
-  color: var(--maroon);
-  font-size: 11px;
+/* =========================================================
+   NOTIFICATION
+   ========================================================= */
+
+.activity-logs-page .notification-wrapper {
+  position: relative;
 }
 
 .activity-logs-page .bell {
   position: relative;
+
   display: grid;
+
   width: 44px;
   height: 44px;
+
   place-items: center;
+
   border: 1px solid #ededf0;
   border-radius: 50%;
+
   background: #fafafa;
+
   color: #272d3a;
+
+  font-size: 17px;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.activity-logs-page .bell:hover,
+.activity-logs-page .bell.active {
+  background: var(--maroon-light);
+
+  border-color: #ead1d2;
+
+  color: var(--maroon);
 }
 
 .activity-logs-page .bell b {
   position: absolute;
-  top: -5px;
-  right: -3px;
+
+  top: -4px;
+  right: -2px;
+
   display: grid;
-  width: 20px;
-  height: 20px;
+
+  width: 19px;
+  height: 19px;
+
   place-items: center;
-  border: 2px solid #fff;
+
+  border: 2px solid #ffffff;
   border-radius: 50%;
+
   background: var(--red);
-  color: #fff;
+
+  color: #ffffff;
+
   font-size: 9px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   NOTIFICATION PANEL
+   ========================================================= */
+
+.activity-logs-page .notification-panel {
+  position: absolute;
+
+  top: calc(100% + 12px);
+  right: -45px;
+
+  z-index: 130;
+
+  width: 380px;
+
+  overflow: hidden;
+
+  border: 1px solid #eadedf;
+  border-radius: 15px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 18px 45px rgba(58, 20, 22, 0.16);
+}
+
+.activity-logs-page .notification-head {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  padding: 17px 18px;
+
+  border-bottom: 1px solid var(--line);
+}
+
+.activity-logs-page .notification-head h3 {
+  margin: 0;
+
+  color: var(--ink);
+
+  font-size: 15px;
+}
+
+.activity-logs-page .notification-head span {
+  display: block;
+
+  margin-top: 3px;
+
+  color: var(--muted);
+
+  font-size: 10px;
+}
+
+.activity-logs-page .notification-head button {
+  background: transparent;
+
+  color: var(--maroon);
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.activity-logs-page .notification-list {
+  max-height: 365px;
+
+  overflow-y: auto;
+}
+
+.activity-logs-page .notification-item {
+  position: relative;
+
+  display: flex;
+
+  width: 100%;
+
+  align-items: flex-start;
+
+  gap: 11px;
+
+  padding: 14px 17px;
+
+  border-bottom: 1px solid #f0f0f2;
+
+  background: #ffffff;
+
+  text-align: left;
+
+  transition: background 0.2s ease;
+}
+
+.activity-logs-page .notification-item:hover {
+  background: #fff8f8;
+}
+
+.activity-logs-page .notification-item.unread {
+  background: #fffafa;
+}
+
+.activity-logs-page .notification-item.read {
+  opacity: 0.72;
+}
+
+.activity-logs-page .notification-icon {
+  display: grid;
+
+  width: 39px;
+  height: 39px;
+
+  flex: 0 0 39px;
+
+  place-items: center;
+
+  border-radius: 10px;
+
+  font-size: 14px;
+}
+
+.activity-logs-page .notification-icon.request {
+  background: #f3e8ff;
+  color: var(--purple);
+}
+
+.activity-logs-page .notification-icon.success {
+  background: #e5f6ea;
+  color: var(--green);
+}
+
+.activity-logs-page .notification-icon.warning {
+  background: #fff3d3;
+  color: #a36a00;
+}
+
+.activity-logs-page .notification-content {
+  min-width: 0;
+
+  padding-right: 8px;
+}
+
+.activity-logs-page .notification-content strong {
+  display: block;
+
+  color: #303747;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.activity-logs-page .notification-content > span {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #6e7481;
+
+  font-size: 10.5px;
+
+  line-height: 1.45;
+}
+
+.activity-logs-page .notification-content small {
+  display: block;
+
+  margin-top: 5px;
+
+  color: #9a9da5;
+
+  font-size: 9.5px;
+}
+
+.activity-logs-page .unread-dot {
+  position: absolute;
+
+  top: 19px;
+  right: 14px;
+
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background: var(--maroon);
+}
+
+.activity-logs-page .notification-footer {
+  padding: 11px;
+
+  border-top: 1px solid var(--line);
+
+  text-align: center;
+}
+
+.activity-logs-page .notification-footer button {
+  width: 100%;
+
+  padding: 7px;
+
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: var(--maroon);
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.activity-logs-page .notification-footer button:hover {
+  background: var(--maroon-light);
+}
+
+
+/* =========================================================
+   ADMIN PROFILE
+   ========================================================= */
+
+.activity-logs-page .profile-wrapper {
+  position: relative;
 }
 
 .activity-logs-page .profile {
   display: flex;
-  min-width: 190px;
+
+  min-width: 185px;
+
   align-items: center;
-  gap: 11px;
+
+  gap: 10px;
+
   padding: 5px 7px;
-  border-radius: 13px;
+
+  border-radius: 12px;
+
+  background: transparent;
+
+  text-align: left;
+
+  transition: background 0.2s ease;
 }
 
-.activity-logs-page .profile:hover {
-  background: #faf6f6;
+.activity-logs-page .profile:hover,
+.activity-logs-page .profile.active {
+  background: #faf3f3;
 }
 
 .activity-logs-page .profile img {
-  width: 46px;
-  height: 46px;
-  flex: 0 0 46px;
+  width: 44px;
+  height: 44px;
+
+  flex: 0 0 44px;
+
   border: 1px solid #dedee3;
   border-radius: 50%;
+
   object-fit: contain;
 }
 
 .activity-logs-page .profile strong {
   display: block;
-  font-size: 14px;
+
+  color: var(--ink);
+
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .activity-logs-page .profile small {
   color: #898c94;
-  font-size: 11px;
+
+  font-size: 10px;
 }
 
 .activity-logs-page .profile > i {
   margin-left: auto;
+
   color: #858992;
-  font-size: 11px;
+
+  font-size: 10px;
 }
 
-/* =========================
-   CONTENT
-========================= */
+
+/* =========================================================
+   ADMIN DROPDOWN
+   ========================================================= */
+
+.activity-logs-page .admin-menu {
+  position: absolute;
+
+  top: calc(100% + 10px);
+  right: 0;
+
+  z-index: 130;
+
+  width: 210px;
+
+  padding: 8px;
+
+  border: 1px solid #eadedf;
+  border-radius: 13px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 16px 35px rgba(58, 20, 22, 0.16);
+}
+
+.activity-logs-page .admin-menu-header {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 10px;
+}
+
+.activity-logs-page .admin-menu-header img {
+  width: 40px;
+  height: 40px;
+
+  flex: 0 0 40px;
+
+  border: 1px solid #dedee3;
+  border-radius: 50%;
+
+  object-fit: contain;
+}
+
+.activity-logs-page .admin-menu-header strong {
+  display: block;
+
+  color: #393f4d;
+
+  font-size: 12px;
+}
+
+.activity-logs-page .admin-menu-header span {
+  display: block;
+
+  margin-top: 2px;
+
+  color: #858994;
+
+  font-size: 10px;
+}
+
+.activity-logs-page .admin-menu-divider {
+  height: 1px;
+
+  margin: 6px 0;
+
+  background: #f0e6e7;
+}
+
+.activity-logs-page .admin-menu > button {
+  display: flex;
+
+  width: 100%;
+  min-height: 40px;
+
+  align-items: center;
+
+  gap: 9px;
+
+  padding: 0 10px;
+
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: #454b59;
+
+  text-align: left;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  transition: 0.2s ease;
+}
+
+.activity-logs-page .admin-menu > button:hover {
+  background: #fff0f0;
+  color: var(--maroon);
+}
+
+.activity-logs-page .admin-menu > button i {
+  width: 18px;
+
+  color: #777d89;
+
+  text-align: center;
+}
+
+.activity-logs-page .admin-menu > button:hover i {
+  color: var(--maroon);
+}
+
+.activity-logs-page .admin-menu .logout-menu-item {
+  color: #9a151a;
+}
+
+.activity-logs-page .admin-menu .logout-menu-item i {
+  color: #9a151a;
+}
+
+.activity-logs-page .admin-menu .logout-menu-item:hover {
+  background: #fff0f0;
+  color: #b62534;
+}
+
+
+/* =========================================================
+   MAIN CONTENT
+   ========================================================= */
 
 .activity-logs-page .content {
-  padding: 32px 30px 45px;
+  padding: 28px 32px 48px;
 }
+
+
+/* =========================================================
+   PAGE HEADER
+   ========================================================= */
 
 .activity-logs-page .page-head {
   display: flex;
+
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 26px;
+
+  gap: 24px;
+
+  margin-bottom: 20px;
+
+  padding: 25px 30px;
+
+  border: 1px solid #ece6e7;
+  border-radius: 17px;
+
+  background:
+    linear-gradient(
+      112deg,
+      #fffafa,
+      #ffffff 62%
+    );
+
+  box-shadow:
+    0 8px 24px rgba(82, 25, 28, 0.045);
 }
 
 .activity-logs-page .page-head h1 {
-  color: var(--maroon);
-  font-size: 34px;
   margin: 0;
+
+  color: var(--maroon-deep);
+
+  font-size: 2.25rem;
+  font-weight: 700;
+
+  line-height: 1.2;
+  letter-spacing: -0.04em;
 }
 
 .activity-logs-page .page-head p {
-  margin-top: 6px;
+  max-width: 650px;
+
+  margin: 6px 0 0;
+
   color: var(--muted);
-  font-size: 13px;
+
+  font-size: 0.88rem;
+
+  line-height: 1.55;
 }
 
 .activity-logs-page .head-actions {
   display: flex;
-  gap: 10px;
+
+  flex-shrink: 0;
+
+  gap: 9px;
 }
 
 .activity-logs-page .outline,
 .activity-logs-page .primary {
   display: flex;
-  min-height: 48px;
+
+  min-height: 44px;
+
   align-items: center;
+
   gap: 8px;
-  padding: 0 17px;
-  border-radius: 12px;
+
+  padding: 0 16px;
+
+  border-radius: 11px;
+
+  font-size: 12px;
   font-weight: 600;
 }
 
 .activity-logs-page .outline {
   border: 1px solid #dedfe4;
-  background: #fff;
+
+  background: #ffffff;
+
   color: #505664;
+}
+
+.activity-logs-page .outline:hover {
+  border-color: #c98a8d;
+
+  color: var(--maroon);
+
+  background: #fffafa;
 }
 
 .activity-logs-page .primary {
   background: var(--maroon);
-  color: #fff;
-  box-shadow: 0 9px 20px rgba(141, 14, 18, 0.18);
+
+  color: #ffffff;
+
+  box-shadow:
+    0 8px 18px rgba(141, 14, 18, 0.17);
 }
 
-/* =========================
+.activity-logs-page .primary:hover {
+  background: var(--maroon-dark);
+}
+
+
+/* =========================================================
    METRICS
-========================= */
+   ========================================================= */
 
 .activity-logs-page .overview {
   display: grid;
+
   grid-template-columns: repeat(4, 1fr);
-  gap: 17px;
-  margin-bottom: 22px;
+
+  gap: 16px;
+
+  margin-bottom: 20px;
 }
 
 .activity-logs-page .metric {
   position: relative;
+
   display: flex;
-  min-height: 110px;
+
+  min-height: 105px;
+
   align-items: center;
-  gap: 14px;
+
+  gap: 13px;
+
   overflow: hidden;
-  padding: 19px;
-  border-radius: 16px;
-  background: #fff;
-  box-shadow: var(--shadow);
+
+  padding: 18px;
+
+  border: 1px solid #eee8e9;
+  border-radius: 15px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 8px 22px rgba(31, 38, 57, 0.045);
 }
 
 .activity-logs-page .metric::before {
   position: absolute;
+
   inset: 0 auto 0 0;
-  width: 5px;
+
+  width: 4px;
+
   background: var(--accent);
+
   content: "";
 }
 
 .activity-logs-page .metric > i {
   display: grid;
-  width: 50px;
-  height: 50px;
+
+  width: 46px;
+  height: 46px;
+
+  flex: 0 0 46px;
+
   place-items: center;
-  border-radius: 14px;
+
+  border-radius: 12px;
+
   background: var(--accent);
-  color: #fff;
-  font-size: 19px;
+
+  color: #ffffff;
+
+  font-size: 17px;
 }
 
 .activity-logs-page .metric span {
   color: #747986;
+
   font-size: 11px;
 }
 
 .activity-logs-page .metric strong {
   display: block;
+
   margin-top: 3px;
-  font-size: 24px;
+
+  color: #303747;
+
+  font-size: 23px;
+
+  line-height: 1.2;
 }
 
 .activity-logs-page .metric .healthy {
-  font-size: 17px;
+  color: var(--green);
+
+  font-size: 16px;
 }
 
 .activity-logs-page .events {
@@ -427,61 +1208,88 @@
   --accent: var(--green);
 }
 
-/* =========================
-   PANEL
-========================= */
+
+/* =========================================================
+   MAIN PANEL
+   ========================================================= */
 
 .activity-logs-page .panel {
   overflow: hidden;
-  border-radius: 17px;
-  background: #fff;
-  box-shadow: var(--shadow);
+
+  border: 1px solid #eee8e9;
+  border-radius: 16px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 8px 24px rgba(31, 38, 57, 0.045);
 }
 
 .activity-logs-page .panel-head {
   display: flex;
+
   align-items: center;
   justify-content: space-between;
-  padding: 21px 23px 14px;
+
+  gap: 20px;
+
+  padding: 20px 22px 15px;
 }
 
 .activity-logs-page .panel-head h2 {
   margin: 0;
+
   color: var(--maroon);
-  font-size: 19px;
+
+  font-size: 1.08rem;
 }
 
 .activity-logs-page .panel-head p {
-  margin-top: 3px;
+  margin: 4px 0 0;
+
   color: var(--muted);
-  font-size: 10px;
+
+  font-size: 0.74rem;
 }
 
 .activity-logs-page .integrity {
   display: flex;
+
   align-items: center;
+
   gap: 7px;
+
   padding: 7px 10px;
-  border-radius: 18px;
+
+  border-radius: 17px;
+
   background: #e5f6ea;
+
   color: #218844;
-  font-size: 9px;
+
+  font-size: 10px;
   font-weight: 600;
 }
 
-/* =========================
+
+/* =========================================================
    FILTERS
-========================= */
+   ========================================================= */
 
 .activity-logs-page .filters {
   display: grid;
+
   grid-template-columns:
-    minmax(260px, 1fr)
-    repeat(3, 160px)
-    145px
+    minmax(240px, 1fr)
+    repeat(3, 155px)
+    135px
     auto;
-  gap: 10px;
-  padding: 19px 20px;
+
+  gap: 9px;
+
+  padding: 18px 20px;
+
+  border-top: 1px solid #f0f0f2;
   border-bottom: 1px solid var(--line);
 }
 
@@ -491,25 +1299,36 @@
 
 .activity-logs-page .search i {
   position: absolute;
+
   top: 50%;
-  left: 14px;
+  left: 13px;
+
   color: #9296a1;
+
   transform: translateY(-50%);
+
+  font-size: 13px;
 }
 
 .activity-logs-page .filters input,
 .activity-logs-page .filters select {
   width: 100%;
-  height: 43px;
-  border: 1px solid #e2e3e8;
-  border-radius: 10px;
-  outline: 0;
+  height: 44px;
+
+  border: 1px solid #e1e2e7;
+  border-radius: 9px;
+
+  outline: none;
+
   background: #fafafb;
-  color: #434956;
+
+  color: #424956;
+
+  font-size: 12px;
 }
 
 .activity-logs-page .filters input[type="search"] {
-  padding: 0 12px 0 40px;
+  padding: 0 12px 0 39px;
 }
 
 .activity-logs-page .filters input[type="date"] {
@@ -522,20 +1341,38 @@
 
 .activity-logs-page .filters input:focus,
 .activity-logs-page .filters select:focus {
-  border-color: var(--maroon);
+  border-color: #be7275;
+
+  box-shadow:
+    0 0 0 3px rgba(141, 14, 18, 0.07);
 }
 
 .activity-logs-page .reset {
-  padding: 0 13px;
+  padding: 0 12px;
+
   border: 1px solid #e2e3e8;
-  border-radius: 10px;
-  background: #fff;
+  border-radius: 9px;
+
+  background: #ffffff;
+
   color: #555b68;
+
+  font-size: 11px;
+  font-weight: 600;
 }
 
-/* =========================
+.activity-logs-page .reset:hover {
+  border-color: #bc6b6e;
+
+  color: var(--maroon);
+
+  background: #fffafa;
+}
+
+
+/* =========================================================
    TABLE
-========================= */
+   ========================================================= */
 
 .activity-logs-page .table-wrap {
   overflow-x: auto;
@@ -543,6 +1380,7 @@
 
 .activity-logs-page table {
   width: 100%;
+
   border-collapse: collapse;
 }
 
@@ -551,18 +1389,27 @@
 }
 
 .activity-logs-page th {
-  padding: 13px 15px;
+  padding: 12px 15px;
+
   color: #555b68;
+
   font-size: 10px;
+  font-weight: 700;
+
   text-align: left;
+
   white-space: nowrap;
 }
 
 .activity-logs-page td {
-  padding: 14px 15px;
+  padding: 13px 15px;
+
   border-top: 1px solid #efeff2;
+
   color: #535966;
-  font-size: 10px;
+
+  font-size: 11px;
+
   white-space: nowrap;
 }
 
@@ -570,72 +1417,125 @@
   background: #fffafa;
 }
 
+
+/* =========================================================
+   ACTOR
+   ========================================================= */
+
 .activity-logs-page .actor {
   display: flex;
+
   align-items: center;
-  gap: 10px;
+
+  gap: 9px;
 }
 
 .activity-logs-page .avatar {
   display: grid;
+
   width: 36px;
   height: 36px;
+
+  flex: 0 0 36px;
+
   place-items: center;
-  border-radius: 50%;
+
+  border-radius: 10px;
+
   background: #f4dddd;
+
   color: var(--maroon);
+
   font-size: 9px;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .activity-logs-page .actor strong {
   display: block;
+
   color: #303747;
+
   font-size: 11px;
 }
 
 .activity-logs-page .actor small {
   color: #9296a0;
+
   font-size: 9px;
 }
 
+
+/* =========================================================
+   EVENT
+   ========================================================= */
+
 .activity-logs-page .event-cell {
   display: flex;
+
   align-items: center;
-  gap: 9px;
+
+  gap: 8px;
 }
 
 .activity-logs-page .event-icon {
   display: grid;
+
   width: 34px;
   height: 34px;
+
   flex: 0 0 34px;
+
   place-items: center;
-  border-radius: 10px;
+
+  border-radius: 9px;
+
   background: #f3f4f6;
+
   color: var(--maroon);
+
+  font-size: 13px;
 }
 
 .activity-logs-page .event-cell strong {
   display: block;
-  font-size: 10px;
+
+  color: #303747;
+
+  font-size: 11px;
 }
 
 .activity-logs-page .event-cell small {
   display: block;
-  max-width: 260px;
+
+  max-width: 280px;
+
   overflow: hidden;
+
+  margin-top: 2px;
+
   color: var(--muted);
-  font-size: 8px;
+
+  font-size: 9px;
+
+  line-height: 1.4;
+
   text-overflow: ellipsis;
 }
+
+
+/* =========================================================
+   ROLE BADGES
+   ========================================================= */
 
 .activity-logs-page .role,
 .activity-logs-page .level {
   display: inline-block;
+
   padding: 5px 9px;
+
   border-radius: 16px;
-  font-size: 8px;
+
+  font-size: 9px;
   font-weight: 600;
 }
 
@@ -653,6 +1553,11 @@
   background: #e6efff;
   color: #155fb9;
 }
+
+
+/* =========================================================
+   LEVEL BADGES
+   ========================================================= */
 
 .activity-logs-page .level.info {
   background: #e5efff;
@@ -674,176 +1579,298 @@
   color: #b62836;
 }
 
+
+/* =========================================================
+   VIEW BUTTON
+   ========================================================= */
+
 .activity-logs-page .view-btn {
-  width: 31px;
-  height: 31px;
+  width: 33px;
+  height: 33px;
+
   border-radius: 8px;
+
   background: #f3f4f6;
+
   color: #555c69;
+
+  font-size: 12px;
 }
 
 .activity-logs-page .view-btn:hover {
   background: var(--maroon);
-  color: #fff;
+
+  color: #ffffff;
 }
+
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
 
 .activity-logs-page .empty-state {
   height: 180px;
+
   color: var(--muted);
+
   text-align: center;
 }
 
 .activity-logs-page .empty-state i {
   display: block;
-  margin-bottom: 10px;
+
+  margin-bottom: 9px;
+
   color: #b0b3bd;
-  font-size: 25px;
+
+  font-size: 27px;
 }
 
 .activity-logs-page .empty-state strong {
   display: block;
+
   color: #505664;
+
   font-size: 13px;
 }
 
 .activity-logs-page .empty-state span {
   display: block;
+
   margin-top: 4px;
+
   font-size: 10px;
 }
 
-/* =========================
+
+/* =========================================================
    TABLE FOOTER
-========================= */
+   ========================================================= */
 
 .activity-logs-page .table-foot {
   display: flex;
+
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
+
+  padding: 15px 19px;
+
   border-top: 1px solid var(--line);
+
   color: var(--muted);
-  font-size: 10px;
+
+  font-size: 11px;
 }
 
 .activity-logs-page .pages {
   display: flex;
+
   gap: 5px;
 }
 
 .activity-logs-page .pages button {
   width: 29px;
   height: 29px;
+
   border-radius: 8px;
+
   background: #f4f4f6;
+
   color: #555b68;
+
+  font-size: 10px;
+}
+
+.activity-logs-page .pages button:hover {
+  background: var(--maroon-light);
+
+  color: var(--maroon);
 }
 
 .activity-logs-page .pages .current {
   background: var(--maroon);
-  color: #fff;
+
+  color: #ffffff;
 }
 
-/* =========================
-   DRAWER
-========================= */
+.activity-logs-page .pages .current:hover {
+  background: var(--maroon-dark);
+
+  color: #ffffff;
+}
+
+
+/* =========================================================
+   DRAWER OVERLAY
+   ========================================================= */
 
 .activity-logs-page .drawer-overlay {
   position: fixed;
+
   inset: 0;
+
   z-index: 70;
+
   display: none;
-  background: rgba(22, 25, 35, 0.48);
+
+  background: rgba(3, 10, 21, 0.58);
+
+  backdrop-filter: blur(3px);
 }
 
 .activity-logs-page .drawer-overlay.show {
   display: block;
 }
 
+
+/* =========================================================
+   DRAWER
+   ========================================================= */
+
 .activity-logs-page .drawer {
   position: fixed;
+
   top: 0;
   right: 0;
+
   z-index: 80;
+
   width: min(440px, 100%);
+
   height: 100vh;
-  overflow: auto;
-  background: #fff;
-  box-shadow: -18px 0 45px rgba(16, 18, 28, 0.16);
+
+  overflow-y: auto;
+
+  background: #ffffff;
+
+  box-shadow:
+    -18px 0 45px rgba(16, 18, 28, 0.16);
+
   transform: translateX(105%);
-  transition: 0.28s;
+
+  transition: transform 280ms var(--ease);
 }
 
 .activity-logs-page .drawer.show {
-  transform: none;
+  transform: translateX(0);
 }
 
 .activity-logs-page .drawer-head {
   display: flex;
+
   align-items: center;
   justify-content: space-between;
-  padding: 22px;
+
+  padding: 20px 22px;
+
   border-bottom: 1px solid var(--line);
 }
 
 .activity-logs-page .drawer-head small {
   color: #8b8f99;
+
+  font-size: 10px;
 }
 
 .activity-logs-page .drawer-head h2 {
-  margin-top: 3px;
+  margin: 3px 0 0;
+
   color: var(--maroon);
-  font-size: 20px;
+
+  font-size: 19px;
 }
 
 .activity-logs-page .close {
-  width: 38px;
-  height: 38px;
+  width: 37px;
+  height: 37px;
+
   border-radius: 50%;
+
   background: #f4f4f6;
+
   color: #444b59;
+
+  font-size: 14px;
 }
+
+.activity-logs-page .close:hover {
+  background: var(--maroon-light);
+
+  color: var(--maroon);
+}
+
+
+/* =========================================================
+   DRAWER EVENT HERO
+   ========================================================= */
 
 .activity-logs-page .event-hero {
   display: flex;
+
   align-items: center;
+
   gap: 13px;
-  padding: 22px;
+
+  padding: 21px 22px;
 }
 
 .activity-logs-page .event-hero > i {
   display: grid;
-  width: 52px;
-  height: 52px;
-  flex: 0 0 52px;
+
+  width: 50px;
+  height: 50px;
+
+  flex: 0 0 50px;
+
   place-items: center;
-  border-radius: 15px;
-  background: var(--soft);
+
+  border-radius: 14px;
+
+  background: var(--maroon-light);
+
   color: var(--maroon);
-  font-size: 20px;
+
+  font-size: 19px;
 }
 
 .activity-logs-page .event-hero h3 {
+  margin: 0;
+
+  color: #303747;
+
   font-size: 14px;
 }
 
 .activity-logs-page .event-hero p {
-  margin-top: 3px;
+  margin: 3px 0 0;
+
   color: var(--muted);
+
   font-size: 10px;
 }
 
+
+/* =========================================================
+   DRAWER DETAILS
+   ========================================================= */
+
 .activity-logs-page .details {
   display: grid;
+
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+
+  gap: 11px;
+
   padding: 0 22px 20px;
 }
 
 .activity-logs-page .detail {
   padding: 12px;
+
+  border: 1px solid #eee8e9;
   border-radius: 10px;
-  background: #f7f7f9;
+
+  background: #fafafb;
 }
 
 .activity-logs-page .detail.full {
@@ -852,74 +1879,88 @@
 
 .activity-logs-page .detail span {
   display: block;
+
   color: var(--muted);
-  font-size: 8px;
+
+  font-size: 9px;
+  font-weight: 600;
+
   text-transform: uppercase;
 }
 
 .activity-logs-page .detail strong {
   display: block;
-  margin-top: 4px;
-  font-size: 10px;
+
+  margin-top: 5px;
+
+  color: #303747;
+
+  font-size: 11px;
+
   line-height: 1.5;
 }
 
 .activity-logs-page .notice {
   margin: 0 22px 22px;
+
   padding: 12px;
+
   border-radius: 10px;
+
   background: #fff7e2;
+
   color: #88610a;
-  font-size: 9px;
+
+  font-size: 10px;
+
   line-height: 1.55;
 }
 
-/* =========================
+
+/* =========================================================
    TOAST
-========================= */
+   ========================================================= */
 
 .activity-logs-page .toast {
   position: fixed;
+
   right: 24px;
   bottom: 24px;
-  z-index: 90;
-  padding: 13px 17px;
-  border-radius: 11px;
+
+  z-index: 150;
+
+  padding: 12px 16px;
+
+  border-radius: 10px;
+
   background: #242a38;
-  color: #fff;
+
+  color: #ffffff;
+
   font-size: 11px;
+
   opacity: 0;
+
   transform: translateY(12px);
-  transition: 0.2s;
+
   pointer-events: none;
+
+  transition: 0.2s;
 }
 
 .activity-logs-page .toast.show {
   opacity: 1;
+
   transform: none;
 }
 
-/* =========================
-   MOBILE SIDEBAR SCREEN
-========================= */
 
-.activity-logs-page .sidebar-screen {
-  position: fixed;
-  inset: 0;
-  z-index: 49;
-  display: none;
-  background: rgba(22, 25, 35, 0.42);
-}
-
-.activity-logs-page .sidebar-screen.show {
-  display: block;
-}
-
-/* =========================
-   RESPONSIVE
-========================= */
+/* =========================================================
+   LARGE TABLET / SMALL DESKTOP
+   ========================================================= */
 
 @media (max-width: 1250px) {
+
   .activity-logs-page .filters {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -927,29 +1968,70 @@
   .activity-logs-page .search {
     grid-column: 1 / -1;
   }
+
+  .activity-logs-page .notification-panel {
+    right: -35px;
+  }
 }
 
-@media (max-width: 900px) {
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 1100px) {
+
+  .activity-logs-page .overview {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .activity-logs-page .school strong {
+    max-width: 500px;
+  }
+
+  .activity-logs-page .top-right {
+    gap: 9px;
+  }
+
+  .activity-logs-page .profile {
+    min-width: 175px;
+  }
+}
+
+
+/* =========================================================
+   MOBILE SIDEBAR / TABLET
+   ========================================================= */
+
+@media (max-width: 1024px) {
+
   .activity-logs-page .sidebar {
-    transform: translateX(-105%);
+    transform: translateX(-102%);
+
+    box-shadow:
+      18px 0 55px rgba(4, 12, 25, 0.28);
   }
 
   .activity-logs-page .sidebar.show {
-    transform: none;
+    transform: translateX(0);
+  }
+
+  .activity-logs-page .mobile-close {
+    display: flex;
   }
 
   .activity-logs-page .shell {
     margin-left: 0;
   }
 
-  .activity-logs-page .topbar {
-    min-height: 78px;
-    padding: 0 18px;
+  .activity-logs-page .menu-btn {
+    display: grid;
   }
 
-  .activity-logs-page .menu-btn,
-  .activity-logs-page .mobile-close {
-    display: grid;
+  .activity-logs-page .topbar {
+    min-height: 78px;
+
+    padding: 0 18px;
   }
 
   .activity-logs-page .school-seal {
@@ -957,11 +2039,72 @@
   }
 
   .activity-logs-page .school strong {
-    max-width: 350px;
+    max-width: 500px;
+
     font-size: 13px;
   }
 
-  .activity-logs-page .year {
+  .activity-logs-page .content {
+    padding: 25px 24px 40px;
+  }
+}
+
+
+/* =========================================================
+   MOBILE TABLET
+   ========================================================= */
+
+@media (max-width: 760px) {
+
+  .activity-logs-page .content {
+    padding: 18px 16px 32px;
+  }
+
+  .activity-logs-page .page-head {
+    align-items: flex-start;
+
+    flex-direction: column;
+
+    gap: 18px;
+
+    padding: 22px 20px;
+  }
+
+  .activity-logs-page .page-head h1 {
+    font-size: 2rem;
+  }
+
+  .activity-logs-page .head-actions {
+    width: 100%;
+  }
+
+  .activity-logs-page .head-actions button {
+    flex: 1;
+
+    justify-content: center;
+  }
+
+  .activity-logs-page .overview {
+    grid-template-columns: 1fr;
+  }
+
+  .activity-logs-page .filters {
+    grid-template-columns: 1fr;
+
+    gap: 9px;
+  }
+
+  .activity-logs-page .search {
+    grid-column: auto;
+  }
+
+  .activity-logs-page .school strong {
+    max-width: 280px;
+
+    font-size: 11px;
+  }
+
+  .activity-logs-page .school span {
     display: none;
   }
 
@@ -974,60 +2117,96 @@
     display: none;
   }
 
-  .activity-logs-page .content {
-    padding: 28px 18px;
-  }
-
-  .activity-logs-page .overview {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 650px) {
-  .activity-logs-page .page-head {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .activity-logs-page .head-actions {
-    width: 100%;
-  }
-
-  .activity-logs-page .head-actions button {
-    flex: 1;
-    justify-content: center;
-  }
-
-  .activity-logs-page .filters,
-  .activity-logs-page .overview {
-    grid-template-columns: 1fr;
-  }
-
-  .activity-logs-page .search {
-    grid-column: auto;
-  }
-
-  .activity-logs-page .school strong {
-    max-width: 210px;
-    font-size: 11px;
-  }
-
-  .activity-logs-page .school span {
-    display: none;
-  }
-
   .activity-logs-page .profile img {
     width: 40px;
     height: 40px;
+
     flex-basis: 40px;
   }
 
   .activity-logs-page .top-right {
-    gap: 8px;
+    gap: 7px;
+  }
+
+  .activity-logs-page .bell {
+    width: 41px;
+    height: 41px;
+  }
+
+  .activity-logs-page .panel-head {
+    align-items: flex-start;
+
+    flex-direction: column;
+
+    gap: 11px;
+  }
+
+  .activity-logs-page .notification-panel {
+    position: fixed;
+
+    top: 72px;
+
+    right: 10px;
+    left: 10px;
+
+    width: auto;
+  }
+
+  .activity-logs-page .admin-menu {
+    position: fixed;
+
+    top: 72px;
+    right: 12px;
+
+    width: 220px;
+  }
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 440px) {
+
+  .activity-logs-page .school {
+    display: none;
   }
 
   .activity-logs-page .page-head h1 {
-    font-size: 29px;
+    font-size: 1.8rem;
+  }
+
+  .activity-logs-page .content {
+    padding: 16px 12px 30px;
+  }
+
+  .activity-logs-page .page-head {
+    padding: 19px 17px;
+  }
+
+  .activity-logs-page .head-actions {
+    flex-direction: column;
+  }
+
+  .activity-logs-page .head-actions button {
+    width: 100%;
+  }
+
+  .activity-logs-page .metric {
+    min-height: 98px;
+  }
+
+  .activity-logs-page .panel-head {
+    padding: 17px;
+  }
+
+  .activity-logs-page .filters {
+    padding: 14px;
+  }
+
+  .activity-logs-page .table-foot {
+    padding: 13px;
   }
 
   .activity-logs-page .details {
@@ -1037,16 +2216,35 @@
   .activity-logs-page .detail.full {
     grid-column: auto;
   }
-
-  .activity-logs-page .panel-head {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 12px;
-  }
 }
 
-@media (max-width: 430px) {
-  .activity-logs-page .school {
-    display: none;
+
+/* =========================================================
+   PRINT
+   ========================================================= */
+
+@media print {
+
+  .activity-logs-page .sidebar,
+  .activity-logs-page .topbar,
+  .activity-logs-page .page-head,
+  .activity-logs-page .filters,
+  .activity-logs-page .table-foot,
+  .activity-logs-page .toast {
+    display: none !important;
   }
-} 
+
+  .activity-logs-page .shell {
+    margin: 0;
+  }
+
+  .activity-logs-page .content {
+    padding: 0;
+  }
+
+  .activity-logs-page .panel {
+    border: 0;
+
+    box-shadow: none;
+  }
+}

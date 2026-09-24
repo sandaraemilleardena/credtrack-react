@@ -94,13 +94,11 @@ textarea:focus-visible,
 }
 
 .administration-dashboard .brand {
-  position: relative;
-  display: flex;
-  align-items: center;
-  min-height: var(--topbar-height);
-  gap: 12px;
-  padding: 15px 20px;
-  border-bottom: 1px solid #ececf0;
+ position: relative; 
+ display: flex; 
+ align-items: center; 
+ -height: var(--topbar-height); gap: 12px; 
+ padding: 20px 20px;
 }
 
 .brand-logo,
@@ -109,15 +107,14 @@ textarea:focus-visible,
   flex: 0 0 auto;
   place-items: center;
   overflow: hidden;
-  border-radius: 12px;
-  background: #fff;
+
+
 }
 
 .brand-logo {
   width: 44px;
   height: 44px;
-  padding: 5px;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14), 0 8px 18px rgba(0, 0, 0, 0.18);
+
 }
 
 .brand-logo img,
@@ -166,7 +163,7 @@ textarea:focus-visible,
   align-items: center;
   gap: 10px;
   margin: 18px 16px 10px;
-  padding: 13px;
+  
   border: 1px solid rgba(107, 149, 207, 0.17);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.045);
@@ -1617,14 +1614,9 @@ textarea:focus-visible,
    The app imports every route stylesheet globally, so these scoped rules keep
    the dashboard visually consistent and prevent other pages from overriding it. */
 .administration-dashboard .main { margin-left: var(--sidebar-width); }
-.administration-dashboard .brand-logo {
-  width: 64px;
-  height: 64px;
-  padding: 0;
-  border-radius: 50%;
-  box-shadow: none;
-}
-.administration-dashboard .brand { min-height: 106px; padding: 17px 20px; }
+.administration-dashboard .brand-logo {width: 64px;height: 64px;padding: 0; box-shadow: none;
+} 
+.administration-dashboard .brand {  position: relative; display: flex; align-items: center; min-height: var(--topbar-height); gap: 12px; padding: 15px 20px; }
 .administration-dashboard .brand-copy h2 { color: #8d0e12; font-size: 1.3rem; }
 .administration-dashboard .sidebar-system-card {
   border-color: #f0dfe0;

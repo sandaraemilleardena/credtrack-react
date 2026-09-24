@@ -159,8 +159,7 @@ function AdministrationStudRecord() {
     () => [
       { label: "Dashboard", icon: "fa-table-columns", path: "/admin-dashboard" },
       { label: "Credential Management", icon: "fa-folder-open", path: "/admin-credential-management" },
-      { label: "Student Records", icon: "fa-user-graduate", path: "/admin-student-records" },
-      
+      { label: "Student Records", icon: "fa-user-graduate", path: "/admin-student-records" }, 
       { label: "Reports", icon: "fa-chart-line", path: "/admin-reports" },
       { label: "Activity Logs", icon: "fa-clock-rotate-left", path: "/admin-activity-logs" },
       { label: "System Settings", icon: "fa-gear", path: "/admin-settings" },
@@ -693,12 +692,6 @@ function AdministrationStudRecord() {
           <button type="button" className="close-sidebar" aria-label="Close sidebar" onClick={() => setSidebarOpen(false)}><i className="fas fa-xmark" /></button>
         </div>
 
-        <div className="sidebar-system-card">
-          <div className="system-card-icon"><i className="fas fa-shield-halved" /></div>
-          <div><strong>Records Management</strong><span>Administrative Portal</span></div>
-          <span className="online-dot" />
-        </div>
-
         <nav className="sidebar-navigation" aria-label="Administrator navigation">
           <ul className="menu">
             {navigationItems.map((item) => (
@@ -713,11 +706,7 @@ function AdministrationStudRecord() {
           </ul>
         </nav>
 
-        <div className="sidebar-profile">
-          <div className="profile-avatar">AD</div>
-          <div className="profile-details"><strong>Administrator</strong><small>System Administrator</small></div>
-          <span className="profile-status"><i className="fas fa-circle" /></span>
-        </div>
+
       </aside>
 
       {/* MAIN */}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./AdministrationSettings.css";
 
@@ -36,6 +36,36 @@ const defaultSettings = {
   logRetention: "3 years",
 };
 
+const initialNotifications = [
+  {
+    id: 1,
+    title: "New credential request",
+    message:
+      "Sophia Garcia submitted a Certificate of Enrollment request.",
+    time: "5 minutes ago",
+    icon: "fa-file-circle-plus",
+    unread: true,
+  },
+  {
+    id: 2,
+    title: "Credential approved",
+    message:
+      "The SF10 request for Juan Dela Cruz was approved.",
+    time: "18 minutes ago",
+    icon: "fa-circle-check",
+    unread: true,
+  },
+  {
+    id: 3,
+    title: "Security alert",
+    message:
+      "Multiple failed login attempts were recorded.",
+    time: "32 minutes ago",
+    icon: "fa-shield-halved",
+    unread: true,
+  },
+];
+
 function AdministrationSettings() {
   const navigate = useNavigate();
 
@@ -46,6 +76,16 @@ function AdministrationSettings() {
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState("");
+
+  const [adminMenuOpen, setAdminMenuOpen] = useState(false);
+
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [notifications, setNotifications] = useState(
+    initialNotifications
+  );
+
+  const adminMenuRef = useRef(null);
+  const notificationRef = useRef(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("credtrackSettings");
@@ -77,6 +117,9 @@ function AdministrationSettings() {
       if (event.key === "Escape") {
         setConfirmOpen(false);
         setPendingAction("");
+        setAdminMenuOpen(false);
+        setNotificationOpen(false);
+        setSidebarOpen(false);
       }
     };
 
@@ -84,6 +127,33 @@ function AdministrationSettings() {
 
     return () => {
       document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (
+        adminMenuRef.current &&
+        !adminMenuRef.current.contains(event.target)
+      ) {
+        setAdminMenuOpen(false);
+      }
+
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target)
+      ) {
+        setNotificationOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+
+    return () => {
+      document.removeEventListener(
+        "mousedown",
+        handleOutsideClick
+      );
     };
   }, []);
 
@@ -135,140 +205,242 @@ function AdministrationSettings() {
 
   const navigateTo = (path) => {
     setSidebarOpen(false);
+    setAdminMenuOpen(false);
+    setNotificationOpen(false);
     navigate(path);
+  };
+
+  const toggleAdminMenu = () => {
+    setAdminMenuOpen((previous) => !previous);
+    setNotificationOpen(false);
+  };
+
+  const logout = () => {
+    localStorage.removeItem("credtrackSession");
+    sessionStorage.removeItem("credtrackSession");
+
+    setAdminMenuOpen(false);
+    navigate("/");
+  };
+
+  const unreadCount = notifications.filter(
+    (notification) => notification.unread
+  ).length;
+
+  const toggleNotifications = () => {
+    setNotificationOpen((previous) => !previous);
+    setAdminMenuOpen(false);
+  };
+
+  const openNotification = (notificationId) => {
+    setNotifications((previous) =>
+      previous.map((notification) =>
+        notification.id === notificationId
+          ? {
+              ...notification,
+              unread: false,
+            }
+          : notification
+      )
+    );
+
+    notify("Notification opened");
+  };
+
+  const markAllNotificationsRead = () => {
+    setNotifications((previous) =>
+      previous.map((notification) => ({
+        ...notification,
+        unread: false,
+      }))
+    );
+
+    notify("All notifications marked as read");
   };
 
   return (
     <div className="administration-settings-page">
-      {/* Mobile Sidebar Overlay */}
-      <div
-        className={`sidebar-screen ${sidebarOpen ? "show" : ""}`}
+
+      {/* MOBILE SIDEBAR OVERLAY */}
+      <button
+        type="button"
+        className={`sidebar-overlay ${
+          sidebarOpen ? "show" : ""
+        }`}
         onClick={closeSidebar}
+        aria-label="Close sidebar"
       />
 
-      {/* Sidebar */}
-      <aside className={`sidebar ${sidebarOpen ? "show" : ""}`}>
+      {/* SIDEBAR */}
+      <aside
+        className={`sidebar ${
+          sidebarOpen ? "open" : ""
+        }`}
+      >
+        {/* BRAND */}
         <div className="brand">
-          <img
-            src="/logo.png"
-            alt="PMRMIS-South school seal"
-          />
+          <div className="brand-logo">
+            <img
+              src="/logo.png"
+              alt="PMRMIS-South school seal"
+            />
+          </div>
 
-          <div>
+          <div className="brand-copy">
             <h2>CredTrack</h2>
             <span>PMRMIS–SOUTH</span>
           </div>
 
           <button
             type="button"
-            className="mobile-close"
+            className="close-sidebar"
             onClick={closeSidebar}
+            aria-label="Close sidebar"
           >
             <i className="fas fa-xmark" />
           </button>
         </div>
 
-        <ul className="nav">
-          <li>
-            <button
-              type="button"
-              onClick={() => navigateTo("/admin-dashboard")}
-            >
-              <i className="fas fa-table-columns" />
-              <span>Dashboard</span>
-            </button>
-          </li>
+        {/* SYSTEM CARD */}
 
-          <li>
-            <button
-              type="button"
-              onClick={() =>
-                navigateTo("/admin-credential-management")
-              }
-            >
-              <i className="fas fa-folder-open" />
-              <span>Credential Management</span>
-            </button>
-          </li>
 
-          <li>
-            <button
-              type="button"
-              onClick={() =>
-                navigateTo("/admin-student-records")
-              }
-            >
-              <i className="fas fa-user-graduate" />
-              <span>Student Records</span>
-            </button>
-          </li>
+        {/* NAVIGATION */}
+        <nav className="sidebar-navigation">
+          <ul className="menu">
 
-          <li>
-            <button
-              type="button"
-              onClick={() =>
-                navigateTo("/admin-user-management")
-              }
-            >
-              <i className="fas fa-users" />
-              <span>User Management</span>
-            </button>
-          </li>
+            <li className="menu-item">
+              <button
+                type="button"
+                className="menu-link"
+                onClick={() =>
+                  navigateTo("/admin-dashboard")
+                }
+              >
+                <span className="menu-icon">
+                  <i className="fas fa-table-columns" />
+                </span>
 
-          <li>
-            <button
-              type="button"
-              onClick={() => navigateTo("/admin-reports")}
-            >
-              <i className="fas fa-chart-line" />
-              <span>Reports</span>
-            </button>
-          </li>
+                <span className="menu-text">
+                  Dashboard
+                </span>
+              </button>
+            </li>
 
-          <li>
-            <button
-              type="button"
-              onClick={() => navigateTo("/admin-activity-logs")}
-            >
-              <i className="fas fa-clock-rotate-left" />
-              <span>Activity Logs</span>
-            </button>
-          </li>
+            <li className="menu-item">
+              <button
+                type="button"
+                className="menu-link"
+                onClick={() =>
+                  navigateTo(
+                    "/admin-credential-management"
+                  )
+                }
+              >
+                <span className="menu-icon">
+                  <i className="fas fa-folder-open" />
+                </span>
 
-          <li className="active">
-            <button
-              type="button"
-              onClick={() => navigateTo("/admin-settings")}
-            >
-              <i className="fas fa-gear" />
-              <span>System Settings</span>
-            </button>
-          </li>
+                <span className="menu-text">
+                  Credential Management
+                </span>
+              </button>
+            </li>
 
-          <li>
-            <button
-              type="button"
-              onClick={() => {
-                localStorage.removeItem("credtrackSession");
-                sessionStorage.removeItem("credtrackSession");
-                navigate("/");
-              }}
-            >
-              <i className="fas fa-right-from-bracket" />
-              <span>Logout</span>
-            </button>
-          </li>
-        </ul>
+            <li className="menu-item">
+              <button
+                type="button"
+                className="menu-link"
+                onClick={() =>
+                  navigateTo("/admin-student-records")
+                }
+              >
+                <span className="menu-icon">
+                  <i className="fas fa-user-graduate" />
+                </span>
+
+                <span className="menu-text">
+                  Student Records
+                </span>
+              </button>
+            </li>
+
+            <li className="menu-item">
+              <button
+                type="button"
+                className="menu-link"
+                onClick={() =>
+                  navigateTo("/admin-reports")
+                }
+              >
+                <span className="menu-icon">
+                  <i className="fas fa-chart-line" />
+                </span>
+
+                <span className="menu-text">
+                  Reports
+                </span>
+              </button>
+            </li>
+
+            <li className="menu-item">
+              <button
+                type="button"
+                className="menu-link"
+                onClick={() =>
+                  navigateTo("/admin-activity-logs")
+                }
+              >
+                <span className="menu-icon">
+                  <i className="fas fa-clock-rotate-left" />
+                </span>
+
+                <span className="menu-text">
+                  Activity Logs
+                </span>
+              </button>
+            </li>
+
+            <li className="menu-item active">
+              <button
+                type="button"
+                className="menu-link"
+                onClick={() =>
+                  navigateTo("/admin-settings")
+                }
+              >
+                <span className="menu-icon">
+                  <i className="fas fa-gear" />
+                </span>
+
+                <span className="menu-text">
+                  System Settings
+                </span>
+
+                <span className="active-indicator">
+                
+                </span>
+              </button>
+            </li>
+
+          </ul>
+        </nav>
+
+
       </aside>
 
-      {/* Main */}
+      {/* MAIN SHELL */}
       <div className="shell">
+
+        {/* TOPBAR */}
         <header className="topbar">
+
           <div className="top-left">
+
             <button
               type="button"
               className="menu-btn"
               onClick={() => setSidebarOpen(true)}
+              aria-label="Open sidebar"
             >
               <i className="fas fa-bars" />
             </button>
@@ -281,50 +453,214 @@ function AdministrationSettings() {
 
             <div className="school">
               <strong>
-                President Manuel Roxas Memorial Integrated School –
-                South
+                President Manuel Roxas Memorial Integrated
+                School – South
               </strong>
 
               <span>
                 Digital Credentials Management System
               </span>
             </div>
+
           </div>
 
           <div className="top-right">
-            <div className="year">
-              ACADEMIC YEAR
-              <strong>2026–2027</strong>
+
+            {/* NOTIFICATIONS */}
+            <div
+              className="notification-wrapper"
+              ref={notificationRef}
+            >
+              <button
+                type="button"
+                className={`bell ${
+                  notificationOpen ? "active" : ""
+                }`}
+                onClick={toggleNotifications}
+                aria-label="Notifications"
+                aria-expanded={notificationOpen}
+              >
+                <i className="far fa-bell" />
+
+                {unreadCount > 0 && (
+                  <b>{unreadCount}</b>
+                )}
+              </button>
+
+              {notificationOpen && (
+                <div className="notification-panel">
+
+                  <div className="notification-head">
+                    <div>
+                      <strong>Notifications</strong>
+
+                      <span>
+                        {unreadCount > 0
+                          ? `${unreadCount} unread notification${
+                              unreadCount > 1
+                                ? "s"
+                                : ""
+                            }`
+                          : "All notifications are read"}
+                      </span>
+                    </div>
+
+                    {unreadCount > 0 && (
+                      <button
+                        type="button"
+                        onClick={
+                          markAllNotificationsRead
+                        }
+                      >
+                        Mark all as read
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="notification-list">
+
+                    {notifications.length > 0 ? (
+                      notifications.map(
+                        (notification) => (
+                          <button
+                            type="button"
+                            key={notification.id}
+                            className={`notification-item ${
+                              notification.unread
+                                ? "unread"
+                                : ""
+                            }`}
+                            onClick={() =>
+                              openNotification(
+                                notification.id
+                              )
+                            }
+                          >
+                            <span className="notification-icon">
+                              <i
+                                className={`fas ${notification.icon}`}
+                              />
+                            </span>
+
+                            <span className="notification-copy">
+                              <strong>
+                                {notification.title}
+                              </strong>
+
+                              <span>
+                                {notification.message}
+                              </span>
+
+                              <small>
+                                {notification.time}
+                              </small>
+                            </span>
+
+                            {notification.unread && (
+                              <span className="unread-dot" />
+                            )}
+                          </button>
+                        )
+                      )
+                    ) : (
+                      <div className="empty-notifications">
+                        <i className="far fa-bell-slash" />
+
+                        <strong>
+                          No notifications
+                        </strong>
+
+                        <span>
+                          You are all caught up.
+                        </span>
+                      </div>
+                    )}
+
+                  </div>
+                </div>
+              )}
             </div>
 
-            <button type="button" className="bell">
-              <i className="far fa-bell" />
-              <b>3</b>
-            </button>
+            {/* ADMIN MENU */}
+            <div
+              className="admin-menu-wrap"
+              ref={adminMenuRef}
+            >
+              <button
+                type="button"
+                className={`profile ${
+                  adminMenuOpen ? "open" : ""
+                }`}
+                onClick={toggleAdminMenu}
+                aria-label="Open administrator menu"
+                aria-expanded={adminMenuOpen}
+              >
+                <img
+                  src="/logo.png"
+                  alt="Administrator"
+                />
 
-            <div className="profile">
-              <img
-                src="/logo.png"
-                alt="Administrator"
-              />
+                <div>
+                  <strong>Administrator</strong>
 
-              <div>
-                <strong>Administrator</strong>
-                <small>System Administrator</small>
-              </div>
+                </div>
 
-              <i className="fas fa-chevron-down" />
+                <i
+                  className={`fas ${
+                    adminMenuOpen
+                      ? "fa-chevron-up"
+                      : "fa-chevron-down"
+                  }`}
+                />
+              </button>
+
+              {adminMenuOpen && (
+                <div className="admin-dropdown">
+
+                  <div className="admin-menu-head">
+                    <img
+                      src="/logo.png"
+                      alt="Administrator"
+                    />
+
+                    <div>
+                      <strong>Administrator</strong>
+                      <span>
+                        System Administrator
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="admin-menu-divider" />
+
+
+
+                  <button
+                    type="button"
+                    className="admin-logout"
+                    onClick={logout}
+                  >
+                    <i className="fas fa-right-from-bracket" />
+                    <span>Logout</span>
+                  </button>
+
+                </div>
+              )}
             </div>
+
           </div>
         </header>
 
+        {/* CONTENT */}
         <main className="content">
+
           <section className="page-head">
             <div>
               <h1>System Settings</h1>
+
               <p>
-                Configure institutional information, workflows,
-                security, and data protection.
+                Configure institutional information,
+                workflows, security, and data protection.
               </p>
             </div>
 
@@ -339,12 +675,16 @@ function AdministrationSettings() {
           </section>
 
           <div className="settings-layout">
-            {/* Settings Navigation */}
+
+            {/* SETTINGS NAVIGATION */}
             <nav className="settings-nav">
+
               <button
                 type="button"
                 className={`tab ${
-                  activeTab === "general" ? "active" : ""
+                  activeTab === "general"
+                    ? "active"
+                    : ""
                 }`}
                 onClick={() => setActiveTab("general")}
               >
@@ -355,9 +695,13 @@ function AdministrationSettings() {
               <button
                 type="button"
                 className={`tab ${
-                  activeTab === "credentials" ? "active" : ""
+                  activeTab === "credentials"
+                    ? "active"
+                    : ""
                 }`}
-                onClick={() => setActiveTab("credentials")}
+                onClick={() =>
+                  setActiveTab("credentials")
+                }
               >
                 <i className="fas fa-file-shield" />
                 Credential Workflow
@@ -366,9 +710,13 @@ function AdministrationSettings() {
               <button
                 type="button"
                 className={`tab ${
-                  activeTab === "notifications" ? "active" : ""
+                  activeTab === "notifications"
+                    ? "active"
+                    : ""
                 }`}
-                onClick={() => setActiveTab("notifications")}
+                onClick={() =>
+                  setActiveTab("notifications")
+                }
               >
                 <i className="fas fa-bell" />
                 Notifications
@@ -377,9 +725,13 @@ function AdministrationSettings() {
               <button
                 type="button"
                 className={`tab ${
-                  activeTab === "security" ? "active" : ""
+                  activeTab === "security"
+                    ? "active"
+                    : ""
                 }`}
-                onClick={() => setActiveTab("security")}
+                onClick={() =>
+                  setActiveTab("security")
+                }
               >
                 <i className="fas fa-lock" />
                 Security
@@ -388,9 +740,13 @@ function AdministrationSettings() {
               <button
                 type="button"
                 className={`tab ${
-                  activeTab === "backup" ? "active" : ""
+                  activeTab === "backup"
+                    ? "active"
+                    : ""
                 }`}
-                onClick={() => setActiveTab("backup")}
+                onClick={() =>
+                  setActiveTab("backup")
+                }
               >
                 <i className="fas fa-database" />
                 Backup & Retention
@@ -399,20 +755,27 @@ function AdministrationSettings() {
               <button
                 type="button"
                 className={`tab ${
-                  activeTab === "maintenance" ? "active" : ""
+                  activeTab === "maintenance"
+                    ? "active"
+                    : ""
                 }`}
-                onClick={() => setActiveTab("maintenance")}
+                onClick={() =>
+                  setActiveTab("maintenance")
+                }
               >
                 <i className="fas fa-screwdriver-wrench" />
                 Maintenance
               </button>
+
             </nav>
 
             <div className="settings-content">
+
               {/* GENERAL */}
               {activeTab === "general" && (
                 <section className="settings-section active">
                   <article className="panel">
+
                     <div className="panel-head">
                       <h2>School Information</h2>
                       <p>
@@ -423,6 +786,7 @@ function AdministrationSettings() {
 
                     <div className="panel-body">
                       <div className="form-grid">
+
                         <div className="field full">
                           <label>School Identity</label>
 
@@ -447,7 +811,8 @@ function AdministrationSettings() {
                               </button>
 
                               <small>
-                                PNG or JPG. Use the official approved
+                                PNG or JPG. Use the
+                                official approved
                                 school seal.
                               </small>
                             </div>
@@ -598,6 +963,7 @@ function AdministrationSettings() {
                             </option>
                           </select>
                         </div>
+
                       </div>
                     </div>
                   </article>
@@ -608,19 +974,26 @@ function AdministrationSettings() {
               {activeTab === "credentials" && (
                 <section className="settings-section active">
                   <article className="panel">
+
                     <div className="panel-head">
-                      <h2>Credential Approval Workflow</h2>
+                      <h2>
+                        Credential Approval Workflow
+                      </h2>
+
                       <p>
-                        Define how official credential requests move
-                        through the system.
+                        Define how official credential
+                        requests move through the system.
                       </p>
                     </div>
 
                     <div className="panel-body">
+
                       <SettingSwitch
                         title="Require Principal approval"
                         description="Official credentials must be authorized by the designated Principal account before release."
-                        checked={settings.principalApproval}
+                        checked={
+                          settings.principalApproval
+                        }
                         onChange={(value) =>
                           updateSetting(
                             "principalApproval",
@@ -632,7 +1005,9 @@ function AdministrationSettings() {
                       <SettingSwitch
                         title="Require document verification"
                         description="Administrator verifies supporting documents before sending a request for approval."
-                        checked={settings.documentVerification}
+                        checked={
+                          settings.documentVerification
+                        }
                         onChange={(value) =>
                           updateSetting(
                             "documentVerification",
@@ -644,7 +1019,9 @@ function AdministrationSettings() {
                       <SettingSwitch
                         title="Release acknowledgment"
                         description="Record claimant name, release date, and releasing staff member."
-                        checked={settings.releaseAcknowledgment}
+                        checked={
+                          settings.releaseAcknowledgment
+                        }
                         onChange={(value) =>
                           updateSetting(
                             "releaseAcknowledgment",
@@ -681,6 +1058,7 @@ function AdministrationSettings() {
                           )
                         }
                       />
+
                     </div>
                   </article>
                 </section>
@@ -690,19 +1068,24 @@ function AdministrationSettings() {
               {activeTab === "notifications" && (
                 <section className="settings-section active">
                   <article className="panel">
+
                     <div className="panel-head">
                       <h2>System Notifications</h2>
+
                       <p>
-                        Choose which events create alerts for
-                        authorized users.
+                        Choose which events create alerts
+                        for authorized users.
                       </p>
                     </div>
 
                     <div className="panel-body">
+
                       <SettingSwitch
                         title="New credential request"
                         description="Notify Administrators when a student request is submitted."
-                        checked={settings.notifyNewRequest}
+                        checked={
+                          settings.notifyNewRequest
+                        }
                         onChange={(value) =>
                           updateSetting(
                             "notifyNewRequest",
@@ -738,7 +1121,9 @@ function AdministrationSettings() {
                       <SettingSwitch
                         title="Security warnings"
                         description="Alert Administrators and ICT Personnel about repeated failed logins or unusual access."
-                        checked={settings.notifySecurity}
+                        checked={
+                          settings.notifySecurity
+                        }
                         onChange={(value) =>
                           updateSetting(
                             "notifySecurity",
@@ -758,6 +1143,7 @@ function AdministrationSettings() {
                           )
                         }
                       />
+
                     </div>
                   </article>
                 </section>
@@ -767,19 +1153,26 @@ function AdministrationSettings() {
               {activeTab === "security" && (
                 <section className="settings-section active">
                   <article className="panel">
+
                     <div className="panel-head">
-                      <h2>Authentication & Access</h2>
+                      <h2>
+                        Authentication & Access
+                      </h2>
+
                       <p>
-                        Security requirements should be enforced by
-                        the backend.
+                        Security requirements should be
+                        enforced by the backend.
                       </p>
                     </div>
 
                     <div className="panel-body">
+
                       <SettingSelect
                         title="Minimum password length"
                         description="Require long passwords for every system user."
-                        value={settings.passwordLength}
+                        value={
+                          settings.passwordLength
+                        }
                         options={[
                           "8 characters",
                           "12 characters",
@@ -812,14 +1205,19 @@ function AdministrationSettings() {
                           "10 failed attempts",
                         ]}
                         onChange={(value) =>
-                          updateSetting("lockout", value)
+                          updateSetting(
+                            "lockout",
+                            value
+                          )
                         }
                       />
 
                       <SettingSelect
                         title="Session timeout"
                         description="Automatically sign out inactive users to protect student records."
-                        value={settings.sessionTimeout}
+                        value={
+                          settings.sessionTimeout
+                        }
                         options={[
                           "15 minutes",
                           "30 minutes",
@@ -836,7 +1234,9 @@ function AdministrationSettings() {
                       <SettingSwitch
                         title="Audit all privileged actions"
                         description="Record approvals, exports, account changes, imports, and system configuration updates."
-                        checked={settings.auditActions}
+                        checked={
+                          settings.auditActions
+                        }
                         onChange={(value) =>
                           updateSetting(
                             "auditActions",
@@ -844,6 +1244,7 @@ function AdministrationSettings() {
                           )
                         }
                       />
+
                     </div>
                   </article>
                 </section>
@@ -853,26 +1254,32 @@ function AdministrationSettings() {
               {activeTab === "backup" && (
                 <section className="settings-section active">
                   <article className="panel">
+
                     <div className="panel-head">
-                      <h2>Backup & Data Retention</h2>
+                      <h2>
+                        Backup & Data Retention
+                      </h2>
+
                       <p>
-                        Protect school records and maintain
-                        recoverable copies.
+                        Protect school records and
+                        maintain recoverable copies.
                       </p>
                     </div>
 
                     <div className="panel-body">
+
                       <div className="status-card">
                         <i className="fas fa-circle-check" />
 
                         <div>
                           <strong>
-                            Last backup completed successfully
+                            Last backup completed
+                            successfully
                           </strong>
 
                           <span>
-                            July 21, 2026 at 2:47 PM · Encrypted
-                            database backup
+                            July 21, 2026 at 2:47 PM ·
+                            Encrypted database backup
                           </span>
                         </div>
 
@@ -882,7 +1289,9 @@ function AdministrationSettings() {
                       <SettingSwitch
                         title="Automatic backups"
                         description="Create encrypted backups on the selected schedule."
-                        checked={settings.automaticBackups}
+                        checked={
+                          settings.automaticBackups
+                        }
                         onChange={(value) =>
                           updateSetting(
                             "automaticBackups",
@@ -894,7 +1303,9 @@ function AdministrationSettings() {
                       <SettingSelect
                         title="Backup frequency"
                         description="More frequent backups reduce possible data loss."
-                        value={settings.backupFrequency}
+                        value={
+                          settings.backupFrequency
+                        }
                         options={[
                           "Every day",
                           "Every 12 hours",
@@ -927,11 +1338,14 @@ function AdministrationSettings() {
                       />
 
                       <div className="button-row">
+
                         <button
                           type="button"
                           className="secondary"
                           onClick={() =>
-                            notify("Manual backup started")
+                            notify(
+                              "Manual backup started"
+                            )
                           }
                         >
                           <i className="fas fa-database" />
@@ -950,39 +1364,55 @@ function AdministrationSettings() {
                           <i className="fas fa-shield-halved" />
                           Verify Latest Backup
                         </button>
+
                       </div>
 
                       <div className="backup-history">
+
                         <div className="backup-row">
-                          <strong>BKP-2026-0721</strong>
+                          <strong>
+                            BKP-2026-0721
+                          </strong>
+
                           <span>
                             Jul 21, 2026 · 2:47 PM
                           </span>
+
                           <span className="success">
                             Completed
                           </span>
                         </div>
 
                         <div className="backup-row">
-                          <strong>BKP-2026-0720</strong>
+                          <strong>
+                            BKP-2026-0720
+                          </strong>
+
                           <span>
                             Jul 20, 2026 · 11:00 PM
                           </span>
+
                           <span className="success">
                             Completed
                           </span>
                         </div>
 
                         <div className="backup-row">
-                          <strong>BKP-2026-0719</strong>
+                          <strong>
+                            BKP-2026-0719
+                          </strong>
+
                           <span>
                             Jul 19, 2026 · 11:00 PM
                           </span>
+
                           <span className="success">
                             Completed
                           </span>
                         </div>
+
                       </div>
+
                     </div>
                   </article>
                 </section>
@@ -991,16 +1421,20 @@ function AdministrationSettings() {
               {/* MAINTENANCE */}
               {activeTab === "maintenance" && (
                 <section className="settings-section active">
+
                   <article className="panel">
+
                     <div className="panel-head">
                       <h2>System Maintenance</h2>
+
                       <p>
-                        Technical operations intended for authorized
-                        ICT Personnel.
+                        Technical operations intended for
+                        authorized ICT Personnel.
                       </p>
                     </div>
 
                     <div className="panel-body">
+
                       <div className="status-card">
                         <i className="fas fa-server" />
 
@@ -1010,8 +1444,9 @@ function AdministrationSettings() {
                           </strong>
 
                           <span>
-                            Database, file storage, email delivery,
-                            and scheduled jobs are available.
+                            Database, file storage, email
+                            delivery, and scheduled jobs
+                            are available.
                           </span>
                         </div>
 
@@ -1019,11 +1454,14 @@ function AdministrationSettings() {
                       </div>
 
                       <div className="button-row">
+
                         <button
                           type="button"
                           className="secondary"
                           onClick={() =>
-                            notify("System health check passed")
+                            notify(
+                              "System health check passed"
+                            )
                           }
                         >
                           <i className="fas fa-stethoscope" />
@@ -1034,33 +1472,45 @@ function AdministrationSettings() {
                           type="button"
                           className="secondary"
                           onClick={() =>
-                            notify("Temporary cache cleared")
+                            notify(
+                              "Temporary cache cleared"
+                            )
                           }
                         >
                           <i className="fas fa-broom" />
                           Clear Temporary Cache
                         </button>
+
                       </div>
+
                     </div>
                   </article>
 
                   <article className="panel danger-zone">
+
                     <div className="panel-head">
                       <h2>Restricted Operations</h2>
+
                       <p>
-                        These actions require confirmation and should
-                        be limited to authorized technical staff.
+                        These actions require confirmation
+                        and should be limited to authorized
+                        technical staff.
                       </p>
                     </div>
 
                     <div className="panel-body">
+
                       <div className="danger-item">
+
                         <div>
-                          <strong>Maintenance Mode</strong>
+                          <strong>
+                            Maintenance Mode
+                          </strong>
 
                           <span>
-                            Temporarily block normal user access while
-                            technical work is performed.
+                            Temporarily block normal user
+                            access while technical work is
+                            performed.
                           </span>
                         </div>
 
@@ -1075,17 +1525,20 @@ function AdministrationSettings() {
                         >
                           Enable Mode
                         </button>
+
                       </div>
 
                       <div className="danger-item">
+
                         <div>
                           <strong>
                             Reset Local UI Preferences
                           </strong>
 
                           <span>
-                            Clear saved settings from this browser
-                            only. Database records are not affected.
+                            Clear saved settings from this
+                            browser only. Database records
+                            are not affected.
                           </span>
                         </div>
 
@@ -1100,17 +1553,21 @@ function AdministrationSettings() {
                         >
                           Reset Local Settings
                         </button>
+
                       </div>
+
                     </div>
                   </article>
+
                 </section>
               )}
+
             </div>
           </div>
         </main>
       </div>
 
-      {/* Confirmation Modal */}
+      {/* CONFIRMATION MODAL */}
       <div
         className={`confirm-overlay ${
           confirmOpen ? "show" : ""
@@ -1122,6 +1579,7 @@ function AdministrationSettings() {
         }}
       >
         <div className="confirm">
+
           <div className="confirm-head">
             <h2>Confirm Restricted Action</h2>
 
@@ -1139,6 +1597,7 @@ function AdministrationSettings() {
           </div>
 
           <div className="confirm-actions">
+
             <button
               type="button"
               className="secondary"
@@ -1154,19 +1613,23 @@ function AdministrationSettings() {
             >
               Confirm Action
             </button>
+
           </div>
         </div>
       </div>
 
-      {/* Toast */}
+      {/* TOAST */}
       <div className={`toast ${toast ? "show" : ""}`}>
         {toast}
       </div>
+
     </div>
   );
 }
 
-/* Reusable Setting Components */
+/* =========================
+   REUSABLE SETTING COMPONENTS
+========================= */
 
 function SettingSwitch({
   title,
@@ -1176,6 +1639,7 @@ function SettingSwitch({
 }) {
   return (
     <div className="setting-row">
+
       <div className="setting-copy">
         <strong>{title}</strong>
         <span>{description}</span>
@@ -1185,10 +1649,14 @@ function SettingSwitch({
         <input
           type="checkbox"
           checked={checked}
-          onChange={(e) => onChange(e.target.checked)}
+          onChange={(e) =>
+            onChange(e.target.checked)
+          }
         />
+
         <span className="slider" />
       </label>
+
     </div>
   );
 }
@@ -1202,6 +1670,7 @@ function SettingSelect({
 }) {
   return (
     <div className="setting-row">
+
       <div className="setting-copy">
         <strong>{title}</strong>
         <span>{description}</span>
@@ -1210,12 +1679,17 @@ function SettingSelect({
       <select
         className="inline-control"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) =>
+          onChange(e.target.value)
+        }
       >
         {options.map((option) => (
-          <option key={option}>{option}</option>
+          <option key={option}>
+            {option}
+          </option>
         ))}
       </select>
+
     </div>
   );
 }
@@ -1228,6 +1702,7 @@ function SettingInput({
 }) {
   return (
     <div className="setting-row">
+
       <div className="setting-copy">
         <strong>{title}</strong>
         <span>{description}</span>
@@ -1236,8 +1711,11 @@ function SettingInput({
       <input
         className="inline-control"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) =>
+          onChange(e.target.value)
+        }
       />
+
     </div>
   );
 }
