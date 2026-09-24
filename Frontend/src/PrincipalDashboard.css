@@ -198,20 +198,12 @@
   width: 45px;
   height: 45px;
 
-  flex: 0 0 45px;
 
   display: flex;
 
   align-items: center;
   justify-content: center;
 
-  padding: 4px;
-
-  background: #ffffff;
-
-  border: 0;
-
-  border-radius: 12px;
 
   overflow: hidden;
 }
@@ -222,7 +214,6 @@
 
   padding: 0;
 
-  object-fit: contain;
 }
 
 /* =========================================================
@@ -701,13 +692,6 @@
   align-items: center;
   justify-content: center;
 
-  padding: 4px;
-
-  background: #ffffff;
-
-  border: 1px solid var(--line);
-
-  border-radius: 50%;
 
   overflow: hidden;
 }
@@ -1342,7 +1326,7 @@
 
   color: var(--maroon);
 
-  font-size: 9px;
+  font-size: 15px;
   font-weight: 700;
 
   letter-spacing: 0.1em;
@@ -1366,7 +1350,7 @@
 
   color: var(--muted);
 
-  font-size: 11px;
+  font-size: 50px;
 }
 
 /* =========================================================
@@ -1395,14 +1379,14 @@
 
   white-space: nowrap;
 
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 600;
 }
 
 .page-date i {
   color: var(--maroon);
 
-  font-size: 12px;
+  font-size: 15px;
 }
 
 /* =========================================================
@@ -1471,7 +1455,7 @@
 .priority-label {
   color: var(--maroon);
 
-  font-size: 8px;
+  font-size: 15px;
   font-weight: 800;
 
   letter-spacing: 0.1em;
@@ -1491,7 +1475,7 @@
 
   color: var(--muted);
 
-  font-size: 9px;
+  font-size: 12px;
 }
 
 .priority-button {
@@ -1514,7 +1498,7 @@
 
   border-radius: 8px;
 
-  font-size: 9px;
+  font-size: 15px;
   font-weight: 700;
 
   transition: var(--ease);
@@ -1568,7 +1552,7 @@
 
   border-radius: 9px;
 
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .signature-content {
@@ -1584,7 +1568,7 @@
 .signature-content strong {
   color: var(--ink);
 
-  font-size: 10px;
+  font-size: 15px;
   font-weight: 700;
 }
 
@@ -1593,7 +1577,7 @@
 
   color: var(--muted);
 
-  font-size: 8px;
+  font-size: 13px;
 }
 
 .signature-status {
@@ -1611,7 +1595,7 @@
 
   border-radius: 7px;
 
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 700;
 }
 
@@ -1684,7 +1668,7 @@
 
   color: var(--maroon);
 
-  font-size: 14px;
+  font-size: 17px;
 }
 
 .metric-card-icon.pending-icon {
@@ -1713,7 +1697,7 @@
 .metric-card-content > span {
   color: var(--muted);
 
-  font-size: 9px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -1722,7 +1706,7 @@
 
   color: var(--ink);
 
-  font-size: 23px;
+  font-size: 25px;
   font-weight: 800;
 
   line-height: 1.25;
@@ -1737,7 +1721,7 @@
 
   color: #9297a2;
 
-  font-size: 8px;
+  font-size: 10px;
 
   text-overflow: ellipsis;
 
@@ -1810,7 +1794,7 @@
 
   color: var(--maroon);
 
-  font-size: 15px;
+  font-size: 20px;
   font-weight: 700;
 }
 
@@ -1827,7 +1811,7 @@
 
   color: var(--maroon);
 
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
 }
 
@@ -1854,7 +1838,7 @@
 
   border-radius: 7px;
 
-  font-size: 10px;
+  font-size: 12px;
 
   transition: var(--ease);
 }
@@ -1897,7 +1881,7 @@
   border-bottom:
     1px solid var(--line-light);
 
-  font-size: 8px;
+  font-size: 12px;
   font-weight: 700;
 
   letter-spacing: 0.05em;
@@ -1934,7 +1918,7 @@
 .request-id {
   color: var(--ink);
 
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 800;
 }
 
@@ -1945,7 +1929,7 @@
 
   color: #a0a4ae;
 
-  font-size: 8px;
+  font-size: 12px;
 }
 
 /* =========================================================
@@ -1980,7 +1964,7 @@
 
   border-radius: 50%;
 
-  font-size: 8px;
+  font-size: 13px;
   font-weight: 800;
 }
 
@@ -1997,7 +1981,7 @@
 
   color: var(--ink);
 
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
 
   text-overflow: ellipsis;
@@ -2028,7 +2012,7 @@
 .credential-cell strong {
   color: #4d5361;
 
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 700;
 
   line-height: 1.4;
@@ -2039,7 +2023,7 @@
 
   color: #9a9ea8;
 
-  font-size: 7px;
+  font-size: 1-px;
 }
 
 /* =========================================================
@@ -2059,7 +2043,7 @@
 
   border-radius: 50px;
 
-  font-size: 7px;
+  font-size: 10px;
   font-weight: 700;
 
   white-space: nowrap;
@@ -2108,7 +2092,7 @@
 
   border-radius: 7px;
 
-  font-size: 9px;
+  font-size: 11px;
 
   transition: var(--ease);
 }
@@ -2195,7 +2179,7 @@
 
   color: #9499a4;
 
-  font-size: 8px;
+  font-size: 15px;
   font-weight: 600;
 }
 
@@ -2229,14 +2213,14 @@
 .completion-legend-item > div > span:last-child {
   color: #707581;
 
-  font-size: 9px;
+  font-size: 15px;
   font-weight: 600;
 }
 
 .completion-legend-item strong {
   color: var(--ink);
 
-  font-size: 11px;
+  font-size: 15px;
   font-weight: 800;
 }
 
@@ -2279,14 +2263,14 @@
 .completion-footer > span {
   color: var(--green);
 
-  font-size: 9px;
+  font-size: 15px;
   font-weight: 700;
 }
 
 .completion-footer p {
   color: #9a9ea8;
 
-  font-size: 8px;
+  font-size: 15px;
 }
 
 /* =========================================================
@@ -2336,7 +2320,7 @@
 
   border-radius: 8px;
 
-  font-size: 10px;
+  font-size: 15px;
 }
 
 .activity-details {
@@ -2352,7 +2336,7 @@
 
   color: var(--ink);
 
-  font-size: 9px;
+  font-size: 15px;
   font-weight: 700;
 
   text-overflow: ellipsis;
@@ -2367,7 +2351,7 @@
 
   color: #9297a2;
 
-  font-size: 8px;
+  font-size: 13px;
 
   text-overflow: ellipsis;
 
@@ -2377,7 +2361,7 @@
 .activity-item small {
   color: #a0a4ae;
 
-  font-size: 7px;
+  font-size: 15px;
 
   white-space: nowrap;
 }
@@ -2401,7 +2385,7 @@
 
   border-radius: 8px;
 
-  font-size: 11px;
+  font-size: 15px;
 }
 
 .credentials-description {
@@ -2409,7 +2393,7 @@
 
   color: #9297a2;
 
-  font-size: 9px;
+  font-size: 15px;
 }
 
 .credential-tags {
@@ -2440,7 +2424,7 @@
 
   border-radius: 7px;
 
-  font-size: 8px;
+  font-size: 15px;
   font-weight: 600;
 }
 

@@ -2,7 +2,7 @@
 
 /* =========================================================
    ROOT
-========================================================= */
+   ========================================================= */
 
 :root {
   --burgundy: #a8071a;
@@ -14,7 +14,20 @@
   --cream: #fffdfc;
 
   --text-dark: #4a1117;
+  --text-muted: #7d6d70;
+
+  --line: #e8dfe1;
+
+  --shadow:
+    0 18px 50px rgba(78, 10, 18, 0.16);
+
+  --ease:
+    220ms cubic-bezier(0.2, 0.75, 0.25, 1);
 }
+
+/* =========================================================
+   GLOBAL RESET
+   ========================================================= */
 
 * {
   box-sizing: border-box;
@@ -25,19 +38,22 @@ body,
 #root {
   width: 100%;
   min-height: 100%;
+
   margin: 0;
   padding: 0;
 }
 
 body {
   font-family: "Poppins", sans-serif;
-  background: var(--cream);
-}
 
+  background: var(--cream);
+
+  color: var(--text-dark);
+}
 
 /* =========================================================
    MAIN PAGE
-========================================================= */
+   ========================================================= */
 
 .landing-page {
   position: relative;
@@ -58,10 +74,9 @@ body {
   color: var(--burgundy);
 }
 
-
 /* =========================================================
    SCHOOL BUILDING
-========================================================= */
+   ========================================================= */
 
 .school-background {
   position: absolute;
@@ -84,28 +99,25 @@ body {
 
   opacity: 0.70;
 
-  filter: grayscale(10%) contrast(1.0);
+  filter:
+    grayscale(10%)
+    contrast(1);
 
   z-index: 0;
 
-  clip-path: polygon(
-    0 8%,
-    100% 1%,
-    100% 100%,
-    0 100%
-  );
+  clip-path:
+    polygon(
+      0 8%,
+      100% 1%,
+      100% 100%,
+      0 100%
+    );
 }
-
-
-/* =========================================================
-   EXTRA WHITE FADE OVER BUILDING
-========================================================= */
 
 .school-background::after {
   content: "";
 
   position: absolute;
-
   inset: 0;
 
   background:
@@ -118,10 +130,9 @@ body {
   pointer-events: none;
 }
 
-
 /* =========================================================
    FADED SCHOOL SEAL
-========================================================= */
+   ========================================================= */
 
 .background-seal {
   position: absolute;
@@ -131,8 +142,20 @@ body {
 
   object-fit: contain;
 
-  right: clamp(-60px, -2vw, -10px);
-  top: clamp(10px, 2vh, 35px);
+  right:
+    clamp(-60px, -2vw, -10px);
+
+  top:
+    clamp(10px, 2vh, 35px);
+
+  margin: 0;
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  box-shadow: none;
 
   opacity: 0.12;
 
@@ -141,10 +164,9 @@ body {
   z-index: 1;
 }
 
-
 /* =========================================================
-   TOP LEFT BURGUNDY DECORATION
-========================================================= */
+   TOP LEFT DECORATION
+   ========================================================= */
 
 .corner-top-left {
   position: absolute;
@@ -162,18 +184,16 @@ body {
       #b10b20
     );
 
-  clip-path: polygon(
-    0 0,
-    100% 0,
-    31% 100%,
-    0 100%
-  );
+  clip-path:
+    polygon(
+      0 0,
+      100% 0,
+      31% 100%,
+      0 100%
+    );
 
   z-index: 4;
 }
-
-
-/* white diagonal stripe */
 
 .corner-top-left::after {
   content: "";
@@ -193,9 +213,6 @@ body {
   opacity: 0.96;
 }
 
-
-/* second lighter stripe */
-
 .corner-top-left::before {
   content: "";
 
@@ -212,10 +229,9 @@ body {
   transform: rotate(-43deg);
 }
 
-
 /* =========================================================
-   BOTTOM RIGHT BURGUNDY DECORATION
-========================================================= */
+   BOTTOM RIGHT DECORATION
+   ========================================================= */
 
 .corner-bottom-right {
   position: absolute;
@@ -233,18 +249,16 @@ body {
       #8a0614
     );
 
-  clip-path: polygon(
-    27% 100%,
-    100% 100%,
-    100% 0,
-    0 100%
-  );
+  clip-path:
+    polygon(
+      27% 100%,
+      100% 100%,
+      100% 0,
+      0 100%
+    );
 
   z-index: 4;
 }
-
-
-/* white diagonal stripe */
 
 .corner-bottom-right::after {
   content: "";
@@ -264,9 +278,6 @@ body {
   opacity: 0.96;
 }
 
-
-/* second stripe */
-
 .corner-bottom-right::before {
   content: "";
 
@@ -283,10 +294,9 @@ body {
   transform: rotate(-43deg);
 }
 
-
 /* =========================================================
    MAIN CONTENT
-========================================================= */
+   ========================================================= */
 
 .landing-content {
   position: relative;
@@ -297,7 +307,9 @@ body {
   min-height: 100vh;
 
   display: flex;
+
   flex-direction: column;
+
   align-items: center;
 
   padding:
@@ -306,29 +318,37 @@ body {
     100px;
 }
 
-
 /* =========================================================
    HEADER
-========================================================= */
+   ========================================================= */
 
 .system-header {
   width: min(650px, 90vw);
 
   display: flex;
+
   flex-direction: column;
+
   align-items: center;
 
   text-align: center;
 }
 
-
+/* Plain logo */
 .school-logo {
   width: clamp(100px, 11vw, 155px);
   height: clamp(100px, 11vw, 155px);
 
   object-fit: contain;
 
-  margin-bottom: 4px;
+  margin: 0 0 4px;
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  box-shadow: none;
 
   filter:
     drop-shadow(
@@ -336,17 +356,17 @@ body {
     );
 }
 
-
 /* =========================================================
    MAIN TITLE
-========================================================= */
+   ========================================================= */
 
 .system-header h1 {
   margin: 0;
 
   color: #8f0715;
 
-  font-size: clamp(30px, 3.1vw, 44px);
+  font-size:
+    clamp(30px, 3.1vw, 44px);
 
   line-height: 1.1;
 
@@ -358,35 +378,37 @@ body {
     0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
-
 /* =========================================================
    SUBTITLE
-========================================================= */
+   ========================================================= */
 
 .system-header h2 {
   margin: 7px 0 0;
 
   color: #790611;
 
-  font-size: clamp(11px, 1.25vw, 17px);
+  font-size:
+    clamp(11px, 1.25vw, 17px);
 
   line-height: 1.3;
 
   font-weight: 700;
 
-  letter-spacing: clamp(2px, 0.35vw, 4px);
+  letter-spacing:
+    clamp(2px, 0.35vw, 4px);
 }
-
 
 /* =========================================================
    TAGLINE
-========================================================= */
+   ========================================================= */
 
 .tagline {
   width: min(500px, 85vw);
 
   display: flex;
+
   align-items: center;
+
   justify-content: center;
 
   gap: 11px;
@@ -395,7 +417,6 @@ body {
 
   color: #6d252b;
 }
-
 
 .tagline span {
   height: 1px;
@@ -410,7 +431,6 @@ body {
     );
 }
 
-
 .tagline span:last-child {
   background:
     linear-gradient(
@@ -420,17 +440,16 @@ body {
     );
 }
 
-
 .tagline em {
   font-family: Georgia, serif;
 
-  font-size: clamp(13px, 1.3vw, 17px);
+  font-size:
+    clamp(13px, 1.3vw, 17px);
 
   font-style: italic;
 
   white-space: nowrap;
 }
-
 
 .tagline b {
   font-size: 11px;
@@ -438,33 +457,35 @@ body {
   color: #8e0716;
 }
 
-
 /* =========================================================
    ROLE MENU
-========================================================= */
+   ========================================================= */
 
 .role-menu {
   width: min(500px, 92vw);
 
   display: flex;
+
   flex-direction: column;
 
-  gap: clamp(9px, 1.2vh, 14px);
+  gap:
+    clamp(9px, 1.2vh, 14px);
 
-  margin-top: clamp(22px, 3.2vh, 34px);
+  margin-top:
+    clamp(22px, 3.2vh, 34px);
 }
-
 
 /* =========================================================
    ROLE BUTTON
-========================================================= */
+   ========================================================= */
 
 .role-button {
   position: relative;
 
   width: 100%;
 
-  min-height: clamp(56px, 6.5vh, 68px);
+  min-height:
+    clamp(56px, 6.5vh, 68px);
 
   padding:
     5px
@@ -482,7 +503,8 @@ body {
 
   align-items: center;
 
-  gap: clamp(10px, 1.4vw, 16px);
+  gap:
+    clamp(10px, 1.4vw, 16px);
 
   border: none;
 
@@ -512,11 +534,6 @@ body {
     background 0.2s ease;
 }
 
-
-/* =========================================================
-   BUTTON HOVER
-========================================================= */
-
 .role-button:hover {
   transform: translateY(-2px);
 
@@ -532,19 +549,20 @@ body {
     0 9px 20px rgba(91, 3, 12, 0.30);
 }
 
-
 .role-button:active {
   transform: translateY(0);
 }
 
-
 /* =========================================================
    ROLE ICON
-========================================================= */
+   ========================================================= */
 
 .role-icon {
-  width: clamp(44px, 4.5vw, 56px);
-  height: clamp(44px, 4.5vw, 56px);
+  width:
+    clamp(44px, 4.5vw, 56px);
+
+  height:
+    clamp(44px, 4.5vw, 56px);
 
   display: flex;
 
@@ -560,18 +578,19 @@ body {
     inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
-
 .role-icon svg {
-  width: clamp(24px, 2.4vw, 31px);
-  height: clamp(24px, 2.4vw, 31px);
+  width:
+    clamp(24px, 2.4vw, 31px);
+
+  height:
+    clamp(24px, 2.4vw, 31px);
 
   fill: white;
 }
 
-
 /* =========================================================
    ROLE DIVIDER
-========================================================= */
+   ========================================================= */
 
 .role-divider {
   width: 1px;
@@ -584,27 +603,26 @@ body {
     rgba(255, 255, 255, 0.42);
 }
 
-
 /* =========================================================
    ROLE NAME
-========================================================= */
+   ========================================================= */
 
 .role-name {
   text-align: left;
 
   color: white;
 
-  font-size: clamp(14px, 1.3vw, 18px);
+  font-size:
+    clamp(14px, 1.3vw, 18px);
 
   font-weight: 600;
 
   letter-spacing: 0.1px;
 }
 
-
 /* =========================================================
    ARROW
-========================================================= */
+   ========================================================= */
 
 .role-arrow {
   display: flex;
@@ -616,7 +634,8 @@ body {
 
   font-family: Arial, sans-serif;
 
-  font-size: clamp(28px, 2.7vw, 39px);
+  font-size:
+    clamp(28px, 2.7vw, 39px);
 
   font-weight: 200;
 
@@ -626,21 +645,22 @@ body {
     transform 0.2s ease;
 }
 
-
 .role-button:hover .role-arrow {
   transform: translateX(5px);
 }
 
-
 /* =========================================================
    BOTTOM MESSAGE
-========================================================= */
+   ========================================================= */
 
 .bottom-message {
   position: absolute;
 
-  right: clamp(45px, 7vw, 110px);
-  bottom: clamp(32px, 5vh, 60px);
+  right:
+    clamp(45px, 7vw, 110px);
+
+  bottom:
+    clamp(32px, 5vh, 60px);
 
   z-index: 8;
 
@@ -651,24 +671,24 @@ body {
   color: white;
 }
 
-
 .bottom-message p {
   margin: 0;
 
   font-family: Georgia, serif;
 
-  font-size: clamp(13px, 1.3vw, 18px);
+  font-size:
+    clamp(13px, 1.3vw, 18px);
 
   line-height: 1.35;
 
   font-style: italic;
 }
 
-
 .bottom-message span {
   display: block;
 
   width: 70px;
+
   height: 1px;
 
   background:
@@ -677,13 +697,953 @@ body {
   margin: 15px auto 0;
 }
 
+/* =========================================================
+   REQUEST MODAL OVERLAY
+   ========================================================= */
+
+.request-modal-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 1000;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 22px;
+
+  background:
+    rgba(39, 5, 10, 0.58);
+
+  backdrop-filter: blur(7px);
+
+  -webkit-backdrop-filter: blur(7px);
+
+  animation:
+    modalFadeIn 180ms ease;
+}
+
+/* =========================================================
+   REQUEST MODAL
+   ========================================================= */
+
+.request-modal {
+  width: min(900px, 100%);
+
+  max-height:
+    min(92vh, 900px);
+
+  overflow: hidden;
+
+  display: flex;
+
+  flex-direction: column;
+
+  border:
+    1px solid rgba(168, 7, 26, 0.12);
+
+  border-radius: 22px;
+
+  background:
+    #ffffff;
+
+  box-shadow:
+    0 30px 90px rgba(53, 3, 9, 0.30);
+
+  animation:
+    modalSlideIn 200ms cubic-bezier(0.2, 0.75, 0.25, 1);
+}
+
+/* =========================================================
+   MODAL HEADER
+   ========================================================= */
+
+.request-modal-header {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding:
+    18px
+    22px;
+
+  border-bottom:
+    1px solid var(--line);
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff,
+      #fffafa
+    );
+}
+
+.request-modal-brand {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  min-width: 0;
+}
+
+/* Modal logo = plain */
+
+.request-modal-brand img {
+  width: 48px;
+  height: 48px;
+
+  margin: 0;
+  padding: 0;
+
+  flex: 0 0 48px;
+
+  border: 0;
+  border-radius: 0;
+
+  background: transparent;
+
+  object-fit: contain;
+
+  box-shadow: none;
+}
+
+.request-modal-brand span {
+  display: block;
+
+  margin-bottom: 2px;
+
+  color: var(--burgundy);
+
+  font-size: 8px;
+  font-weight: 800;
+
+  letter-spacing: 0.7px;
+}
+
+.request-modal-brand h2 {
+  margin: 0;
+
+  color: var(--text-dark);
+
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.request-modal-close {
+  display: grid;
+
+  width: 40px;
+  height: 40px;
+
+  flex: 0 0 40px;
+
+  place-items: center;
+
+  border-radius: 50%;
+
+  background: #f5f2f3;
+
+  color: #5b5053;
+
+  cursor: pointer;
+
+  font-size: 16px;
+
+  transition:
+    background var(--ease),
+    color var(--ease);
+}
+
+.request-modal-close:hover {
+  background:
+    var(--burgundy-light);
+
+  color:
+    var(--burgundy);
+}
+
+.request-modal-close:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* =========================================================
+   MODAL INTRO
+   ========================================================= */
+
+.request-modal-intro {
+  padding:
+    15px
+    22px
+    8px;
+}
+
+.request-type-badge {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  padding:
+    6px
+    10px;
+
+  border-radius: 20px;
+
+  background:
+    #fff0f0;
+
+  color:
+    var(--burgundy);
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.request-modal-intro p {
+  margin: 8px 0 0;
+
+  color: var(--text-muted);
+
+  font-size: 10px;
+
+  line-height: 1.5;
+}
+
+/* =========================================================
+   FORM
+   ========================================================= */
+
+.request-form {
+  min-height: 0;
+
+  overflow-y: auto;
+
+  padding:
+    8px
+    22px
+    22px;
+}
+
+.request-form::-webkit-scrollbar {
+  width: 7px;
+}
+
+.request-form::-webkit-scrollbar-track {
+  background: #faf7f7;
+}
+
+.request-form::-webkit-scrollbar-thumb {
+  border-radius: 20px;
+
+  background:
+    #d9c5c8;
+}
+
+.request-form::-webkit-scrollbar-thumb:hover {
+  background:
+    #bea4a8;
+}
+
+/* =========================================================
+   FORM SECTION TITLE
+   ========================================================= */
+
+.form-section-title {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  margin:
+    14px
+    0
+    12px;
+}
+
+.form-section-title > span {
+  display: grid;
+
+  width: 28px;
+  height: 28px;
+
+  place-items: center;
+
+  flex: 0 0 28px;
+
+  border-radius: 8px;
+
+  background:
+    var(--burgundy);
+
+  color:
+    #ffffff;
+
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.form-section-title > div {
+  min-width: 0;
+}
+
+.form-section-title strong {
+  display: block;
+
+  color: var(--text-dark);
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.form-section-title small {
+  display: block;
+
+  margin-top: 2px;
+
+  color: var(--text-muted);
+
+  font-size: 9px;
+}
+
+/* =========================================================
+   FORM GRID
+   ========================================================= */
+
+.form-grid {
+  display: grid;
+
+  grid-template-columns:
+    1fr
+    1fr;
+
+  gap:
+    13px
+    14px;
+}
+
+.form-field {
+  min-width: 0;
+}
+
+.form-field.full-width {
+  grid-column:
+    1 / -1;
+}
+
+.form-field label {
+  display: flex;
+
+  align-items: center;
+
+  gap: 4px;
+
+  margin-bottom: 6px;
+
+  color:
+    #56494c;
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.form-field label > span:not(.optional) {
+  color:
+    var(--burgundy);
+
+  font-weight: 800;
+}
+
+.form-field label .optional {
+  color:
+    #aaa0a3;
+
+  font-size: 8px;
+  font-weight: 500;
+}
+
+/* =========================================================
+   INPUT WRAPPER
+   ========================================================= */
+
+.input-wrapper {
+  position: relative;
+}
+
+.input-wrapper > i {
+  position: absolute;
+
+  top: 50%;
+  left: 13px;
+
+  z-index: 2;
+
+  color:
+    #9f8f93;
+
+  font-size: 11px;
+
+  transform:
+    translateY(-50%);
+
+  pointer-events: none;
+}
+
+.input-wrapper input,
+.input-wrapper select,
+.input-wrapper textarea {
+  width: 100%;
+
+  border:
+    1px solid #ddd2d5;
+
+  border-radius: 10px;
+
+  outline: none;
+
+  background:
+    #ffffff;
+
+  color:
+    var(--text-dark);
+
+  font-family:
+    "Poppins",
+    sans-serif;
+
+  font-size: 10px;
+
+  transition:
+    border-color var(--ease),
+    box-shadow var(--ease),
+    background var(--ease);
+}
+
+.input-wrapper input,
+.input-wrapper select {
+  height: 43px;
+
+  padding:
+    0
+    12px
+    0
+    36px;
+}
+
+.input-wrapper textarea {
+  min-height: 85px;
+
+  padding:
+    11px
+    12px
+    10px
+    36px;
+
+  resize: vertical;
+
+  line-height: 1.5;
+}
+
+.input-wrapper textarea + * {
+  pointer-events: none;
+}
+
+.input-wrapper textarea::placeholder,
+.input-wrapper input::placeholder {
+  color:
+    #b2a8aa;
+}
+
+.input-wrapper select {
+  appearance: auto;
+
+  cursor: pointer;
+}
+
+.input-wrapper input:focus,
+.input-wrapper select:focus,
+.input-wrapper textarea:focus {
+  border-color:
+    #be7275;
+
+  background:
+    #fffdfd;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(168, 7, 26, 0.06);
+}
+
+/* =========================================================
+   TEXTAREA ICON
+   ========================================================= */
+
+.textarea-wrapper > i {
+  top: 16px;
+
+  transform: none;
+}
+
+/* =========================================================
+   FIELD HELP
+   ========================================================= */
+
+.field-help {
+  display: block;
+
+  margin-top: 4px;
+
+  color:
+    #9a8e91;
+
+  font-size: 8px;
+}
+
+/* =========================================================
+   FIELD ERROR
+   ========================================================= */
+
+.field-error {
+  display: block;
+
+  margin-top: 4px;
+
+  color:
+    #c12c3c;
+
+  font-size: 8px;
+  font-weight: 600;
+}
+
+.form-submit-error {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 8px;
+
+  margin-bottom: 12px;
+
+  padding:
+    10px
+    12px;
+
+  border:
+    1px solid #f0c8ce;
+
+  border-radius: 9px;
+
+  background:
+    #fff0f2;
+
+  color:
+    #b62836;
+
+  font-size: 9px;
+
+  line-height: 1.45;
+}
+
+/* =========================================================
+   SMS NOTICE
+   ========================================================= */
+
+.sms-notice {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 11px;
+
+  margin-top: 18px;
+
+  padding:
+    13px;
+
+  border:
+    1px solid #ead9dc;
+
+  border-radius: 11px;
+
+  background:
+    #fffafa;
+}
+
+.sms-notice-icon {
+  display: grid;
+
+  width: 34px;
+  height: 34px;
+
+  flex: 0 0 34px;
+
+  place-items: center;
+
+  border-radius: 9px;
+
+  background:
+    var(--burgundy);
+
+  color:
+    #ffffff;
+
+  font-size: 11px;
+}
+
+.sms-notice strong {
+  display: block;
+
+  color:
+    var(--text-dark);
+
+  font-size: 10px;
+
+  font-weight: 800;
+}
+
+.sms-notice p {
+  margin: 3px 0 0;
+
+  color:
+    var(--text-muted);
+
+  font-size: 8px;
+
+  line-height: 1.55;
+}
+
+/* =========================================================
+   FORM ACTIONS
+   ========================================================= */
+
+.request-form-actions {
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 9px;
+
+  margin-top: 18px;
+
+  padding-top: 14px;
+
+  border-top:
+    1px solid var(--line);
+}
+
+.request-cancel-button,
+.request-submit-button {
+  min-height: 42px;
+
+  padding:
+    0
+    16px;
+
+  border-radius: 9px;
+
+  font-family:
+    "Poppins",
+    sans-serif;
+
+  font-size: 9px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background var(--ease),
+    color var(--ease),
+    transform var(--ease),
+    box-shadow var(--ease);
+}
+
+.request-cancel-button {
+  border:
+    1px solid #ded5d7;
+
+  background:
+    #ffffff;
+
+  color:
+    #62585a;
+}
+
+.request-cancel-button:hover {
+  background:
+    #faf5f5;
+
+  color:
+    var(--burgundy);
+}
+
+.request-submit-button {
+  min-width: 145px;
+
+  background:
+    var(--burgundy);
+
+  color:
+    #ffffff;
+
+  box-shadow:
+    0 7px 18px
+    rgba(168, 7, 26, 0.18);
+}
+
+.request-submit-button:hover {
+  background:
+    var(--burgundy-dark);
+
+  transform:
+    translateY(-1px);
+
+  box-shadow:
+    0 9px 20px
+    rgba(168, 7, 26, 0.23);
+}
+
+.request-submit-button:disabled,
+.request-cancel-button:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.6;
+
+  transform: none;
+}
+
+/* =========================================================
+   SUCCESS STATE
+   ========================================================= */
+
+.request-success {
+  overflow-y: auto;
+
+  padding:
+    30px
+    28px
+    28px;
+
+  text-align: center;
+}
+
+.request-success-icon {
+  display: grid;
+
+  width: 66px;
+  height: 66px;
+
+  margin:
+    2px
+    auto
+    14px;
+
+  place-items: center;
+
+  border-radius: 50%;
+
+  background:
+    #e8f6ec;
+
+  color:
+    #218844;
+
+  font-size: 24px;
+}
+
+.request-success h3 {
+  margin: 0;
+
+  color:
+    var(--text-dark);
+
+  font-size: 18px;
+
+  font-weight: 800;
+}
+
+.request-success > p {
+  max-width: 470px;
+
+  margin:
+    7px
+    auto
+    18px;
+
+  color:
+    var(--text-muted);
+
+  font-size: 10px;
+
+  line-height: 1.55;
+}
+
+.request-success-id {
+  width: min(310px, 100%);
+
+  margin: 0 auto 14px;
+
+  padding:
+    13px
+    15px;
+
+  border:
+    1px solid #ead9dc;
+
+  border-radius: 11px;
+
+  background:
+    #fffafa;
+}
+
+.request-success-id span {
+  display: block;
+
+  color:
+    var(--text-muted);
+
+  font-size: 8px;
+
+  font-weight: 600;
+}
+
+.request-success-id strong {
+  display: block;
+
+  margin-top: 4px;
+
+  color:
+    var(--burgundy);
+
+  font-size: 19px;
+
+  font-weight: 800;
+
+  letter-spacing: 0.5px;
+}
+
+.request-success-note {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 9px;
+
+  max-width: 510px;
+
+  margin: 0 auto 19px;
+
+  padding:
+    11px
+    13px;
+
+  border-radius: 10px;
+
+  background:
+    #f6f7fb;
+
+  color:
+    #626778;
+
+  text-align: left;
+
+  font-size: 8px;
+
+  line-height: 1.5;
+}
+
+.request-success-note i {
+  margin-top: 2px;
+
+  color:
+    var(--burgundy);
+}
+
+.request-success-button {
+  min-height: 42px;
+
+  min-width: 130px;
+
+  padding:
+    0
+    16px;
+
+  border-radius: 9px;
+
+  background:
+    var(--burgundy);
+
+  color:
+    #ffffff;
+
+  font-family:
+    "Poppins",
+    sans-serif;
+
+  font-size: 9px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background var(--ease),
+    transform var(--ease);
+}
+
+.request-success-button:hover {
+  background:
+    var(--burgundy-dark);
+
+  transform:
+    translateY(-1px);
+}
+
+/* =========================================================
+   MODAL ANIMATIONS
+   ========================================================= */
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+
+    transform:
+      translateY(12px)
+      scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateY(0)
+      scale(1);
+  }
+}
 
 /* =========================================================
    TABLET
-========================================================= */
+   ========================================================= */
 
 @media (max-width: 900px) {
-
   .landing-content {
     padding-top: 20px;
   }
@@ -731,15 +1691,17 @@ body {
     right: 40px;
     bottom: 25px;
   }
-}
 
+  .request-modal {
+    width: min(820px, 100%);
+  }
+}
 
 /* =========================================================
    MOBILE
-========================================================= */
+   ========================================================= */
 
 @media (max-width: 600px) {
-
   body {
     overflow-x: hidden;
     overflow-y: auto;
@@ -763,7 +1725,6 @@ body {
       45px;
   }
 
-
   /* Background */
 
   .school-background {
@@ -779,7 +1740,6 @@ body {
     clip-path: none;
   }
 
-
   /* Seal */
 
   .background-seal {
@@ -791,7 +1751,6 @@ body {
 
     opacity: 0.07;
   }
-
 
   /* Decorations */
 
@@ -816,7 +1775,6 @@ body {
     left: 0;
   }
 
-
   .corner-bottom-right {
     width: 200px;
     height: 125px;
@@ -838,7 +1796,6 @@ body {
     right: -25px;
   }
 
-
   /* Header */
 
   .system-header {
@@ -853,7 +1810,8 @@ body {
   }
 
   .system-header h1 {
-    font-size: clamp(25px, 8vw, 32px);
+    font-size:
+      clamp(25px, 8vw, 32px);
 
     line-height: 1.1;
   }
@@ -861,13 +1819,13 @@ body {
   .system-header h2 {
     margin-top: 7px;
 
-    font-size: clamp(9px, 2.7vw, 12px);
+    font-size:
+      clamp(9px, 2.7vw, 12px);
 
     letter-spacing: 2px;
 
     line-height: 1.5;
   }
-
 
   /* Tagline */
 
@@ -886,7 +1844,6 @@ body {
   .tagline b {
     font-size: 9px;
   }
-
 
   /* Buttons */
 
@@ -940,7 +1897,6 @@ body {
     font-size: 31px;
   }
 
-
   /* Bottom message */
 
   .bottom-message {
@@ -957,17 +1913,119 @@ body {
   }
 
   .bottom-message span {
-    background: rgba(126, 10, 21, 0.5);
+    background:
+      rgba(126, 10, 21, 0.5);
+  }
+
+  /* =======================================================
+     REQUEST MODAL MOBILE
+     ======================================================= */
+
+  .request-modal-overlay {
+    align-items: flex-end;
+
+    padding: 0;
+  }
+
+  .request-modal {
+    width: 100%;
+
+    max-height: 95svh;
+
+    border-radius:
+      22px
+      22px
+      0
+      0;
+
+    animation:
+      modalMobileSlideIn
+      220ms cubic-bezier(0.2, 0.75, 0.25, 1);
+  }
+
+  .request-modal-header {
+    padding:
+      15px
+      16px;
+  }
+
+  .request-modal-brand {
+    gap: 9px;
+  }
+
+  .request-modal-brand img {
+    width: 42px;
+    height: 42px;
+
+    flex-basis: 42px;
+  }
+
+  .request-modal-brand span {
+    font-size: 7px;
+  }
+
+  .request-modal-brand h2 {
+    font-size: 16px;
+  }
+
+  .request-modal-close {
+    width: 38px;
+    height: 38px;
+
+    flex-basis: 38px;
+  }
+
+  .request-modal-intro {
+    padding:
+      12px
+      16px
+      5px;
+  }
+
+  .request-form {
+    padding:
+      7px
+      16px
+      18px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+
+    gap: 12px;
+  }
+
+  .form-section-title {
+    margin-top: 13px;
+  }
+
+  .form-field.full-width {
+    grid-column:
+      auto;
+  }
+
+  .request-form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .request-cancel-button,
+  .request-submit-button {
+    width: 100%;
+  }
+
+  .request-success {
+    padding:
+      26px
+      18px
+      24px;
   }
 }
 
-
 /* =========================================================
    SMALL PHONES
-========================================================= */
+   ========================================================= */
 
 @media (max-width: 380px) {
-
   .landing-content {
     padding-left: 12px;
     padding-right: 12px;
@@ -984,7 +2042,6 @@ body {
 
   .system-header h2 {
     font-size: 8px;
-
     letter-spacing: 1.5px;
   }
 
@@ -1035,15 +2092,21 @@ body {
   .role-arrow {
     font-size: 28px;
   }
-}
 
+  .request-modal-brand h2 {
+    font-size: 14px;
+  }
+
+  .request-modal-intro p {
+    font-size: 9px;
+  }
+}
 
 /* =========================================================
    VERY SHORT SCREENS
-========================================================= */
+   ========================================================= */
 
 @media (max-height: 700px) and (min-width: 601px) {
-
   .landing-content {
     padding-top: 8px;
   }
@@ -1087,5 +2150,21 @@ body {
 
   .bottom-message {
     display: none;
+  }
+}
+
+@keyframes modalMobileSlideIn {
+  from {
+    opacity: 0;
+
+    transform:
+      translateY(25px);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateY(0);
   }
 }

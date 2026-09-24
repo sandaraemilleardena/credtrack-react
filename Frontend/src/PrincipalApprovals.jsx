@@ -812,26 +812,12 @@ function PrincipalApprovals() {
             </li>
 
 
-            {/* LOGOUT */}
-            <li className="logout-item">
 
-
-            </li>
 
           </ul>
 
         </nav>
 
-        {/* ACCOUNT */}
-        <div className="principal-sidebar-footer">
-
-          <div className="principal-sidebar-user">
-
-  
-
-          </div>
-
-        </div>
 
       </aside>
 

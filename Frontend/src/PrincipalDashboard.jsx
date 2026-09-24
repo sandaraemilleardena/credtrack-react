@@ -382,7 +382,7 @@ function PrincipalDashboard() {
               >
                 <i className="fas fa-file-signature"></i>
                 <span>Credential Approvals</span>
-                <span className="nav-badge">4</span>
+                <span className="nav-badge">7</span>
               </button>
             </li>
 
@@ -412,13 +412,6 @@ function PrincipalDashboard() {
           </ul>
         </nav>
 
-        {/* SIDEBAR FOOTER */}
-        <div className="principal-sidebar-footer">
-          <div className="sidebar-secure-status">
-            <span className="secure-dot"></span>
-
-          </div>
-        </div>
       </aside>
 
       {/* =====================================================
@@ -584,9 +577,10 @@ function PrincipalDashboard() {
                   setNotificationsOpen(false);
                 }}
               >
-                <div className="profile-avatar">
-                  P
-                </div>
+  <img
+                  src="/logo.png"
+                  alt="Principal profile"
+                />
 
                 <div className="profile-info">
                   <strong>Principal</strong>
@@ -599,18 +593,7 @@ function PrincipalDashboard() {
               {profileOpen && (
                 <div className="profile-dropdown">
 
-                  <div className="profile-dropdown-header">
-
-                    <div className="profile-dropdown-avatar">
-                      P
-                    </div>
-
-                    <div>
-                      <strong>Principal</strong>
-                      <span>School Principal</span>
-                    </div>
-
-                  </div>
+      
 
                   <div className="profile-dropdown-content">
 

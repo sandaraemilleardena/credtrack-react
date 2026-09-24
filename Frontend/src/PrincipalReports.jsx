@@ -413,50 +413,9 @@ function PrincipalReports() {
 
           </li>
 
-          {/* LOGOUT */}
-          <li className="logout-item">
-
-            <button
-              type="button"
-              onClick={handleLogout}
-            >
-              <i className="fas fa-right-from-bracket" />
-
-              <span>
-                Logout
-              </span>
-
-            </button>
-
-          </li>
 
         </ul>
 
-        {/* SIDEBAR FOOTER */}
-        <div className="principal-sidebar-footer">
-
-          <div className="principal-sidebar-user">
-
-            <img
-              src="/logo.png"
-              alt="Principal"
-            />
-
-            <div>
-
-              <strong>
-                Dr. Elena Reyes
-              </strong>
-
-              <span>
-                School Principal
-              </span>
-
-            </div>
-
-          </div>
-
-        </div>
 
       </aside>
 
