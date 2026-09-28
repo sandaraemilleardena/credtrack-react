@@ -1,7 +1,6 @@
-import { logoutUser } from './auth/session';
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./ictDataProtection.css";
+import "./IctDataProtection.css";
 
 // =========================================================
 // ICON PATHS
@@ -170,7 +169,7 @@ function badgeTone(value) {
 function protectionDemo() {
   const ago = (hours) =>
     new Date(
-      new Date().getTime() - hours * 3600000
+      Date.now() - hours * 3600000
     ).toISOString();
 
   return {
@@ -385,7 +384,7 @@ export default function IctDataProtection({
       )
     : 0;
 
-  const canAct = demo || Boolean(onAction && data.backupConfigured);
+  const canAct = demo || Boolean(onAction);
 
   // =========================================================
   // DIALOG
@@ -497,7 +496,7 @@ export default function IctDataProtection({
         await onLogout();
       }
 
-      await logoutUser();
+      localStorage.removeItem("credtrackSession");
       sessionStorage.clear();
 
       navigate("/", {
@@ -546,7 +545,7 @@ export default function IctDataProtection({
   ) {
     return [
       {
-        id: `au-${new Date().getTime()}`,
+        id: `au-${Date.now()}`,
         title,
         detail,
         createdAt: new Date().toISOString(),
@@ -580,7 +579,7 @@ export default function IctDataProtection({
       },
       () =>
         setLocalData((previous) => {
-          const id = `BK-DEMO-${new Date().getTime()}`;
+          const id = `BK-DEMO-${Date.now()}`;
 
           return {
             ...previous,
@@ -1218,12 +1217,10 @@ export default function IctDataProtection({
 
                 <div>
                   <strong>
-                    ICT Personnel
+                    ICT PERSONNEL
                   </strong>
 
-                  <small>
-                    System Operations
-                  </small>
+  
                 </div>
 
                 <Icon
@@ -1237,13 +1234,6 @@ export default function IctDataProtection({
                   id="ict-account"
                   className="principal-profile-dropdown ict-dropdown"
                 >
-                  <strong>
-                    ICT Personnel
-                  </strong>
-
-                  <p>
-                    Technical operations workspace
-                  </p>
 
                   <button
                     type="button"
@@ -1764,7 +1754,7 @@ export default function IctDataProtection({
                 <span>
                   Recovery tests use an isolated
                   environment. Select a verified
-                  backup after ICT configures and verifies protected storage.
+                  backup to get started.
                 </span>
               </div>
             </aside>
@@ -1950,7 +1940,7 @@ export default function IctDataProtection({
                   <p className="ix-mode-note">
                     {demo
                       ? "Sample backup record. No backup files are accessed."
-                      : "Backup operations require configured infrastructure."}
+                      : "Actions use your connected backup service."}
                   </p>
 
                   <p
@@ -2216,7 +2206,7 @@ export default function IctDataProtection({
                   {demo
                     ? "Demo mode · No backups, deletions, or restores will run."
                     : canAct
-                    ? "Requests are handled by the configured backup service."
+                    ? "Requests are handled by your connected backup service."
                     : "Read-only workspace · Backup requests are unavailable."}
                 </p>
 

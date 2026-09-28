@@ -460,8 +460,8 @@ function AdministrationActLogs() {
                 />
 
                 <div>
-                  <strong>Administrator</strong>
-                  <small>System Administrator</small>
+                  <strong>ADMINISTRATOR</strong>
+             
                 </div>
 
                 <i
@@ -475,45 +475,8 @@ function AdministrationActLogs() {
 
               {adminMenuOpen && (
                 <div className="admin-menu">
-                  <div className="admin-menu-header">
-                    <img
-                      src="/logo.png"
-                      alt="Administrator"
-                    />
-
-                    <div>
-                      <strong>Administrator</strong>
-                      <span>
-                        System Administrator
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="admin-menu-divider"></div>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAdminMenuOpen(false);
-                      navigatePage("/admin-settings");
-                    }}
-                  >
-                    <i className="fas fa-user-gear"></i>
-                    <span>Account Settings</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAdminMenuOpen(false);
-                      navigatePage("/admin-settings");
-                    }}
-                  >
-                    <i className="fas fa-gear"></i>
-                    <span>System Settings</span>
-                  </button>
-
-                  <div className="admin-menu-divider"></div>
+                 
+                 
 
                   <button
                     type="button"

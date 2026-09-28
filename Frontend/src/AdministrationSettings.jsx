@@ -514,35 +514,16 @@ function AdministrationSettings() {
                 />
 
                 <div>
-                  <strong>Administrator</strong>
+                  <strong>ADMINISTRATOR</strong>
 
                 </div>
 
-                <i
-                  className={`fas ${
-                    adminMenuOpen
-                      ? "fa-chevron-up"
-                      : "fa-chevron-down"
-                  }`}
-                />
+                
+             
               </button>
 
               {adminMenuOpen && (
                 <div className="admin-dropdown">
-
-                  <div className="admin-menu-head">
-                    <img
-                      src="/logo.png"
-                      alt="Administrator"
-                    />
-
-                    <div>
-                      <strong>Administrator</strong>
-                      <span>
-                        System Administrator
-                      </span>
-                    </div>
-                  </div>
 
                   <div className="admin-menu-divider" />
 

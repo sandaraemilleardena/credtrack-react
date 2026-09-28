@@ -193,18 +193,24 @@ const navigation = [
   { id: "settings", label: "Settings", icon: "settings" },
 ];
 
-// onNavigate(section) optionally connects sidebar items to your own routes.
-// onAction(type, values) must resolve only after your server accepts an action.
-// Supported types: account, reset, ticket, maintenance, backup.
+// Register these paths in your existing React Router. Override through routes or onNavigate.
+const DEFAULT_ROUTES = {
+  overview: "/ict-dashboard",
+  access: "/ict-user-access",
+  support: "/ict-technical-support",
+  maintenance: "/ict-system-maintenance",
+  protection: "/ict-data-protection",
+  settings: "/ict-settings",
+};
+
 // =========================================================
 // ICT DASHBOARD
 // =========================================================
 export default function IctDashboard({
   snapshot,
-  onRunDiagnostics,
   onLogout,
   onNavigate,
-  onAction,
+  routes = {},
   logoSrc = "/logo.png",
 }) {
   const navigate = useNavigate();
@@ -215,22 +221,12 @@ export default function IctDashboard({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const active = "overview";
   const [menu, setMenu] = useState(null);
-  const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const tasks = data.maintenance ?? [];
-  const [filter, setFilter] = useState("All tickets");
-  const [query, setQuery] = useState("");
   const [action, setAction] = useState(null);
-  const [actionBusy, setActionBusy] = useState(false);
-  const [actionMessage, setActionMessage] = useState("");
-  const [localTickets, setLocalTickets] = useState([]);
   const dialogRef = useRef(null);
   const actionTrigger = useRef(null);
-  const submitting = useRef(false);
-  const tickets = [...(demo ? localTickets : []), ...(data.tickets ?? [])];
-  const openTickets = tickets.filter(t => t.status !== "Resolved");
-  const visibleTickets = tickets.filter(t => (filter === "All tickets" || t.status === filter) &&
-    [t.id, t.subject, t.requester].join(" ").toLowerCase().includes(query.toLowerCase()));
+  const openTickets = (data.tickets ?? []).filter(ticket => ticket.status !== "Resolved");
 
   useEffect(() => {
     if (!action) return;
@@ -241,45 +237,15 @@ export default function IctDashboard({
     return () => { dialog.close(); document.body.style.overflow = overflow; };
   }, [action]);
 
-  function openAction(type) {
-    const destinations={account:'access',reset:'access',maintenance:'maintenance',backup:'protection',settings:'settings'};if(onNavigate&&destinations[type]){onNavigate(destinations[type]);return;}
+  function openAction() {
     actionTrigger.current = document.activeElement;
     setMenu(null);
-    setActionMessage("");
-    setAction(type);
+    setAction("quick");
   }
 
   function closeAction() {
-    if (submitting.current) return;
     setAction(null);
     actionTrigger.current?.focus();
-  }
-
-  async function submitAction(event) {
-    event.preventDefault();
-    if (submitting.current) return;
-    const values = Object.fromEntries(new FormData(event.currentTarget));
-    submitting.current = true;
-    setActionBusy(true);
-    setActionMessage("");
-    try {
-      if (onAction) {
-        const result = await onAction(action, values);
-        setActionMessage(result?.message || "Request accepted. Refresh the connected data to see its latest status.");
-      } else if (!demo) {
-        setActionMessage("This action is not connected yet. Connect onAction to submit requests.");
-      } else {
-        if (action === "ticket") {
-          setLocalTickets(previous => [{ id: "DEMO-" + Date.now(), subject: values.subject, requester: values.requester, category: values.category, priority: values.priority, status: "Open", time: "Just now" }, ...previous]);
-        }
-        setActionMessage(action === "ticket" ? "Demo ticket added to this dashboard. It will clear when the page reloads." : "Demo request previewed. No account, schedule, or backup was changed.");
-      }
-    } catch (error) {
-      setActionMessage(error?.message || "The request could not be completed. Please try again.");
-    } finally {
-      submitting.current = false;
-      setActionBusy(false);
-    }
   }
 
   const sidebarRef = useRef(null);
@@ -386,15 +352,14 @@ export default function IctDashboard({
   // NAVIGATION JUMP
   // =========================================================
   // Keep the same navigation UI; detailed work now opens its own page.
-  function jump(id) {
+  function jump(id, requestedAction) {
+    const section = ({ health: "maintenance", infrastructure: "protection", security: "access" })[id] || id;
     setSidebarOpen(false);
     setMenu(null);
-    const section = ({ health: "maintenance", infrastructure: "protection", security: "access", activity: "activity" })[id] || id;
-    if (onNavigate) { onNavigate(section); return; }
-    if (section === "settings") { openAction("settings"); return; }
-    const target = document.getElementById("ict-" + section);
-    target?.scrollIntoView({ block: "start", behavior: "smooth" });
-    target?.focus({ preventScroll: true });
+    setAction(null);
+    if (onNavigate) { onNavigate(section, requestedAction); return; }
+    const path = routes[section] || DEFAULT_ROUTES[section];
+    if (path) navigate(path, { state: requestedAction ? { action: requestedAction } : null });
   }
 
   // =========================================================
@@ -433,38 +398,7 @@ export default function IctDashboard({
   }
 
   // =========================================================
-  // RUN DIAGNOSTICS
-  // =========================================================
-  async function runDiagnostics() {
-    if (busy) return;
-    setBusy(true);
-
-    try {
-      if (!onRunDiagnostics) {
-        setNotice(
-          demo ? "Demo diagnostics preview completed. No live system check was performed." : "Connect the diagnostics service to run a live check."
-        );
-      } else {
-        const result =
-          await onRunDiagnostics();
-
-        setNotice(
-          result?.message ||
-            "Diagnostics completed."
-        );
-      }
-    } catch {
-      setNotice(
-        "Diagnostics could not complete. Try again or check the service connection."
-      );
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  // =========================================================
-  // LOGOUT
-  // =========================================================
+  // SIGN OUT
   async function logout() {
     try {
       if (!onLogout && !demo) {
@@ -499,20 +433,6 @@ export default function IctDashboard({
         service.status !== "Operational"
     ).length;
 
-  const storagePercent =
-    data.storageTotalGB > 0
-      ? Math.min(
-          100,
-          Math.max(
-            0,
-            (data.storageUsedGB /
-              data.storageTotalGB) *
-              100
-          )
-        )
-      : 0;
-
-
   const taskCount =
     tasks.filter(
       (task) => !task.done
@@ -520,18 +440,17 @@ export default function IctDashboard({
 
   const operational = services.length - issues;
   const availability = services.length ? Math.round(operational / services.length * 100) : 0;
-  const storageAvailable = Number.isFinite(data.storageUsedGB) && Number.isFinite(data.storageTotalGB) && data.storageTotalGB > 0;
   const recentEvents = (data.events ?? []).slice(0, 3);
   const attention = [
     ...services.filter((service) => service.status !== "Operational").map((service) => ({ id: "service-" + service.id, title: service.name, detail: service.detail || "Review the latest service status.", label: service.status, icon: "pulse", route: "health" })),
     ...tasks.filter((task) => !task.done && task.priority === "High").map((task) => ({ id: "task-" + task.id, title: task.title, detail: task.detail, label: "High priority", icon: "tools", route: "maintenance" })),
   ];
   const quickActions = [
-    { id: "account", title: "Create account", detail: "Prepare a user access request", icon: "users" },
-    { id: "reset", title: "Reset password", detail: "Request a secure reset link", icon: "key" },
-    { id: "ticket", title: "New support ticket", detail: "Log an issue for follow-up", icon: "support" },
-    { id: "maintenance", title: "Schedule maintenance", detail: "Plan a service window", icon: "tools" },
-    { id: "backup", title: "Request backup", detail: "Protect the latest system data", icon: "shield" },
+    { id: "access", title: "User access", detail: "Manage accounts and approved roles", icon: "users" },
+    { id: "support", title: "Technical support", detail: "Open the support ticket workspace", icon: "support" },
+    { id: "maintenance", title: "System maintenance", detail: "Manage service checks and schedules", icon: "tools" },
+    { id: "protection", title: "Data protection", detail: "Review backups and recovery", icon: "shield" },
+    { id: "settings", title: "Settings", detail: "Manage workspace preferences", icon: "settings" },
   ];
 
   // =========================================================
@@ -625,7 +544,7 @@ export default function IctDashboard({
                   }
                   aria-current={
                     active === item.id
-                      ? "location"
+                      ? "page"
                       : undefined
                   }
                 >
@@ -811,12 +730,9 @@ export default function IctDashboard({
 
                 <div>
                   <strong>
-                    ICT Personnel
+                    ICT PERSONNEL
                   </strong>
 
-                  <small>
-                    System Operations
-                  </small>
                 </div>
 
                 <Icon
@@ -832,13 +748,7 @@ export default function IctDashboard({
                   className="principal-profile-dropdown ict-dropdown"
                 >
 
-                  <strong>
-                    ICT Personnel
-                  </strong>
-
-                  <p>
-                    Technical operations workspace
-                  </p>
+                 
 
                   <button
                     className="ict-logout"
@@ -881,46 +791,24 @@ export default function IctDashboard({
             ].map((metric) => <button type="button" className="ov-metric" key={metric.label} onClick={() => jump(metric.target)}><div className="ov-metric-head"><span>{metric.label}</span><span className="ov-icon"><Icon name={metric.icon} /></span></div><strong>{metric.value}</strong><div className="ov-metric-foot"><span>{metric.detail}</span><Icon name="chevron" width="13" height="13" /></div></button>)}
           </section>
 
-          <section className="ov-section" aria-labelledby="ov-quick-title"><div className="ov-section-heading"><div><h2 id="ov-quick-title">Quick actions</h2><p>Everyday tasks, a little closer.</p></div><span className="ov-small-label">YOUR TOOLS</span></div><div className="ov-actions">{quickActions.map((action) => <button type="button" className="ov-action" key={action.id} onClick={() => openAction(action.id)}><div className="ov-action-top"><span className="ov-action-icon"><Icon name={action.icon} width="22" height="22" /></span><span className="ov-action-arrow" aria-hidden="true">↗</span></div><strong>{action.title}</strong><span>{action.detail}</span></button>)}</div></section>
+          <section className="ov-section" aria-labelledby="ov-quick-title"><div className="ov-section-heading"><div><h2 id="ov-quick-title">Quick actions</h2><p>Open a dedicated workspace to manage each area.</p></div><span className="ov-small-label">YOUR TOOLS</span></div><div className="ov-actions">{quickActions.map((action) => <button type="button" className="ov-action" key={action.id} onClick={() => jump(action.id)}><div className="ov-action-top"><span className="ov-action-icon"><Icon name={action.icon} width="22" height="22" /></span><span className="ov-action-arrow" aria-hidden="true">↗</span></div><strong>{action.title}</strong><span>{action.detail}</span></button>)}</div></section>
 
-                    <section className="ov-panel ix-support" id="ict-support" tabIndex={-1} aria-labelledby="support-title">
-            <div className="ov-panel-heading"><div><h2 id="support-title">Technical support</h2><p className="ix-subtitle">A clear view of the issues waiting for you.</p></div><button className="ov-text-link" onClick={() => openAction("ticket")}><Icon name="plus" width="16" /> New ticket</button></div>
-            <div className="ix-toolbar"><div className="ix-filters" aria-label="Filter support tickets">{["All tickets", "Open", "In progress", "Resolved"].map(value => <button key={value} aria-pressed={filter === value} onClick={() => setFilter(value)}>{value}</button>)}</div><label className="ix-search"><Icon name="search" width="16" /><span className="ict-sr-only">Search tickets</span><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search tickets…" type="search" /></label></div>
-            <div className="ix-table-wrap"><table className="ix-table"><caption className="ict-sr-only">Support ticket overview</caption><thead><tr><th scope="col">Ticket / issue</th><th scope="col">Requested by</th><th scope="col">Priority</th><th scope="col">Status</th><th scope="col">Received</th></tr></thead><tbody>{visibleTickets.map(ticket => <tr key={ticket.id}><td><strong>{ticket.subject}</strong><small>{ticket.id} · {ticket.category}</small></td><td>{ticket.requester}</td><td><span className={`ix-badge ${ticket.priority === "High" ? "red" : "neutral"}`}>{ticket.priority}</span></td><td><span className={`ix-badge ${ticket.status === "Resolved" ? "green" : ticket.status === "Open" ? "amber" : "blue"}`}>{ticket.status}</span></td><td className="ix-time">{ticket.time}</td></tr>)}</tbody></table>{!visibleTickets.length && <div className="ov-empty"><Icon name="support" /><strong>No matching tickets</strong><p>Try another search or create a new support ticket.</p></div>}</div>
-            <div className="ov-panel-footer"><span>{visibleTickets.length} ticket{visibleTickets.length !== 1 ? "s" : ""} shown</span><span>{demo ? "Sample support queue" : "Current support snapshot"}</span></div>
-          </section>
-
-          <div className="ix-operations-grid">
-            <section className="ov-panel" id="ict-access" tabIndex={-1} aria-labelledby="access-title"><div className="ov-panel-heading"><h2 id="access-title">User access</h2><span className="ov-icon"><Icon name="users" /></span></div><div className="ix-panel-body"><div className="ix-summary"><strong>{data.pendingAccess ?? "—"}</strong><div>pending requests<small>Accounts and role changes</small></div></div><div className="ix-request-list">{(data.accessRequests ?? []).slice(0, 2).map(request => <div className="ix-request" key={request.id}><span className="ix-avatar" aria-hidden="true">{request.name.split(" ").map(n => n[0]).slice(0,2).join("")}</span><div><strong>{request.name}</strong><small>{request.detail}</small></div></div>)}{!data.accessRequests?.length && <p className="ix-subtitle">No access requests reported.</p>}</div><p className="ix-hint">Assign roles according to approved access requests.</p></div><div className="ov-panel-footer"><button className="ov-text-link" onClick={() => openAction("account")}>Create account request <Icon name="chevron" width="13" /></button><button className="ov-text-link" onClick={() => openAction("reset")}>Reset password</button></div></section>
-
-            <section className="ov-panel" id="ict-maintenance" tabIndex={-1} aria-labelledby="maintenance-title"><div className="ov-panel-heading"><h2 id="maintenance-title">System maintenance</h2><span className="ov-icon"><Icon name="tools" /></span></div><div className="ix-panel-body"><div className="ix-service-strip"><span className={`ix-badge ${issues ? "amber" : "green"}`}>{services.length ? `${operational}/${services.length} services operational` : "No service data"}</span><span className="ix-subtitle">Uptime {data.uptime || "—"}</span></div>{tasks.slice(0,3).map(task => <div className="ix-task" key={task.id}><span className={`ix-task-dot ${task.done ? "done" : ""}`} aria-hidden="true"><Icon name={task.done ? "check" : "clock"} width="14" height="14" /></span><div><strong>{task.title}</strong><small>{task.done ? "Completed" : `${task.priority || "Normal"} priority · Pending`}</small></div></div>)}{!tasks.length && <p className="ix-subtitle">No maintenance tasks reported.</p>}</div><div className="ov-panel-footer"><button className="ov-text-link" onClick={() => openAction("maintenance")}>Schedule maintenance</button><button className="ov-text-link" onClick={runDiagnostics} disabled={busy}><Icon name="refresh" width="13" />{busy ? "Checking…" : "Run diagnostics"}</button></div></section>
-
-            <section className="ov-panel" id="ict-protection" tabIndex={-1} aria-labelledby="protection-title"><div className="ov-panel-heading"><h2 id="protection-title">Data protection</h2><span className="ov-icon"><Icon name="shield" /></span></div><div className="ix-panel-body"><div className="ix-backup"><span className="ix-backup-icon"><Icon name="shield" width="25" height="25" /></span><div><strong>{data.backupStatus ? `Backup: ${data.backupStatus}` : "Backup status unavailable"}</strong><small>{data.lastBackup || "No backup reported"}</small></div></div><div className="ix-storage-heading"><span>Storage usage</span><strong>{storageAvailable ? `${Math.round(storagePercent)}%` : "—"}</strong></div><div className="ix-progress" role="progressbar" aria-label="Storage used" aria-valuenow={storageAvailable ? Math.round(storagePercent) : undefined} aria-valuemin={0} aria-valuemax={100}><span style={{ width: storageAvailable ? storagePercent + "%" : "0%" }} /></div><p className="ix-subtitle">{storageAvailable ? `${data.storageUsedGB} GB used of ${data.storageTotalGB} GB` : "No storage reading"}</p><div className="ix-next"><Icon name="clock" width="15" /><span>Next backup<strong>{data.nextBackup || "Not reported"}</strong></span></div></div><div className="ov-panel-footer"><span>Backup & recovery</span><button className="ov-text-link" onClick={() => openAction("backup")}>Request backup <Icon name="chevron" width="13" /></button></div></section>
-          </div>
-
-          <div className="ov-lower-grid">
+                    <div className="ov-lower-grid">
             <section className="ov-panel" aria-labelledby="ov-attention-title"><div className="ov-panel-heading"><h2 id="ov-attention-title">Needs attention</h2><span className="ov-count">{attention.length} items</span></div><div className="ov-attention-list">{attention.slice(0,3).map((item) => <button type="button" className="ov-attention-item" key={item.id} onClick={() => jump(item.route)}><span className="ov-warning-icon"><Icon name={item.icon} width="18" height="18" /></span><span className="ov-item-copy"><span className="ov-item-label">{item.label}</span><strong>{item.title}</strong><span>{item.detail}</span></span><Icon name="chevron" width="15" height="15" /></button>)}{!attention.length && <div className="ov-empty"><Icon name="check" /><strong>{services.length || tasks.length ? "Nothing urgent reported" : "No operational data reported"}</strong><p>{services.length || tasks.length ? "No service alerts or high-priority tasks in the current snapshot." : "Connect your services to display an operations overview."}</p></div>}</div><div className="ov-panel-footer"><span>{attention.length > 3 ? `Showing 3 of ${attention.length} priority items` : "Service alerts and high-priority tasks"}</span><button className="ov-text-link" onClick={() => jump("maintenance")}>Open maintenance <Icon name="chevron" width="13" height="13" /></button></div></section>
             <section className="ov-panel" id="ict-activity" tabIndex={-1} aria-labelledby="ov-recent-title"><div className="ov-panel-heading"><h2 id="ov-recent-title">Recent activity</h2><span className="ov-small-label">LATEST EVENTS</span></div><ol className="ov-timeline">{recentEvents.map((event) => <li key={event.id}><span className={`ov-event-dot ${event.level === "Warning" ? "warning" : event.level === "Success" ? "success" : event.level === "Error" ? "error" : ""}`} aria-hidden="true" /><div><div className="ov-event-heading"><strong>{event.title}</strong><span>{event.level || "Info"}</span></div><p>{event.detail}</p><small>{event.time || "Time not reported"}</small></div></li>)}</ol>{!recentEvents.length && <div className="ov-empty"><Icon name="clock" /><strong>No recent activity</strong><p>Reported technical events will appear here.</p></div>}<div className="ov-panel-footer"><span>Latest {recentEvents.length} reported events</span><span>Account, support & system events</span></div></section>
           </div>
           <footer className="ov-footer"><span>CredTrack <span aria-hidden="true">·</span> ICT Operations</span><span>{demo ? "Demo workspace · sample data" : "Operations overview"}</span></footer>
         </main>
-        {action && <dialog ref={dialogRef} className="ix-modal" aria-labelledby="ix-modal-title" aria-describedby="ix-modal-description" onCancel={event => { event.preventDefault(); closeAction(); }} onClick={event => { if (event.target === event.currentTarget) { const rect = event.currentTarget.getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) closeAction(); } }}>
-          <div className="ix-modal-heading"><span className="ov-action-icon"><Icon name={quickActions.find(item => item.id === action)?.icon || "settings"} /></span><button type="button" className="ix-close" aria-label="Close quick actions" onClick={closeAction} disabled={actionBusy}><Icon name="close" /></button></div>
-          <h2 id="ix-modal-title">{action === "quick" ? "What would you like to do?" : action === "settings" ? "Workspace settings" : quickActions.find(item => item.id === action)?.title}</h2>
-          <p id="ix-modal-description">{action === "quick" ? "Choose a task to get started." : action === "settings" ? "Your ICT workspace connection details." : "Complete the details below to prepare your request."}</p>
-          {action === "quick" ? <div className="ix-modal-actions">{quickActions.map(item => <button key={item.id} onClick={() => { setActionMessage(""); openAction(item.id); }}><span className="ov-action-icon"><Icon name={item.icon} /></span><span><strong>{item.title}</strong><small>{item.detail}</small></span><Icon name="chevron" width="16" /></button>)}</div> : action === "settings" ? <div className="ix-settings"><dl><div><dt>Workspace</dt><dd>ICT Personnel</dd></div><div><dt>Data source</dt><dd>{demo ? "Demo snapshot" : "Connected snapshot"}</dd></div><div><dt>Actions</dt><dd>{onAction ? "Handler connected" : "Preview only"}</dd></div></dl><p>Account preferences and notification settings will be available when the Settings page is connected.</p><button className="ov-primary" onClick={closeAction}>Done</button></div> : <form key={action} onSubmit={submitAction}>
-            <fieldset disabled={actionBusy} className="ix-fields">
-              {action === "account" && <><label>Full name<input name="name" required maxLength={100} autoComplete="name" placeholder="Enter the user’s full name" /></label><label>School email<input name="email" type="email" required autoComplete="email" placeholder="name@school.edu.ph" /></label><label>Requested role<select name="role" defaultValue="" required><option value="" disabled>Select an approved role</option><option>Teacher</option><option>Principal</option><option>Administrator</option><option>ICT Personnel</option></select></label><label>Approval reference<input name="approvalReference" required maxLength={160} placeholder="Approved request ID or reference" /></label><p className="ix-hint">Your server should verify the approval before granting access.</p></>}
-              {action === "reset" && <><label>Account email<input name="email" type="email" required autoComplete="email" placeholder="name@school.edu.ph" /></label><label>Support reference<input name="reference" required maxLength={160} placeholder="Related ticket or verified request" /></label><p className="ix-hint">Request a secure reset link. Do not enter or share the user’s password.</p></>}
-              {action === "ticket" && <><div className="ix-form-grid"><label>Requested by<input name="requester" required maxLength={100} placeholder="Full name" /></label><label>Priority<select name="priority" defaultValue="Normal"><option>Normal</option><option>High</option><option>Low</option></select></label></div><label>Issue title<input name="subject" required maxLength={160} placeholder="Briefly describe the issue" /></label><label>Category<select name="category"><option>Account access</option><option>Upload issue</option><option>System error</option><option>Other</option></select></label><label>Description<textarea name="description" required maxLength={2000} rows={3} placeholder="What happened? Include steps to reproduce the issue." /></label></>}
-              {action === "maintenance" && <><label>Maintenance task<input name="title" required maxLength={160} placeholder="e.g. Application update" /></label><div className="ix-form-grid"><label>Start time (local)<input name="startsAt" type="datetime-local" required /></label><label>Duration (minutes)<input name="durationMinutes" type="number" defaultValue={30} min={5} max={1440} required /></label></div><label>Expected impact<select name="impact"><option>No downtime expected</option><option>Brief service interruption</option><option>System unavailable</option></select></label><label>Notes<textarea name="notes" rows={3} maxLength={2000} placeholder="Scope and planned work" /></label></>}
-              {action === "backup" && <><div className="ix-backup-note"><Icon name="shield" /><div><strong>Request a system backup</strong><p>The server will use your configured backup destination and retention policy.</p></div></div><label>Reason<textarea name="reason" rows={3} required maxLength={500} placeholder="e.g. Before scheduled system maintenance" /></label></>}
-            </fieldset>
-            <div className="ix-mode-note">{onAction ? "Requests will be sent to your connected service." : demo ? "Demo mode · No live system changes will be made." : "Preview only · Action service is not connected."}</div>
-            <p role="status" aria-live="polite" className={actionMessage ? "ix-result" : "ict-sr-only"}>{actionMessage}</p>
-            <div className="ix-modal-footer"><button type="button" className="ix-secondary" onClick={closeAction} disabled={actionBusy}>Close</button><button type="submit" className="ov-primary" disabled={actionBusy}>{actionBusy ? "Submitting…" : onAction ? "Submit request" : action === "ticket" && demo ? "Add demo ticket" : "Preview request"}</button></div>
-          </form>}
-        </dialog>}
+        {action && (
+          <dialog ref={dialogRef} className="ix-modal" aria-labelledby="quick-title" onCancel={event => { event.preventDefault(); closeAction(); }}>
+            <div className="ix-modal-heading"><span className="ov-action-icon"><Icon name="plus" /></span><button className="ix-close" onClick={closeAction} aria-label="Close quick actions"><Icon name="close" /></button></div>
+            <h2 id="quick-title">Where would you like to go?</h2>
+            <p id="ix-modal-description">Each tool opens its own page.</p>
+            <div className="ix-modal-actions">{quickActions.map(item => (
+              <button key={item.id} onClick={() => jump(item.id)}><span className="ov-action-icon"><Icon name={item.icon} /></span><span><strong>{item.title}</strong><small>{item.detail}</small></span><Icon name="chevron" width="16" /></button>
+            ))}</div>
+          </dialog>
+        )}
 
       </div>
     </div>

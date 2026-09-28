@@ -987,12 +987,10 @@ function IctSettings({
 
                 <div>
                   <strong>
-                    ICT Personnel
+                    ICT PERSONNEL
                   </strong>
 
-                  <small>
-                    System Operations
-                  </small>
+   
                 </div>
 
                 <Icon
@@ -1006,14 +1004,7 @@ function IctSettings({
                   id="ict-account"
                   className="principal-profile-dropdown ict-dropdown"
                 >
-                  <strong>
-                    ICT Personnel
-                  </strong>
 
-                  <p>
-                    Technical operations
-                    workspace
-                  </p>
 
                   <button
                     className="ict-logout"

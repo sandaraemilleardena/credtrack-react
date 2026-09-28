@@ -304,11 +304,10 @@ function AdministrationCredManagement() {
                 </div>
 
                 <div className="admin-copy">
-                  <strong>Administrator</strong>
-                  <small>System Administrator</small>
+                  <strong>ADMINISTRATOR</strong>
+  
                 </div>
 
-                <i className="fas fa-chevron-down admin-chevron"></i>
               </button>
 
               {adminMenuOpen && (
@@ -317,16 +316,6 @@ function AdministrationCredManagement() {
                   role="menu"
                   aria-label="Administrator account menu"
                 >
-                  <div className="dropdown-profile">
-
-                    <div>
-                
-                    </div>
-                  </div>
-
-          
-
-                  <div className="dropdown-divider"></div>
 
                   <button
                     type="button"

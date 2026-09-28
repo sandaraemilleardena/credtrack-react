@@ -864,7 +864,6 @@ function AdministrationDashboard() {
                 >
 
 
-                  <div className="dropdown-divider"></div>
 
                   <button
                     type="button"
@@ -880,9 +879,7 @@ function AdministrationDashboard() {
                         Logout
                       </strong>
 
-                      <small>
-                        Sign out of CredTrack
-                      </small>
+   
 
                     </span>
 

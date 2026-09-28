@@ -436,18 +436,15 @@ function AdministrationStudRecord() {
               >
                 <img src="/logo.png" alt="Administrator" />
                 <div>
-                  <strong>Administrator</strong>
-                  <small>System Administrator</small>
+                  <strong>ADMINISTRATOR</strong>
+        
                 </div>
                 <i className="fas fa-chevron-down admin-chevron" />
               </button>
 
               {adminMenuOpen && (
                 <div className="admin-dropdown" role="menu">
-                  <div className="admin-dropdown-heading">
-                    <strong>Administrator</strong>
-                    <span>Account actions</span>
-                  </div>
+                
                   <button
                     type="button"
                     className="admin-logout"

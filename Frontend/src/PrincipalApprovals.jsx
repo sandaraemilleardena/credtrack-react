@@ -675,12 +675,10 @@ function PrincipalApprovals() {
                 <div>
 
                   <strong>
-                    Dr. Elena Reyes
+                  Principal
                   </strong>
 
-                  <small>
-                    School Principal
-                  </small>
+      
 
                 </div>
 

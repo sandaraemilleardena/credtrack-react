@@ -231,7 +231,7 @@ function maintenanceDemo() {
         title: "Review email delivery delays",
         service: "Email delivery",
         startsAt: new Date(
-          new Date().getTime() - 30 * 60000
+          Date.now() - 30 * 60000
         ).toISOString(),
         duration: 60,
         owner: "ICT Personnel",
@@ -635,7 +635,7 @@ export default function IctSystemMaintenance({
 
     if (
       !Number.isFinite(start) ||
-      start <= new Date().getTime()
+      start <= Date.now()
     ) {
       setError(
         "Choose a start time in the future."
@@ -719,7 +719,7 @@ export default function IctSystemMaintenance({
             ...previous.tasks,
             {
               ...payload,
-              id: `MT-DEMO-${new Date().getTime()}`,
+              id: `MT-DEMO-${Date.now()}`,
               status: "Scheduled",
             },
           ],
@@ -1274,12 +1274,9 @@ export default function IctSystemMaintenance({
 
                 <div>
                   <strong>
-                    ICT Personnel
+                    ICT PERSONNEL
                   </strong>
 
-                  <small>
-                    System Operations
-                  </small>
                 </div>
 
                 <Icon
@@ -1295,14 +1292,7 @@ export default function IctSystemMaintenance({
                   className="principal-profile-dropdown ict-dropdown"
                 >
 
-                  <strong>
-                    ICT Personnel
-                  </strong>
 
-                  <p>
-                    Technical operations
-                    workspace
-                  </p>
 
                   <button
                     type="button"
@@ -2172,7 +2162,7 @@ export default function IctSystemMaintenance({
                           type="datetime-local"
                           required
                           min={localInputTime(
-                            new Date().getTime()
+                            Date.now()
                           )}
                         />
                       </label>

@@ -472,7 +472,7 @@ function PrincipalDashboard() {
 
                 <div className="profile-info">
                   <strong>Principal</strong>
-                  <span>School Principal</span>
+        
                 </div>
 
                 <i className="fas fa-chevron-down profile-arrow"></i>
