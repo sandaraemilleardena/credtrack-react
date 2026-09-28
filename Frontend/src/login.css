@@ -905,7 +905,7 @@ body {
   color:
     var(--burgundy);
 
-  font-size: 9px;
+  font-size: 15px;
   font-weight: 700;
 }
 
@@ -989,7 +989,7 @@ body {
   color:
     #ffffff;
 
-  font-size: 9px;
+  font-size: 15px;
   font-weight: 800;
 }
 
@@ -1002,7 +1002,7 @@ body {
 
   color: var(--text-dark);
 
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 800;
 }
 
@@ -1013,7 +1013,7 @@ body {
 
   color: var(--text-muted);
 
-  font-size: 9px;
+  font-size: 11px;
 }
 
 /* =========================================================
@@ -1053,7 +1053,7 @@ body {
   color:
     #56494c;
 
-  font-size: 9px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -1068,7 +1068,7 @@ body {
   color:
     #aaa0a3;
 
-  font-size: 8px;
+  font-size: 12px;
   font-weight: 500;
 }
 
@@ -1091,7 +1091,7 @@ body {
   color:
     #9f8f93;
 
-  font-size: 11px;
+  font-size: 15px;
 
   transform:
     translateY(-50%);
@@ -1121,7 +1121,7 @@ body {
     "Poppins",
     sans-serif;
 
-  font-size: 10px;
+  font-size: 13px;
 
   transition:
     border-color var(--ease),
@@ -1206,7 +1206,7 @@ body {
   color:
     #9a8e91;
 
-  font-size: 8px;
+  font-size: 11px;
 }
 
 /* =========================================================
@@ -1249,7 +1249,7 @@ body {
   color:
     #b62836;
 
-  font-size: 9px;
+  font-size: 12px;
 
   line-height: 1.45;
 }
@@ -1297,7 +1297,7 @@ body {
   color:
     #ffffff;
 
-  font-size: 11px;
+  font-size: 20px;
 }
 
 .sms-notice strong {
@@ -1306,7 +1306,7 @@ body {
   color:
     var(--text-dark);
 
-  font-size: 10px;
+  font-size: w0px;
 
   font-weight: 800;
 }
@@ -1317,7 +1317,7 @@ body {
   color:
     var(--text-muted);
 
-  font-size: 8px;
+  font-size: 15px;
 
   line-height: 1.55;
 }
@@ -1347,15 +1347,15 @@ body {
 
   padding:
     0
-    16px;
+    20px;
 
-  border-radius: 9px;
+  border-radius: 11px;
 
   font-family:
     "Poppins",
     sans-serif;
 
-  font-size: 9px;
+  font-size: 15px;
   font-weight: 700;
 
   cursor: pointer;
@@ -1466,7 +1466,7 @@ body {
   color:
     var(--text-dark);
 
-  font-size: 18px;
+  font-size: 20px;
 
   font-weight: 800;
 }

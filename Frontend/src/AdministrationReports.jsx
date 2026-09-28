@@ -1,98 +1,10 @@
+import { logoutUser } from './auth/session';
+import {usePortal} from './hooks/PortalContext';
+import {metrics,monthlyCounts,statusName,elapsed,localDay} from './api/portalData';
+import {downloadCSV} from './api/operations';
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./AdministrationReports.css";
-
-const monthly = [
-  { m: "Jan", p: 20, a: 35, r: 28, x: 5 },
-  { m: "Feb", p: 24, a: 39, r: 31, x: 4 },
-  { m: "Mar", p: 21, a: 45, r: 33, x: 6 },
-  { m: "Apr", p: 28, a: 48, r: 30, x: 5 },
-  { m: "May", p: 32, a: 54, r: 35, x: 6 },
-  { m: "Jun", p: 18, a: 37, r: 26, x: 3 },
-];
-
-const rows = [
-  [
-    "REQ-2026-0127",
-    "Juan Dela Cruz",
-    "SF10",
-    "May 25, 2026",
-    "Pending",
-    "Pending",
-  ],
-  [
-    "REQ-2026-0126",
-    "Maria Santos",
-    "Good Moral Certificate",
-    "May 24, 2026",
-    "1.8 days",
-    "Approved",
-  ],
-  [
-    "REQ-2026-0125",
-    "John Ramos",
-    "Certificate of Enrollment",
-    "May 23, 2026",
-    "2.1 days",
-    "Released",
-  ],
-  [
-    "REQ-2026-0124",
-    "Angela Reyes",
-    "SF9",
-    "May 22, 2026",
-    "1.2 days",
-    "Rejected",
-  ],
-  [
-    "REQ-2026-0123",
-    "Carlo Mendoza",
-    "Certificate of Enrollment",
-    "May 21, 2026",
-    "Pending",
-    "Pending",
-  ],
-  [
-    "REQ-2026-0122",
-    "Sophia Garcia",
-    "SF10",
-    "May 20, 2026",
-    "2.7 days",
-    "Approved",
-  ],
-  [
-    "REQ-2026-0121",
-    "Mark Bautista",
-    "SF9",
-    "May 19, 2026",
-    "Pending",
-    "Pending",
-  ],
-  [
-    "REQ-2026-0120",
-    "Bea Navarro",
-    "Good Moral Certificate",
-    "May 18, 2026",
-    "2.3 days",
-    "Released",
-  ],
-  [
-    "REQ-2026-0119",
-    "Luis Aquino",
-    "SF10",
-    "May 17, 2026",
-    "2.5 days",
-    "Released",
-  ],
-  [
-    "REQ-2026-0118",
-    "Chloe Villanueva",
-    "Certificate of Enrollment",
-    "May 16, 2026",
-    "Pending",
-    "Pending",
-  ],
-];
 
 const templates = [
   {
@@ -122,6 +34,7 @@ const templates = [
 ];
 
 function AdministrationReports() {
+  const system=usePortal();
   const navigate = useNavigate();
   const location = useLocation();
   const [adminMenuOpen, setAdminMenuOpen] = useState(false);
@@ -140,10 +53,15 @@ function AdministrationReports() {
   const [reportType, setReportType] = useState(
     "Credential Requests Summary"
   );
-  const [dateFrom, setDateFrom] = useState("2026-05-01");
-  const [dateTo, setDateTo] = useState("2026-05-31");
+  const [dateFrom, setDateFrom] = useState(new Date().getFullYear()+'-01-01');
+  const [dateTo, setDateTo] = useState(localDay(new Date()));
   const [credentialFilter, setCredentialFilter] =
     useState("All Credentials");
+  const items=system.data.requests.filter(r=>(!dateFrom||localDay(r.created_at)>=dateFrom)&&(!dateTo||localDay(r.created_at)<=dateTo)&&(credentialFilter==='All Credentials'||r.credential.toLowerCase().includes(credentialFilter.toLowerCase()))).filter(r=>reportType==='Released Credentials Report'?r.status==='COLLECTED':reportType==='Credential Completion Report'?Boolean(r.approved_at):true);
+  const totals=metrics(items), monthly=monthlyCounts(items);
+  const popular=Object.entries(items.reduce((all,r)=>({...all,[r.credential]:(all[r.credential]||0)+1}),{})).sort((a,b)=>b[1]-a[1])[0]||['None yet',0];
+  const [reportPage,setReportPage]=useState(1),pages=Math.max(1,Math.ceil(items.length/10)),currentPage=Math.min(reportPage,pages);
+  const rows=items.map(r=>[r.id,r.full_name,r.credential,new Date(r.created_at).toLocaleDateString(),elapsed(r)===null?'In progress':elapsed(r).toFixed(1)+' days',statusName(r)]);
   const [selectedTemplate, setSelectedTemplate] = useState(
     "Credential Requests Summary"
   );
@@ -153,7 +71,7 @@ function AdministrationReports() {
   );
 
   const [chartPeriod, setChartPeriod] = useState(
-    "May 1–31, 2026 · All Credentials"
+    "Current reporting period"
   );
 
   useEffect(() => {
@@ -247,11 +165,11 @@ function AdministrationReports() {
   };
 
   const handleExport = (format) => {
-    notify(`${format} report prepared for export`);
+    if(format==='PDF'){window.print();return;}downloadCSV('CredTrack_Transactions.csv',[['Reference','Requester','Credential','Submitted','Turnaround','Status'],...rows]);notify('Transaction report exported as CSV (opens in Excel).');
   };
 
-  const handleLogout = () => {
-    sessionStorage.removeItem("credtrackSession");
+  const handleLogout = async () => {
+    await logoutUser();
     navigate("/");
   };
 
@@ -270,7 +188,7 @@ function AdministrationReports() {
       <div className="shell">
         <header className="topbar">
           <div className="top-left"><button type="button" className="menu-btn" onClick={() => setSidebarOpen(true)}><i className="fas fa-bars" /></button><img className="school-seal" src="/logo.png" alt="PMRMIS-South school seal" /><div className="school"><strong>President Manuel Roxas Memorial Integrated School – South</strong><span>Digital Credentials Management System</span></div></div>
-          <div className="top-right"><button type="button" className="bell" onClick={() => notify("You have 3 notifications.")}><i className="far fa-bell" /><b>3</b></button><div className="admin-menu-wrap"><button type="button" className="profile" aria-expanded={adminMenuOpen} onClick={() => setAdminMenuOpen((open) => !open)}><img src="/logo.png" alt="Administrator" /><div><strong>Administrator</strong><small>System Administrator</small></div><i className="fas fa-chevron-down" /></button>{adminMenuOpen && <div className="admin-dropdown"><strong>Administrator</strong><span>Account actions</span><button type="button" className="admin-logout" onClick={handleLogout}><i className="fas fa-right-from-bracket" />Log out</button></div>}</div></div>
+          <div className="top-right"><button type="button" className="bell" onClick={() => notify(`${system.data.requests.filter(r=>r.status==='PRINCIPAL_APPROVED').length} requests await final release confirmation.`)}><i className="far fa-bell" /><b>{system.data.requests.filter(r=>r.status==='PRINCIPAL_APPROVED').length}</b></button><div className="admin-menu-wrap"><button type="button" className="profile" aria-expanded={adminMenuOpen} onClick={() => setAdminMenuOpen((open) => !open)}><img src="/logo.png" alt="Administrator" /><div><strong>Administrator</strong><small>System Administrator</small></div><i className="fas fa-chevron-down" /></button>{adminMenuOpen && <div className="admin-dropdown"><strong>Administrator</strong><span>Account actions</span><button type="button" className="admin-logout" onClick={handleLogout}><i className="fas fa-right-from-bracket" />Log out</button></div>}</div></div>
         </header>
         {/* Content */}
         <main className="content">
@@ -314,9 +232,9 @@ function AdministrationReports() {
               <span>Track request activity, release performance, and document processing from one reporting workspace.</span>
             </div>
             <div className="overview-metrics">
-              <div><b>143</b><span>Requests this month</span></div>
-              <div><b>92%</b><span>Completion rate</span></div>
-              <div><b>1.8d</b><span>Average processing</span></div>
+              <div><b>{totals.total}</b><span>Requests in period</span></div>
+              <div><b>{totals.total?Math.round(totals.released/totals.total*100):0}%</b><span>Completion rate</span></div>
+              <div><b>{totals.average}d</b><span>Average processing</span></div>
             </div>
           </section>
 
@@ -480,7 +398,7 @@ function AdministrationReports() {
 
                   <span>
                     <i className="legend-red"></i>
-                    Rejected
+                    Returned / unavailable
                   </span>
                 </div>
               </div>
@@ -493,7 +411,7 @@ function AdministrationReports() {
                         className="bar pending-bar"
                         data-value={item.p}
                         style={{
-                          height: `${(item.p / 60) * 100}%`,
+                          height: `${(item.p / Math.max(1,...monthly.flatMap(r=>[r.p,r.a,r.r,r.x]))) * 100}%`,
                         }}
                       ></div>
                     </div>
@@ -503,7 +421,7 @@ function AdministrationReports() {
                         className="bar approved-bar"
                         data-value={item.a}
                         style={{
-                          height: `${(item.a / 60) * 100}%`,
+                          height: `${(item.a / Math.max(1,...monthly.flatMap(r=>[r.p,r.a,r.r,r.x]))) * 100}%`,
                         }}
                       ></div>
                     </div>
@@ -513,7 +431,7 @@ function AdministrationReports() {
                         className="bar released-bar"
                         data-value={item.r}
                         style={{
-                          height: `${(item.r / 60) * 100}%`,
+                          height: `${(item.r / Math.max(1,...monthly.flatMap(r=>[r.p,r.a,r.r,r.x]))) * 100}%`,
                         }}
                       ></div>
                     </div>
@@ -524,8 +442,8 @@ function AdministrationReports() {
                         data-value={item.x}
                         style={{
                           height: `${Math.max(
-                            (item.x / 60) * 100,
-                            5
+                            (item.x / Math.max(1,...monthly.flatMap(r=>[r.p,r.a,r.r,r.x]))) * 100,
+                            0
                           )}%`,
                         }}
                       ></div>
@@ -559,7 +477,7 @@ function AdministrationReports() {
                     <span>Submitted this period</span>
                   </div>
 
-                  <b>127</b>
+                  <b>{totals.total}</b>
                 </div>
 
                 <div className="insight">
@@ -567,10 +485,10 @@ function AdministrationReports() {
 
                   <div>
                     <strong>Completion rate</strong>
-                    <span>Approved or released</span>
+                    <span>Collected by requester</span>
                   </div>
 
-                  <b>70%</b>
+                  <b>{totals.total?Math.round(totals.released/totals.total*100):0}%</b>
                 </div>
 
                 <div className="insight">
@@ -578,10 +496,10 @@ function AdministrationReports() {
 
                   <div>
                     <strong>Average processing</strong>
-                    <span>From request to approval</span>
+                    <span>From request to collection</span>
                   </div>
 
-                  <b>2.4 days</b>
+                  <b>{totals.average} days</b>
                 </div>
 
                 <div className="insight">
@@ -589,10 +507,10 @@ function AdministrationReports() {
 
                   <div>
                     <strong>Most requested</strong>
-                    <span>SF10 Permanent Record</span>
+                    <span>{popular[0]}</span>
                   </div>
 
-                  <b>41</b>
+                  <b>{popular[1]}</b>
                 </div>
               </div>
 
@@ -609,7 +527,7 @@ function AdministrationReports() {
             <div className="table-head">
               <div>
                 <h2>Detailed Report</h2>
-                <p>10 credential requests shown</p>
+                <p>{rows.length} saved requests in this report</p>
               </div>
 
               <div className="export-buttons">
@@ -653,7 +571,7 @@ function AdministrationReports() {
                 </thead>
 
                 <tbody>
-                  {rows.map((row) => (
+                  {rows.slice((currentPage-1)*10,currentPage*10).map((row) => (
                     <tr key={row[0]}>
                       <td>
                         <strong>{row[0]}</strong>
@@ -678,27 +596,9 @@ function AdministrationReports() {
             </div>
 
             <div className="table-foot">
-              <span>Showing 1–10 of 127 records</span>
+              <span>Page {currentPage} of {pages} · {rows.length} records</span>
 
-              <div className="pages">
-                <button type="button">
-                  <i className="fas fa-chevron-left"></i>
-                </button>
-
-                <button
-                  type="button"
-                  className="current"
-                >
-                  1
-                </button>
-
-                <button type="button">2</button>
-                <button type="button">3</button>
-
-                <button type="button">
-                  <i className="fas fa-chevron-right"></i>
-                </button>
-              </div>
+              <div className="pages"><button type="button" disabled={currentPage===1} onClick={()=>setReportPage(currentPage-1)}><i className="fas fa-chevron-left"/></button><button className="current">{currentPage}</button><button type="button" disabled={currentPage===pages} onClick={()=>setReportPage(currentPage+1)}><i className="fas fa-chevron-right"/></button></div>
             </div>
           </section>
         </main>

@@ -1,3 +1,8 @@
+import { logoutUser } from './auth/session';
+import {usePortal} from './hooks/PortalContext';
+import {metrics,auditRows} from './api/portalData';
+import {actOnCredential} from './api/credentials';
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./PrincipalDashboard.css";
@@ -6,119 +11,15 @@ import "./PrincipalDashboard.css";
    SAMPLE DATA
    ========================================================= */
 
-const initialRequests = [
-  {
-    id: "REQ-2026-0127",
-    name: "Juan Dela Cruz",
-    lrn: "136512340001",
-    credential: "SF10 Permanent Record",
-    date: "July 18, 2026",
-    grade: "Grade 12",
-    status: "Pending",
-    priority: "High",
-  },
-  {
-    id: "REQ-2026-0126",
-    name: "Maria Santos",
-    lrn: "136512340002",
-    credential: "Certificate of Enrollment",
-    date: "July 18, 2026",
-    grade: "Grade 11",
-    status: "Pending",
-    priority: "Normal",
-  },
-  {
-    id: "REQ-2026-0125",
-    name: "Mark Anthony Cruz",
-    lrn: "136512340003",
-    credential: "Good Moral Certificate",
-    date: "July 17, 2026",
-    grade: "Grade 10",
-    status: "Approved",
-    priority: "Normal",
-  },
-  {
-    id: "REQ-2026-0124",
-    name: "Angela Mae Reyes",
-    lrn: "136512340004",
-    credential: "SF9 Report Card",
-    date: "July 17, 2026",
-    grade: "Grade 9",
-    status: "Approved",
-    priority: "Normal",
-  },
-  {
-    id: "REQ-2026-0123",
-    name: "Kevin Garcia",
-    lrn: "136512340005",
-    credential: "Certificate of Appearance",
-    date: "July 16, 2026",
-    grade: "Grade 8",
-    status: "Returned",
-    priority: "Normal",
-  },
-];
-
-const recentActivities = [
-  {
-    icon: "fa-check",
-    title: "Credential approved",
-    description: "SF10 for Mark Anthony Cruz was approved.",
-    time: "10 minutes ago",
-  },
-  {
-    icon: "fa-file-circle-check",
-    title: "Request submitted",
-    description: "New SF10 request from Juan Dela Cruz.",
-    time: "35 minutes ago",
-  },
-  {
-    icon: "fa-rotate-left",
-    title: "Request returned",
-    description: "Certificate request returned for correction.",
-    time: "1 hour ago",
-  },
-  {
-    icon: "fa-user",
-    title: "Student record viewed",
-    description: "Student record was accessed.",
-    time: "2 hours ago",
-  },
-];
-
-const authorizedCredentials = [
-  "SF9 Report Card",
-  "SF10 Permanent Record",
-  "Good Moral Certificate",
-  "Certificate of Enrollment",
-  "Certificate of Appearance",
-  "Diploma",
-  "Transcript of Records",
-];
-
-const completionData = [
-  {
-    label: "Approved",
-    value: 54,
-  },
-  {
-    label: "Pending",
-    value: 32,
-  },
-  {
-    label: "Released",
-    value: 35,
-  },
-];
-
-/* =========================================================
-   COMPONENT
-   ========================================================= */
-
 function PrincipalDashboard() {
   const navigate = useNavigate();
 
-  const [requests, setRequests] = useState(initialRequests);
+  const system=usePortal();
+  const totals=metrics(system.data.requests);
+  const requests=system.data.requests.filter(r=>['PRINCIPAL_REVIEW','PRINCIPAL_APPROVED','READY','COLLECTED','RETURNED'].includes(r.status)).map(r=>({...r,name:r.full_name,grade:r.grade_level,date:new Date(r.created_at).toLocaleDateString(),status:r.status==='PRINCIPAL_REVIEW'?'Pending':r.status==='RETURNED'?'Returned':'Approved',priority:'Normal'}));
+  const recentActivities=auditRows(system.data).filter(e=>e.role==='Principal').slice(0,5).map(e=>({...e,title:e.action,time:new Date(e.created_at).toLocaleString()}));
+  const authorizedCredentials=[...new Set(system.data.requests.filter(r=>r.approved_at).map(r=>r.credential))];
+  const completionData=[{label:'Approved',value:totals.approved},{label:'Pending',value:requests.filter(r=>r.status==='Pending').length},{label:'Released',value:totals.released}];
   const [currentRequest, setCurrentRequest] = useState(null);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -187,21 +88,7 @@ function PrincipalDashboard() {
     setDecisionNote("");
   };
 
-  const finishRequest = (requestId, newStatus, message) => {
-    setRequests((previousRequests) =>
-      previousRequests.map((request) =>
-        request.id === requestId
-          ? {
-              ...request,
-              status: newStatus,
-            }
-          : request
-      )
-    );
-
-    closeDrawer();
-    showToast(message);
-  };
+  const finishRequest=async(requestId,newStatus,message)=>{try{await actOnCredential(currentRequest,newStatus==='Approved'?'approve':'return',decisionNote);await system.refresh();closeDrawer();showToast(message);}catch(e){showToast(e.message,'error');}};
 
   const handleApprove = () => {
     if (!currentRequest) return;
@@ -235,8 +122,8 @@ function PrincipalDashboard() {
      LOGOUT
      ========================================================= */
 
-  const handleLogout = () => {
-    sessionStorage.removeItem("credtrackSession");
+  const handleLogout = async () => {
+    await logoutUser();
 
     setProfileOpen(false);
     setNotificationsOpen(false);
@@ -382,7 +269,7 @@ function PrincipalDashboard() {
               >
                 <i className="fas fa-file-signature"></i>
                 <span>Credential Approvals</span>
-                <span className="nav-badge">7</span>
+                <span className="nav-badge">{requests.filter(r=>r.status==='Pending').length}</span>
               </button>
             </li>
 
@@ -419,6 +306,7 @@ function PrincipalDashboard() {
           ===================================================== */}
 
       <main className="principal-main">
+
 
         {/* ===================================================
             TOPBAR
@@ -467,7 +355,7 @@ function PrincipalDashboard() {
                 aria-label="Notifications"
               >
                 <i className="fas fa-bell"></i>
-                <span className="notification-count">3</span>
+                <span className="notification-count">{requests.filter(r=>r.status==='Pending').length}</span>
               </button>
 
               {notificationsOpen && (
@@ -479,7 +367,7 @@ function PrincipalDashboard() {
                       <span>Recent system updates</span>
                     </div>
 
-                    <span className="dropdown-count">3</span>
+                    <span className="dropdown-count">{requests.filter(r=>r.status==='Pending').length}</span>
                   </div>
 
                   <div className="notification-list">
@@ -499,10 +387,10 @@ function PrincipalDashboard() {
                         <strong>New credential request</strong>
 
                         <span>
-                          Juan Dela Cruz submitted an SF10 request.
+                          {requests.filter(r=>r.status==='Pending').length} prepared requests await review.
                         </span>
 
-                        <small>35 minutes ago</small>
+                        <small>Live queue</small>
                       </div>
                     </button>
 
@@ -521,10 +409,10 @@ function PrincipalDashboard() {
                         <strong>Pending approval</strong>
 
                         <span>
-                          4 credential requests require your review.
+                          {requests.filter(r=>r.status==='Pending').length} credential requests require your review.
                         </span>
 
-                        <small>1 hour ago</small>
+                        <small>Live queue</small>
                       </div>
                     </button>
 
@@ -543,10 +431,10 @@ function PrincipalDashboard() {
                         <strong>Credential approved</strong>
 
                         <span>
-                          Mark Anthony Cruz&apos;s credential was approved.
+                          {totals.approved} saved requests have Principal approval.
                         </span>
 
-                        <small>2 hours ago</small>
+                        <small>Saved approval history</small>
                       </div>
                     </button>
 
@@ -722,11 +610,11 @@ function PrincipalDashboard() {
 
               <div className="metric-card-content">
                 <span>Total Requests</span>
-                <strong>121</strong>
+                <strong>{totals.total}</strong>
 
                 <small className="metric-positive">
                   <i className="fas fa-arrow-up"></i>
-                  12% from last month
+                  Saved requests
                 </small>
               </div>
             </div>
@@ -738,7 +626,7 @@ function PrincipalDashboard() {
 
               <div className="metric-card-content">
                 <span>Pending Approval</span>
-                <strong>32</strong>
+                <strong>{requests.filter(r=>r.status==='Pending').length}</strong>
 
                 <small>
                   4 require your attention
@@ -753,7 +641,7 @@ function PrincipalDashboard() {
 
               <div className="metric-card-content">
                 <span>Approved</span>
-                <strong>54</strong>
+                <strong>{totals.approved}</strong>
 
                 <small>This month</small>
               </div>
@@ -766,7 +654,7 @@ function PrincipalDashboard() {
 
               <div className="metric-card-content">
                 <span>Released</span>
-                <strong>35</strong>
+                <strong>{totals.released}</strong>
 
                 <small>This month</small>
               </div>
@@ -907,13 +795,13 @@ function PrincipalDashboard() {
                     REQUEST OVERVIEW
                   </span>
 
-                  <h2>Monthly Completion</h2>
+                  <h2>Overall Completion</h2>
                 </div>
 
                 <button
                   type="button"
                   className="panel-more-button"
-                  aria-label="More options"
+                  aria-label="More options" onClick={()=>goTo('/principal-reports')}
                 >
                   <i className="fas fa-ellipsis"></i>
                 </button>
@@ -922,10 +810,10 @@ function PrincipalDashboard() {
 
               <div className="completion-content">
 
-                <div className="completion-circle">
+                <div className="completion-circle" style={{background:'conic-gradient(#af0015 '+(totals.total?totals.released/totals.total*100:0)+'%, #eee 0)'}}>
 
                   <div className="completion-circle-inner">
-                    <strong>73%</strong>
+                    <strong>{totals.total?Math.round(totals.released/totals.total*100):0}%</strong>
                     <span>Completed</span>
                   </div>
 

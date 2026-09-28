@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { submitCredential } from "./api/credentials";
 import { useNavigate } from "react-router-dom";
 import "./login.css";
 
@@ -17,6 +18,8 @@ const initialForm = {
 
 function Login() {
   const navigate = useNavigate();
+  const submissionKey = useRef(null);
+  const submitLock = useRef(false);
 
   const [requesterType, setRequesterType] = useState("");
   const [requestModalOpen, setRequestModalOpen] = useState(false);
@@ -26,6 +29,7 @@ function Login() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [requestId, setRequestId] = useState("");
+  const [smsEnabled, setSmsEnabled] = useState(false);
 
   const [errors, setErrors] = useState({});
 
@@ -74,6 +78,7 @@ function Login() {
      ========================================================= */
 
   const openRequestModal = (type) => {
+    submissionKey.current = crypto.randomUUID();
     setRequesterType(type);
 
     setFormData({
@@ -189,167 +194,44 @@ function Login() {
      GENERATE REQUEST ID
      ========================================================= */
 
-  const generateRequestId = () => {
-    const year = new Date().getFullYear();
 
-    const randomPart = Math.floor(
-      1000 + Math.random() * 9000
-    );
-
-    return `REQ-${year}-${randomPart}`;
-  };
-
-  /* =========================================================
-     GET EXISTING REQUESTS
-     ========================================================= */
-
-  const getExistingRequests = () => {
-    try {
-      const stored = localStorage.getItem(
-        "credtrackCredentialRequests"
-      );
-
-      if (!stored) {
-        return [];
-      }
-
-      const parsed = JSON.parse(stored);
-
-      if (!Array.isArray(parsed)) {
-        return [];
-      }
-
-      return parsed;
-    } catch (error) {
-      console.error(
-        "Unable to read credential requests:",
-        error
-      );
-
-      return [];
-    }
-  };
-
-  /* =========================================================
-     SUBMIT REQUEST
-     ========================================================= */
-
-  const handleSubmitRequest = (event) => {
+  const handleSubmitRequest = async (event) => {
     event.preventDefault();
-
+    if (submitLock.current) return;
     const validationErrors = validateForm();
-
-    if (Object.keys(validationErrors).length > 0) {
+    if (Object.keys(validationErrors).length) {
       setErrors(validationErrors);
       return;
     }
-
+    submitLock.current = true;
     setSubmitting(true);
-
-    const generatedRequestId =
-      generateRequestId();
-
-    const now = new Date();
-
-    const request = {
-      id: generatedRequestId,
-
-      requesterType,
-
-      name: formData.fullName.trim(),
-
-      lrn: formData.lrn.trim(),
-
-      grade:
-        requesterType === "Student"
-          ? formData.gradeLevel
-          : "Alumni",
-
-      section:
-        requesterType === "Student"
-          ? formData.section.trim()
-          : "",
-
-      graduationYear:
-        requesterType === "Alumni"
-          ? formData.graduationYear.trim()
-          : "",
-
-      credential:
-        formData.credential,
-
-      purpose:
-        formData.purpose.trim(),
-
-      phone:
-        formData.phone.trim(),
-
-      email:
-        formData.email.trim(),
-
-      additionalDetails:
-        formData.additionalDetails.trim(),
-
-      date:
-        now.toLocaleDateString("en-US", {
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-        }),
-
-      submittedAt:
-        now.toISOString(),
-
-      status: "Pending",
-
-      approvalStatus:
-        "Pending Principal Review",
-
-      verifiedBy: "Pending",
-
-      source:
-        "Public Request Portal",
-    };
-
     try {
-      const existingRequests =
-        getExistingRequests();
-
-      const updatedRequests = [
-        request,
-        ...existingRequests,
-      ];
-
-      localStorage.setItem(
-        "credtrackCredentialRequests",
-        JSON.stringify(updatedRequests)
-      );
-
-      setRequestId(
-        generatedRequestId
-      );
-
+      submissionKey.current ||= crypto.randomUUID();
+      const result = await submitCredential({
+        submission_key: submissionKey.current,
+        requester_type: requesterType,
+        full_name: formData.fullName.trim(),
+        lrn: formData.lrn.trim(),
+        grade_level: requesterType === "Student" ? formData.gradeLevel : "",
+        section: requesterType === "Student" ? formData.section.trim() : "",
+        graduation_year: requesterType === "Alumni" ? formData.graduationYear.trim() : "",
+        credential: formData.credential,
+        purpose: formData.purpose.trim(),
+        phone: formData.phone.trim(),
+        email: formData.email.trim(),
+        additional_details: formData.additionalDetails.trim(),
+      });
+      setRequestId(result.id);
+      setSmsEnabled(result.sms_enabled === true);
       setSubmitted(true);
-
       setErrors({});
     } catch (error) {
-      console.error(
-        "Unable to save credential request:",
-        error
-      );
-
-      setErrors({
-        submit:
-          "The request could not be submitted. Please try again.",
-      });
+      setErrors({ submit: error.message || "The request could not be submitted. Please try again." });
     } finally {
+      submitLock.current = false;
       setSubmitting(false);
     }
   };
-
-  /* =========================================================
-     RENDER
-     ========================================================= */
 
   return (
     <div className="landing-page">
@@ -761,10 +643,9 @@ function Login() {
                   <i className="fas fa-mobile-screen-button"></i>
 
                   <span>
-                    You will receive an SMS notification
-                    on the mobile number you provided when
-                    your request is ready or when an update
-                    is available.
+                    {smsEnabled
+                      ? "An SMS will be queued after Principal approval and the Administrator’s final confirmation that your credentials are ready for collection."
+                      : "Your request is saved. SMS service is awaiting activation; please keep your request ID and contact the school records office for updates."}
                   </span>
 
                 </div>
@@ -1274,10 +1155,10 @@ function Login() {
 
                     <p>
                       Please make sure your mobile number
-                      is active. CredTrack will use it to
-                      notify you when your request is ready
-                      or when the school needs additional
-                      information.
+                      is active. Once SMS service is activated,
+                      CredTrack will use it to notify you after
+                      your approved credentials are confirmed
+                      ready for collection by the Administrator.
                     </p>
 
                   </div>

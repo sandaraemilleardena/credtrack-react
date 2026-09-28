@@ -1,10 +1,13 @@
-.page-actions {
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap");
+
+/* Credential management content, scoped to this page. */
+.student-records-page .page-actions {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.btn-import {
+.student-records-page .btn-import {
   display: inline-flex;
   min-height: 48px;
   align-items: center;
@@ -18,11 +21,11 @@
   cursor: pointer;
 }
 
-.btn-import:hover {
+.student-records-page .btn-import:hover {
   background: #fff3f3;
 }
 
-.excel-modal {
+.student-records-page .excel-modal {
   position: fixed;
   inset: 0;
   z-index: 3000;
@@ -32,11 +35,11 @@
   background: rgba(25, 29, 40, .58);
 }
 
-.excel-modal.show {
+.student-records-page .excel-modal.show {
   display: grid;
 }
 
-.excel-dialog {
+.student-records-page .excel-dialog {
   width: min(920px, 100%);
   max-height: 92vh;
   overflow: auto;
@@ -45,7 +48,7 @@
   box-shadow: 0 30px 80px rgba(0,0,0,.25);
 }
 
-.excel-head {
+.student-records-page .excel-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -54,18 +57,18 @@
   border-bottom: 1px solid #e9e9ed;
 }
 
-.excel-head h2 {
+.student-records-page .excel-head h2 {
   color: #8d0e12;
   font-size: 22px;
 }
 
-.excel-head p {
+.student-records-page .excel-head p {
   margin-top: 3px;
   color: #7d8190;
   font-size: 12px;
 }
 
-.excel-close {
+.student-records-page .excel-close {
   width: 38px;
   height: 38px;
   border: 0;
@@ -75,18 +78,18 @@
   cursor: pointer;
 }
 
-.excel-body {
+.student-records-page .excel-body {
   padding: 24px;
 }
 
-.import-steps {
+.student-records-page .import-steps {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
   margin-bottom: 20px;
 }
 
-.import-step {
+.student-records-page .import-step {
   display: flex;
   align-items: center;
   gap: 9px;
@@ -98,7 +101,7 @@
   font-weight: 600;
 }
 
-.import-step b {
+.student-records-page .import-step b {
   display: grid;
   width: 24px;
   height: 24px;
@@ -108,17 +111,17 @@
   color: #666c78;
 }
 
-.import-step.active {
+.student-records-page .import-step.active {
   background: #fff0f0;
   color: #8d0e12;
 }
 
-.import-step.active b {
+.student-records-page .import-step.active b {
   background: #8d0e12;
   color: #fff;
 }
 
-.drop-zone {
+.student-records-page .drop-zone {
   display: grid;
   min-height: 220px;
   place-items: center;
@@ -130,30 +133,30 @@
   transition: .2s;
 }
 
-.drop-zone.dragging {
+.student-records-page .drop-zone.dragging {
   border-color: #8d0e12;
   background: #fff1f1;
   transform: scale(1.005);
 }
 
-.drop-zone > div > i {
+.student-records-page .drop-zone > div > i {
   color: #8d0e12;
   font-size: 42px;
 }
 
-.drop-zone h3 {
+.student-records-page .drop-zone h3 {
   margin-top: 12px;
   color: #303747;
   font-size: 17px;
 }
 
-.drop-zone p {
+.student-records-page .drop-zone p {
   margin: 5px 0 14px;
   color: #858996;
   font-size: 12px;
 }
 
-.choose-file {
+.student-records-page .choose-file {
   display: inline-flex;
   min-height: 42px;
   align-items: center;
@@ -166,7 +169,7 @@
   cursor: pointer;
 }
 
-.required-columns {
+.student-records-page .required-columns {
   margin-top: 16px;
   padding: 14px 16px;
   border-radius: 11px;
@@ -176,11 +179,11 @@
   line-height: 1.7;
 }
 
-.required-columns strong {
+.student-records-page .required-columns strong {
   color: #343a48;
 }
 
-.file-summary {
+.student-records-page .file-summary {
   display: none;
   grid-template-columns: 1fr auto;
   align-items: center;
@@ -191,38 +194,38 @@
   border-radius: 12px;
 }
 
-.file-summary.show {
+.student-records-page .file-summary.show {
   display: grid;
 }
 
-.file-summary strong {
+.student-records-page .file-summary strong {
   display: block;
   color: #343a48;
   font-size: 13px;
 }
 
-.file-summary span {
+.student-records-page .file-summary span {
   color: #858996;
   font-size: 11px;
 }
 
-.file-summary i {
+.student-records-page .file-summary i {
   color: #299c4b;
   font-size: 27px;
 }
 
-.mapping {
+.student-records-page .mapping {
   display: none;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
   margin-bottom: 18px;
 }
 
-.mapping.show {
+.student-records-page .mapping.show {
   display: grid;
 }
 
-.map-field label {
+.student-records-page .map-field label {
   display: block;
   margin-bottom: 6px;
   color: #555b68;
@@ -230,7 +233,7 @@
   font-weight: 600;
 }
 
-.map-field select {
+.student-records-page .map-field select {
   width: 100%;
   height: 42px;
   padding: 0 10px;
@@ -240,23 +243,23 @@
   color: #444b59;
 }
 
-.preview-wrap {
+.student-records-page .preview-wrap {
   display: none;
   overflow-x: auto;
   border: 1px solid #e7e8ec;
   border-radius: 12px;
 }
 
-.preview-wrap.show {
+.student-records-page .preview-wrap.show {
   display: block;
 }
 
-.preview-table {
+.student-records-page .preview-table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.preview-table th {
+.student-records-page .preview-table th {
   padding: 11px 12px;
   background: #f5f5f7;
   color: #555b68;
@@ -265,7 +268,7 @@
   white-space: nowrap;
 }
 
-.preview-table td {
+.student-records-page .preview-table td {
   padding: 11px 12px;
   border-top: 1px solid #ededf0;
   color: #555b68;
@@ -273,7 +276,8 @@
   white-space: nowrap;
 }
 
-.row-ok, .row-warning {
+.student-records-page .row-ok,
+.student-records-page .row-warning {
   display: inline-block;
   padding: 4px 8px;
   border-radius: 15px;
@@ -281,43 +285,43 @@
   font-weight: 600;
 }
 
-.row-ok {
+.student-records-page .row-ok {
   background: #e4f6e9;
   color: #218844;
 }
 
-.row-warning {
+.student-records-page .row-warning {
   background: #fff1d5;
   color: #a56a00;
 }
 
-.import-result {
+.student-records-page .import-result {
   display: none;
   padding: 28px;
   text-align: center;
 }
 
-.import-result.show {
+.student-records-page .import-result.show {
   display: block;
 }
 
-.import-result i {
+.student-records-page .import-result i {
   color: #29a94d;
   font-size: 48px;
 }
 
-.import-result h3 {
+.student-records-page .import-result h3 {
   margin-top: 12px;
   color: #303747;
 }
 
-.import-result p {
+.student-records-page .import-result p {
   margin-top: 5px;
   color: #7d8190;
   font-size: 12px;
 }
 
-.excel-actions {
+.student-records-page .excel-actions {
   display: flex;
   justify-content: space-between;
   gap: 10px;
@@ -325,7 +329,7 @@
   border-top: 1px solid #e9e9ed;
 }
 
-.excel-actions button {
+.student-records-page .excel-actions button {
   min-height: 43px;
   padding: 0 16px;
   border: 0;
@@ -334,414 +338,50 @@
   cursor: pointer;
 }
 
-.download-template {
+.student-records-page .download-template {
   background: #f3f4f6;
   color: #4d5360;
 }
 
-.import-now {
+.student-records-page .import-now {
   background: #8d0e12;
   color: #fff;
 }
 
-.import-now:disabled {
+.student-records-page .import-now:disabled {
   background: #c9c9cf;
   cursor: not-allowed;
 }
 
 @media (max-width: 720px) {
-  .page-header {
+.student-records-page .page-header {
     align-items: flex-start;
     flex-direction: column;
   }
 
-  .page-actions {
+.student-records-page .page-actions {
     width: 100%;
     flex-wrap: wrap;
   }
 
-  .page-actions button {
+.student-records-page .page-actions button {
     flex: 1;
     justify-content: center;
   }
 
-  .import-steps, .mapping {
+.student-records-page .import-steps,
+.student-records-page .mapping {
     grid-template-columns: 1fr;
   }
 
 }
 
-/* Dashboard-matched sidebar brand and top navigation. */
-:root {
+.student-records-page {
   --shell-maroon: #8d0e12;
   --shell-line: #ececf0;
   --shell-sidebar: 280px;
 }
 
-.sidebar {
-  position: fixed;
-  inset: 0 auto 0 0;
-  z-index: 1000;
-  width: var(--shell-sidebar);
-  height: 100vh;
-  overflow-y: auto;
-  background: #fff;
-  border-right: 1px solid var(--shell-line);
-  box-shadow: none;
-  transition: transform .25s ease;
-}
-
-.logo {
-  display: flex;
-  min-height: 106px;
-  align-items: center;
-  gap: 14px;
- 
-}
-
-.logo > img {
-  display: block;
-  width: 70px;
-  height: 70px;
-  flex: 0 0 70px;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  object-fit: contain;
-  filter: drop-shadow(0 3px 6px rgba(65,25,25,.12));
-}
-
-.logo-copy {
-  min-width: 0;
-}
-
-.logo-copy h2 {
-  overflow: hidden;
-  color: var(--shell-maroon);
-  font-size: 23px;
-  font-weight: 700;
-  letter-spacing: -.35px;
-  line-height: 1.1;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.logo-copy span {
-  display: block;
-  margin-top: 5px;
-  color: #7b7d83;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: .15px;
-}
-
-.mobile-close {
-  display: none;
-  margin-left: auto;
-  border: 0;
-  background: transparent;
-  color: var(--shell-maroon);
-  font-size: 21px;
-  cursor: pointer;
-}
-
-.menu {
-  padding: 18px 16px;
-}
-
-.menu > li {
-  margin: 8px 0;
-}
-
-.menu > li > a,.menu > li > .dropdown-toggle {
-  min-height: 50px;
-  padding: 0 18px;
-  border-radius: 13px;
-}
-
-.menu > li > a span,.menu > li > .dropdown-toggle span {
-  font-size: 14px;
-}
-
-.main {
-  min-height: 100vh;
-  margin-left: var(--shell-sidebar);
-  background: #f5f6fa;
-}
-
-.topbar {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  display: flex;
-  min-height: 88px;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  padding: 0 30px;
-  border-bottom: 1px solid var(--shell-line);
-  background: rgba(255,255,255,.98);
-  box-shadow: 0 5px 20px rgba(36,42,57,.035);
-  backdrop-filter: blur(12px);
-}
-
-.topbar-left {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  gap: 13px;
-}
-
-.menu-button {
-  display: none;
-  width: 40px;
-  height: 40px;
-  flex: 0 0 40px;
-  place-items: center;
-  border: 1px solid #e5e5e9;
-  border-radius: 10px;
-  background: #fff;
-  color: var(--shell-maroon);
-  cursor: pointer;
-}
-
-.school-seal {
-  display: grid;
-  width: 52px;
-  height: 52px;
-  flex: 0 0 52px;
-  place-items: center;
-  overflow: hidden;
-}
-
-.school-seal img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.school-name {
-  min-width: 0;
-}
-
-.school-name strong {
-  display: block;
-  overflow: hidden;
-  max-width: 760px;
-  color: var(--shell-maroon);
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: -.15px;
-  line-height: 1.3;
-  text-overflow: ellipsis;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.school-name span {
-  display: block;
-  margin-top: 3px;
-  color: #85858b;
-  font-size: 12px;
-}
-
-.topbar-right {
-  display: flex;
-  flex: 0 0 auto;
-  align-items: center;
-  gap: 18px;
-}
-
-.academic-year {
-  padding-right: 18px;
-  border-right: 1px solid #e7e7eb;
-  color: #92949b;
-  font-size: 8px;
-  font-weight: 600;
-  letter-spacing: 1px;
-}
-
-.academic-year strong {
-  display: block;
-  margin-top: 3px;
-  color: var(--shell-maroon);
-  font-size: 11px;
-  letter-spacing: .2px;
-}
-
-.notification-button {
-  position: relative;
-  display: grid;
-  width: 44px;
-  height: 44px;
-  place-items: center;
-  border: 1px solid #ededf0;
-  border-radius: 50%;
-  background: #fafafa;
-  color: #272d3a;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.notification-button b {
-  position: absolute;
-  top: -5px;
-  right: -3px;
-  display: grid;
-  width: 20px;
-  height: 20px;
-  place-items: center;
-  border: 2px solid #fff;
-  border-radius: 50%;
-  background: #dc3545;
-  color: #fff;
-  font-size: 9px;
-}
-
-.admin-menu {
-  display: flex;
-  min-width: 190px;
-  align-items: center;
-  gap: 11px;
-  padding: 5px 7px 5px 5px;
-  border-radius: 13px;
-  transition: background .2s;
-}
-
-.admin-menu:hover {
-  background: #faf6f6;
-}
-
-.admin-menu img {
-  display: block;
-  width: 46px;
-  height: 46px;
-  flex: 0 0 46px;
-  border: 1px solid #dedee3;
-  border-radius: 50%;
-  background: #f4eee2;
-  object-fit: contain;
-}
-
-.admin-menu strong {
-  display: block;
-  color: #343a48;
-  font-size: 14px;
-}
-
-.admin-menu small {
-  display: block;
-  color: #898c94;
-  font-size: 11px;
-}
-
-.admin-chevron {
-  margin-left: auto;
-  color: #858992;
-  font-size: 11px;
-}
-
-.sidebar-screen {
-  position: fixed;
-  inset: 0;
-  z-index: 999;
-  display: none;
-  background: rgba(26,29,39,.42);
-}
-
-.sidebar-screen.show {
-  display: block;
-}
-
-@media(max-width:1180px) {
-  .school-seal {
-    display: none;
-  }
-
-  .school-name strong {
-    max-width: 430px;
-    font-size: 14px;
-  }
-
-  .academic-year {
-    display: none;
-  }
-
-}
-
-@media(max-width:900px) {
-  .sidebar {
-    transform: translateX(-105%);
-  }
-
-  .sidebar.open {
-    transform: none;
-    box-shadow: 15px 0 40px rgba(0,0,0,.15);
-  }
-
-  .main {
-    margin-left: 0;
-  }
-
-  .topbar {
-    min-height: 78px;
-    padding: 0 18px;
-  }
-
-  .menu-button,.mobile-close {
-    display: grid;
-  }
-
-  .school-name strong {
-    max-width: 360px;
-  }
-
-  .admin-menu {
-    min-width: auto;
-  }
-
-  .admin-menu div,.admin-chevron {
-    display: none;
-  }
-
-}
-
-@media(max-width:600px) {
-  .school-name strong {
-    max-width: 220px;
-    font-size: 12px;
-  }
-
-  .school-name span {
-    display: none;
-  }
-
-  .notification-button {
-    width: 40px;
-    height: 40px;
-  }
-
-  .admin-menu img {
-    width: 40px;
-    height: 40px;
-    flex-basis: 40px;
-  }
-
-  .topbar-right {
-    gap: 8px;
-  }
-
-}
-
-@media(max-width:430px) {
-  .school-name {
-    display: none;
-  }
-
-}
-
-/* ========================================================= CREDTRACK - ADMINISTRATION STUDENT RECORDS React-specific additions ========================================================= */
 .student-records-page {
   min-height: 100vh;
   overflow-x: hidden;
@@ -750,44 +390,13 @@
   font-family: Poppins, sans-serif;
 }
 
-/* ========================================================= SIDEBAR BUTTON RESET ========================================================= */
-.menu li button {
-  width: 100%;
-  min-height: 50px;
-  padding: 0 18px;
-  border: 0;
-  border-radius: 13px;
-  background: transparent;
-  color: inherit;
-  font-family: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.menu li button span {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-}
-
-.menu li button:hover {
-  background: #faf2f2;
-}
-
-.menu li.active button {
-  background: #8d0e12;
-  color: #fff;
-}
-
-/* ========================================================= STUDENT TABLE ========================================================= */
-.student-name-cell {
+.student-records-page .student-name-cell {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.table-avatar {
+.student-records-page .table-avatar {
   display: grid;
   width: 38px;
   height: 38px;
@@ -798,32 +407,31 @@
   color: #8d0e12;
 }
 
-.student-name-cell strong {
+.student-records-page .student-name-cell strong {
   display: block;
   color: #303747;
   font-size: 12px;
 }
 
-.student-name-cell small {
+.student-records-page .student-name-cell small {
   display: block;
   margin-top: 3px;
   color: #92949b;
   font-size: 10px;
 }
 
-.lrn-text {
+.student-records-page .lrn-text {
   color: #8d0e12;
   font-size: 11px;
 }
 
-/* ========================================================= ACTION BUTTONS ========================================================= */
-.row-actions {
+.student-records-page .row-actions {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.row-actions button {
+.student-records-page .row-actions button {
   display: grid;
   width: 32px;
   height: 32px;
@@ -835,25 +443,24 @@
   transition: .2s ease;
 }
 
-.action-view {
+.student-records-page .action-view {
   color: #586174;
 }
 
-.action-edit {
+.student-records-page .action-edit {
   color: #8d0e12;
 }
 
-.action-delete {
+.student-records-page .action-delete {
   color: #dc3545;
 }
 
-.row-actions button:hover {
+.student-records-page .row-actions button:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, .08);
 }
 
-/* ========================================================= STATUS BADGES ========================================================= */
-.status-badge {
+.student-records-page .status-badge {
   display: inline-flex;
   align-items: center;
   padding: 5px 10px;
@@ -862,54 +469,52 @@
   font-weight: 600;
 }
 
-.status-active {
+.student-records-page .status-active {
   background: #e4f6e9;
   color: #218844;
 }
 
-.status-graduated {
+.student-records-page .status-graduated {
   background: #fff1d5;
   color: #a56a00;
 }
 
-.status-transferred {
+.student-records-page .status-transferred {
   background: #e9efff;
   color: #4867b1;
 }
 
-.status-archived {
+.student-records-page .status-archived {
   background: #eeeeef;
   color: #686d77;
 }
 
-/* ========================================================= EMPTY STATE ========================================================= */
-.empty-state {
+.student-records-page .empty-state {
   height: 260px;
   text-align: center;
 }
 
-.empty-state i {
+.student-records-page .empty-state i {
   display: block;
   margin-bottom: 12px;
   color: #c5c7cd;
   font-size: 42px;
 }
 
-.empty-state strong {
+.student-records-page .empty-state strong {
   display: block;
   color: #555b68;
   font-size: 14px;
 }
 
-.empty-state span {
+.student-records-page .empty-state span {
   display: block;
   margin-top: 5px;
   color: #9699a2;
   font-size: 11px;
 }
 
-/* ========================================================= PAGINATION ========================================================= */
-.pagination {
+.student-records-page .pagination {
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -917,7 +522,7 @@
   padding: 18px 22px;
 }
 
-.pagination button {
+.student-records-page .pagination button {
   display: grid;
   min-width: 34px;
   height: 34px;
@@ -932,24 +537,23 @@
   cursor: pointer;
 }
 
-.pagination button:hover:not(:disabled) {
+.student-records-page .pagination button:hover:not(:disabled) {
   border-color: #8d0e12;
   color: #8d0e12;
 }
 
-.pagination button.active {
+.student-records-page .pagination button.active {
   border-color: #8d0e12;
   background: #8d0e12;
   color: #fff;
 }
 
-.pagination button:disabled {
+.student-records-page .pagination button:disabled {
   opacity: .45;
   cursor: not-allowed;
 }
 
-/* ========================================================= MODAL OVERLAY ========================================================= */
-.modal-overlay {
+.student-records-page .modal-overlay {
   position: fixed;
   inset: 0;
   z-index: 2000;
@@ -959,11 +563,11 @@
   background: rgba(25, 29, 40, .58);
 }
 
-.modal-overlay.show {
+.student-records-page .modal-overlay.show {
   display: grid;
 }
 
-.modal-container {
+.student-records-page .modal-container {
   width: min(650px, 100%);
   max-height: 92vh;
   overflow-y: auto;
@@ -972,11 +576,11 @@
   box-shadow: 0 30px 80px rgba(0, 0, 0, .25);
 }
 
-.modal-container.large {
+.student-records-page .modal-container.large {
   width: min(900px, 100%);
 }
 
-.modal-header {
+.student-records-page .modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -985,7 +589,7 @@
   border-bottom: 1px solid #e9e9ed;
 }
 
-.modal-header h2 {
+.student-records-page .modal-header h2 {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -994,7 +598,7 @@
   font-size: 20px;
 }
 
-.close-modal {
+.student-records-page .close-modal {
   display: grid;
   width: 38px;
   height: 38px;
@@ -1006,28 +610,27 @@
   cursor: pointer;
 }
 
-.close-modal:hover {
+.student-records-page .close-modal:hover {
   background: #fff0f0;
   color: #8d0e12;
 }
 
-/* ========================================================= FORM ========================================================= */
-.form-grid {
+.student-records-page .form-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 17px;
   padding: 24px 25px;
 }
 
-.form-group {
+.student-records-page .form-group {
   min-width: 0;
 }
 
-.form-group.full {
+.student-records-page .form-group.full {
   grid-column: 1 / -1;
 }
 
-.form-group label {
+.student-records-page .form-group label {
   display: block;
   margin-bottom: 7px;
   color: #555b68;
@@ -1035,7 +638,9 @@
   font-weight: 600;
 }
 
-.form-group input, .form-group select, .form-group textarea {
+.student-records-page .form-group input,
+.student-records-page .form-group select,
+.student-records-page .form-group textarea {
   width: 100%;
   box-sizing: border-box;
   border: 1px solid #dedfe4;
@@ -1048,23 +653,25 @@
   transition: .2s ease;
 }
 
-.form-group input, .form-group select {
+.student-records-page .form-group input,
+.student-records-page .form-group select {
   height: 44px;
   padding: 0 12px;
 }
 
-.form-group textarea {
+.student-records-page .form-group textarea {
   padding: 11px 12px;
   resize: vertical;
 }
 
-.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+.student-records-page .form-group input:focus,
+.student-records-page .form-group select:focus,
+.student-records-page .form-group textarea:focus {
   border-color: #8d0e12;
   box-shadow: 0 0 0 3px rgba(141, 14, 18, .08);
 }
 
-/* ========================================================= MODAL FOOTER ========================================================= */
-.modal-footer {
+.student-records-page .modal-footer {
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -1073,12 +680,13 @@
   border-top: 1px solid #e9e9ed;
 }
 
-.modal-footer.center {
+.student-records-page .modal-footer.center {
   justify-content: center;
 }
 
-/* ========================================================= BUTTONS ========================================================= */
-.btn-primary, .btn-light, .btn-danger {
+.student-records-page .btn-primary,
+.student-records-page .btn-light,
+.student-records-page .btn-danger {
   display: inline-flex;
   min-height: 42px;
   align-items: center;
@@ -1093,41 +701,40 @@
   cursor: pointer;
 }
 
-.btn-primary {
+.student-records-page .btn-primary {
   background: #8d0e12;
   color: #fff;
 }
 
-.btn-primary:hover {
+.student-records-page .btn-primary:hover {
   background: #730a0e;
 }
 
-.btn-light {
+.student-records-page .btn-light {
   border: 1px solid #dedfe4;
   background: #fff;
   color: #555b68;
 }
 
-.btn-light:hover {
+.student-records-page .btn-light:hover {
   background: #f7f7f9;
 }
 
-.btn-danger {
+.student-records-page .btn-danger {
   background: #dc3545;
   color: #fff;
 }
 
-.btn-danger:hover {
+.student-records-page .btn-danger:hover {
   background: #bd2737;
 }
 
-/* ========================================================= PROFILE VIEW ========================================================= */
-.profile-top {
+.student-records-page .profile-top {
   padding: 25px 25px 20px;
   text-align: center;
 }
 
-.student-avatar {
+.student-records-page .student-avatar {
   display: grid;
   width: 76px;
   height: 76px;
@@ -1139,24 +746,24 @@
   font-size: 30px;
 }
 
-.profile-top h3 {
+.student-records-page .profile-top h3 {
   margin: 12px 0 4px;
   color: #303747;
   font-size: 18px;
 }
 
-.profile-top p {
+.student-records-page .profile-top p {
   margin: 0;
   color: #8a8d96;
   font-size: 11px;
 }
 
-.profile-top p span {
+.student-records-page .profile-top p span {
   color: #8d0e12;
   font-weight: 600;
 }
 
-.profile-grid {
+.student-records-page .profile-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1px;
@@ -1167,16 +774,16 @@
   background: #e8e8ec;
 }
 
-.profile-grid > div {
+.student-records-page .profile-grid > div {
   padding: 14px;
   background: #fff;
 }
 
-.profile-grid > div.full {
+.student-records-page .profile-grid > div.full {
   grid-column: 1 / -1;
 }
 
-.profile-grid label {
+.student-records-page .profile-grid label {
   display: block;
   margin-bottom: 5px;
   color: #93959d;
@@ -1186,14 +793,13 @@
   letter-spacing: .4px;
 }
 
-.profile-grid span {
+.student-records-page .profile-grid span {
   display: block;
   color: #444b59;
   font-size: 12px;
 }
 
-/* ========================================================= DELETE DIALOG ========================================================= */
-.delete-box {
+.student-records-page .delete-box {
   width: min(420px, 100%);
   padding: 30px;
   border-radius: 18px;
@@ -1202,7 +808,7 @@
   box-shadow: 0 30px 80px rgba(0, 0, 0, .25);
 }
 
-.delete-icon {
+.student-records-page .delete-icon {
   display: grid;
   width: 65px;
   height: 65px;
@@ -1214,13 +820,13 @@
   font-size: 25px;
 }
 
-.delete-box h2 {
+.student-records-page .delete-box h2 {
   margin: 0;
   color: #303747;
   font-size: 20px;
 }
 
-.delete-box p {
+.student-records-page .delete-box p {
   margin: 10px auto;
   max-width: 350px;
   color: #7d8190;
@@ -1228,15 +834,14 @@
   line-height: 1.6;
 }
 
-.delete-student-name {
+.student-records-page .delete-student-name {
   display: block;
   margin: 12px 0;
   color: #8d0e12;
   font-size: 13px;
 }
 
-/* ========================================================= TOAST ========================================================= */
-.toast {
+.student-records-page .toast {
   position: fixed;
   right: 25px;
   bottom: 25px;
@@ -1255,19 +860,18 @@
   font-size: 12px;
 }
 
-.toast i {
+.student-records-page .toast i {
   color: #299c4b;
   font-size: 17px;
 }
 
-/* ========================================================= EXCEL IMPORT ========================================================= */
-.page-actions {
+.student-records-page .page-actions {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.btn-import {
+.student-records-page .btn-import {
   display: inline-flex;
   min-height: 48px;
   align-items: center;
@@ -1283,11 +887,11 @@
   cursor: pointer;
 }
 
-.btn-import:hover {
+.student-records-page .btn-import:hover {
   background: #fff3f3;
 }
 
-.excel-modal {
+.student-records-page .excel-modal {
   position: fixed;
   inset: 0;
   z-index: 3000;
@@ -1297,11 +901,11 @@
   background: rgba(25, 29, 40, .58);
 }
 
-.excel-modal.show {
+.student-records-page .excel-modal.show {
   display: grid;
 }
 
-.excel-dialog {
+.student-records-page .excel-dialog {
   width: min(920px, 100%);
   max-height: 92vh;
   overflow: auto;
@@ -1310,7 +914,7 @@
   box-shadow: 0 30px 80px rgba(0, 0, 0, .25);
 }
 
-.excel-head {
+.student-records-page .excel-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1319,19 +923,19 @@
   border-bottom: 1px solid #e9e9ed;
 }
 
-.excel-head h2 {
+.student-records-page .excel-head h2 {
   margin: 0;
   color: #8d0e12;
   font-size: 22px;
 }
 
-.excel-head p {
+.student-records-page .excel-head p {
   margin: 3px 0 0;
   color: #7d8190;
   font-size: 12px;
 }
 
-.excel-close {
+.student-records-page .excel-close {
   width: 38px;
   height: 38px;
   border: 0;
@@ -1341,18 +945,18 @@
   cursor: pointer;
 }
 
-.excel-body {
+.student-records-page .excel-body {
   padding: 24px;
 }
 
-.import-steps {
+.student-records-page .import-steps {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
   margin-bottom: 20px;
 }
 
-.import-step {
+.student-records-page .import-step {
   display: flex;
   align-items: center;
   gap: 9px;
@@ -1364,7 +968,7 @@
   font-weight: 600;
 }
 
-.import-step b {
+.student-records-page .import-step b {
   display: grid;
   width: 24px;
   height: 24px;
@@ -1374,17 +978,17 @@
   color: #666c78;
 }
 
-.import-step.active {
+.student-records-page .import-step.active {
   background: #fff0f0;
   color: #8d0e12;
 }
 
-.import-step.active b {
+.student-records-page .import-step.active b {
   background: #8d0e12;
   color: #fff;
 }
 
-.drop-zone {
+.student-records-page .drop-zone {
   display: grid;
   min-height: 220px;
   place-items: center;
@@ -1396,30 +1000,30 @@
   transition: .2s;
 }
 
-.drop-zone.dragging {
+.student-records-page .drop-zone.dragging {
   border-color: #8d0e12;
   background: #fff1f1;
   transform: scale(1.005);
 }
 
-.drop-zone > div > i {
+.student-records-page .drop-zone > div > i {
   color: #8d0e12;
   font-size: 42px;
 }
 
-.drop-zone h3 {
+.student-records-page .drop-zone h3 {
   margin-top: 12px;
   color: #303747;
   font-size: 17px;
 }
 
-.drop-zone p {
+.student-records-page .drop-zone p {
   margin: 5px 0 14px;
   color: #858996;
   font-size: 12px;
 }
 
-.choose-file {
+.student-records-page .choose-file {
   display: inline-flex;
   min-height: 42px;
   align-items: center;
@@ -1432,7 +1036,7 @@
   cursor: pointer;
 }
 
-.required-columns {
+.student-records-page .required-columns {
   margin-top: 16px;
   padding: 14px 16px;
   border-radius: 11px;
@@ -1442,11 +1046,11 @@
   line-height: 1.7;
 }
 
-.required-columns strong {
+.student-records-page .required-columns strong {
   color: #343a48;
 }
 
-.file-summary {
+.student-records-page .file-summary {
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
@@ -1457,30 +1061,30 @@
   border-radius: 12px;
 }
 
-.file-summary strong {
+.student-records-page .file-summary strong {
   display: block;
   color: #343a48;
   font-size: 13px;
 }
 
-.file-summary span {
+.student-records-page .file-summary span {
   color: #858996;
   font-size: 11px;
 }
 
-.file-summary > i {
+.student-records-page .file-summary > i {
   color: #299c4b;
   font-size: 27px;
 }
 
-.mapping {
+.student-records-page .mapping {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
   margin-bottom: 18px;
 }
 
-.map-field label {
+.student-records-page .map-field label {
   display: block;
   margin-bottom: 6px;
   color: #555b68;
@@ -1488,7 +1092,7 @@
   font-weight: 600;
 }
 
-.map-field select {
+.student-records-page .map-field select {
   width: 100%;
   height: 42px;
   padding: 0 10px;
@@ -1498,18 +1102,18 @@
   color: #444b59;
 }
 
-.preview-wrap {
+.student-records-page .preview-wrap {
   overflow-x: auto;
   border: 1px solid #e7e8ec;
   border-radius: 12px;
 }
 
-.preview-table {
+.student-records-page .preview-table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.preview-table th {
+.student-records-page .preview-table th {
   padding: 11px 12px;
   background: #f5f5f7;
   color: #555b68;
@@ -1518,7 +1122,7 @@
   white-space: nowrap;
 }
 
-.preview-table td {
+.student-records-page .preview-table td {
   padding: 11px 12px;
   border-top: 1px solid #ededf0;
   color: #555b68;
@@ -1526,7 +1130,8 @@
   white-space: nowrap;
 }
 
-.row-ok, .row-warning {
+.student-records-page .row-ok,
+.student-records-page .row-warning {
   display: inline-block;
   padding: 4px 8px;
   border-radius: 15px;
@@ -1534,38 +1139,38 @@
   font-weight: 600;
 }
 
-.row-ok {
+.student-records-page .row-ok {
   background: #e4f6e9;
   color: #218844;
 }
 
-.row-warning {
+.student-records-page .row-warning {
   background: #fff1d5;
   color: #a56a00;
 }
 
-.import-result {
+.student-records-page .import-result {
   padding: 28px;
   text-align: center;
 }
 
-.import-result i {
+.student-records-page .import-result i {
   color: #29a94d;
   font-size: 48px;
 }
 
-.import-result h3 {
+.student-records-page .import-result h3 {
   margin-top: 12px;
   color: #303747;
 }
 
-.import-result p {
+.student-records-page .import-result p {
   margin-top: 5px;
   color: #7d8190;
   font-size: 12px;
 }
 
-.excel-actions {
+.student-records-page .excel-actions {
   display: flex;
   justify-content: space-between;
   gap: 10px;
@@ -1573,7 +1178,7 @@
   border-top: 1px solid #e9e9ed;
 }
 
-.excel-actions button {
+.student-records-page .excel-actions button {
   min-height: 43px;
   padding: 0 16px;
   border: 0;
@@ -1583,46 +1188,45 @@
   cursor: pointer;
 }
 
-.download-template {
+.student-records-page .download-template {
   background: #f3f4f6;
   color: #4d5360;
 }
 
-.import-now {
+.student-records-page .import-now {
   background: #8d0e12;
   color: #fff;
 }
 
-.import-now:disabled {
+.student-records-page .import-now:disabled {
   background: #c9c9cf;
   cursor: not-allowed;
 }
 
-/* ========================================================= RESPONSIVE ========================================================= */
 @media (max-width: 900px) {
-  .form-grid {
+.student-records-page .form-grid {
     grid-template-columns: 1fr;
   }
 
-  .form-group.full {
+.student-records-page .form-group.full {
     grid-column: auto;
   }
 
-  .profile-grid {
+.student-records-page .profile-grid {
     grid-template-columns: 1fr;
   }
 
-  .profile-grid > div.full {
+.student-records-page .profile-grid > div.full {
     grid-column: auto;
   }
 
-  .table-header {
+.student-records-page .table-header {
     align-items: flex-start;
     flex-direction: column;
     gap: 15px;
   }
 
-  .table-right {
+.student-records-page .table-right {
     width: 100%;
     flex-wrap: wrap;
   }
@@ -1630,57 +1234,59 @@
 }
 
 @media (max-width: 720px) {
-  .page-header {
+.student-records-page .page-header {
     align-items: flex-start;
     flex-direction: column;
   }
 
-  .page-actions {
+.student-records-page .page-actions {
     width: 100%;
     flex-wrap: wrap;
   }
 
-  .page-actions button {
+.student-records-page .page-actions button {
     flex: 1;
     justify-content: center;
   }
 
-  .import-steps, .mapping {
+.student-records-page .import-steps,
+.student-records-page .mapping {
     grid-template-columns: 1fr;
   }
 
-  .excel-actions {
+.student-records-page .excel-actions {
     flex-direction: column;
   }
 
 }
 
 @media (max-width: 600px) {
-  .dashboard-content {
+.student-records-page .dashboard-content {
     padding: 20px 15px;
   }
 
-  .modal-overlay {
+.student-records-page .modal-overlay {
     padding: 10px;
   }
 
-  .modal-container, .modal-container.large {
+.student-records-page .modal-container,
+.student-records-page .modal-container.large {
     max-height: 95vh;
   }
 
-  .form-grid {
+.student-records-page .form-grid {
     padding: 18px;
   }
 
-  .modal-header {
+.student-records-page .modal-header {
     padding: 18px;
   }
 
-  .modal-footer {
+.student-records-page .modal-footer {
     padding: 15px 18px;
   }
 
-  .toast {
+.student-records-page .toast {
     right: 15px;
     bottom: 15px;
     left: 15px;
@@ -1689,13 +1295,7 @@
 
 }
 
-/* =========================================================
-   SHARED BURGUNDY SIDEBAR
-   Dashboard, Credential Management, and Student Records
-   This final section overrides the legacy Student Records sidebar.
-   ========================================================= */
-/* Import this after AdministrationCredManagement.css. The component now uses the dashboard sidebar structure exactly. */
-:root {
+.student-records-page {
   --sidebar-width: 276px;
   --topbar-height: 78px;
   --ink-800: #353c4b;
@@ -1704,296 +1304,6 @@
   --ease: 220ms cubic-bezier(0.2, 0.75, 0.25, 1);
 }
 
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .sidebar {
-  position: fixed;
-  inset: 0 auto 0 0;
-  z-index: 50;
-  display: flex;
-  width: var(--sidebar-width);
-  flex-direction: column;
-  overflow: hidden;
-  color: var(--ink-800);
-  background: #710b0e;
-  border-right: 1px solid #ececf0;
-}
-
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .brand {
-  position: relative;
-  display: flex;
-  align-items: center;
-  min-height: var(--topbar-height);
-  gap: 12px;
-  padding: 15px 20px;
-  border-bottom: 1px solid #ececf0;
-}
-
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .brand-logo {
-  display: grid;
-  width: 44px;
-  height: 44px;
-  flex: 0 0 auto;
-  place-items: center;
-  overflow: hidden;
-
-}
-
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .brand-logo img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .brand-copy {
-  min-width: 0;
-}
-
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .brand-copy h2 {
-  margin: 0;
-  color: var(--white);
-  font: 700 1.18rem/1.25 "Poppins", sans-serif;
-  letter-spacing: -.02em;
-}
-
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .brand-copy span {
-  display: block;
-  margin-top: 2px;
-  color:white;
-  font-size: .7rem;
-  font-weight: 700;
-  letter-spacing: .13em;
-}
-
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .close-sidebar {
-  display: none;
-  width: 38px;
-  height: 38px;
-  margin-left: auto;
-  border: 0;
-  border-radius: 10px;
-  color: #fff;
-  background: rgba(255,255,255,.08);
-  cursor: pointer;
-}
-
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .sidebar-system-card {
-  position: relative;
-  display: grid;
-  grid-template-columns: 38px 1fr auto;
-  align-items: center;
-  gap: 10px;
-  margin: 18px 16px 10px;
-  padding: 13px;
-  border: 1px solid rgba(107,149,207,.17);
-  border-radius: 14px;
-  background: rgba(255,255,255,.045);
-}
-
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .system-card-icon {
-  display: grid;
-  width: 38px;
-  height: 38px;
-  place-items: center;
-  border-radius: 11px;
-  color: #ffd0d0;
-  background: rgba(255,255,255,.12);
-}
-
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .sidebar-system-card strong, :is(.administration-dashboard, .credential-management-page, .student-records-page) .sidebar-system-card span {
-  display: block;
-}
-
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .sidebar-system-card strong {
-  color: #fff4f4;
-  font-size: .78rem;
-  line-height: 1.35;
-}
-
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .sidebar-system-card div > span {
-  margin-top: 2px;
-  color: #efbcbc;
-  font-size: .67rem;
-}
-
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .online-dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #ffb800;
-  box-shadow: 0 0 0 4px rgba(255,184,0,.16);
-}
-
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .sidebar-navigation {
-  flex: 1;
-  overflow-y: auto;
-  padding: 8px 14px 22px;
-  scrollbar-width: thin;
-  scrollbar-color: #31445f transparent;
-}
-
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .menu {
-  display: grid;
-  gap: 4px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .menu-link {
-  position: relative;
-  display: grid;
-  width: 100%;
-  grid-template-columns: 34px minmax(0,1fr) auto;
-  align-items: center;
-  gap: 10px;
-  min-height: 46px;
-  padding: 6px 11px;
-  border: 1px solid transparent;
-  border-radius: 12px;
-  color: #f2c9c9;
-  background: transparent;
-  text-align: left;
-  cursor: pointer;
-  transition: color var(--ease), background var(--ease), transform var(--ease), border-color var(--ease);
-}
-
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .menu-link:hover {
-  color: #fff;
-  background: rgba(255,255,255,.065);
-  transform: translateX(2px);
-}
-
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .menu-item.active .menu-link {
-  color: #fff;
-  background: linear-gradient(90deg,rgba(255,255,255,.24),rgba(255,255,255,.12));
-  border-color: rgba(255,205,205,.35);
-  box-shadow: inset 3px 0 #ffd0d0;
-}
-
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .menu-icon {
-  display: grid;
-  width: 32px;
-  height: 32px;
-  place-items: center;
-  border-radius: 9px;
-  background: rgba(255,255,255,.035);
-}
-
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .menu-item.active .menu-icon {
-  color: #ffe3e3;
-  background: rgba(255,255,255,.18);
-}
-
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .menu-text {
-  overflow: hidden;
-  font-size: .85rem;
-  font-weight: 600;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .active-indicator {
-  color: #8db6ff;
-  font-size: .66rem;
-}
-
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .sidebar-profile {
-  display: grid;
-  grid-template-columns: 38px minmax(0,1fr) auto;
-  align-items: center;
-  gap: 10px;
-  padding: 16px 20px 18px;
-  border-top: 1px solid rgba(255,255,255,.08);
-  background: rgba(0,0,0,.09);
-}
-
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .profile-avatar {
-  display: grid;
-  width: 38px;
-  height: 38px;
-  place-items: center;
-  border-radius: 11px;
-  color: #fff;
-  background: linear-gradient(145deg,#b6323c,#7a0c10);
-  font-size: .75rem;
-  font-weight: 800;
-  box-shadow: 0 6px 14px rgba(70,8,10,.35);
-}
-
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .profile-details {
-  min-width: 0;
-}
-
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .profile-details strong, :is(.administration-dashboard, .credential-management-page, .student-records-page) .profile-details small {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .profile-details strong {
-  color: #fff5f5;
-  font-size: .79rem;
-}
-
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .profile-details small {
-  margin-top: 2px;
-  color: #efbcbc;
-  font-size: .67rem;
-}
-
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .profile-status {
-  color: #ffb800;
-  font-size: .48rem;
-}
-
-:is(.administration-dashboard, .credential-management-page, .student-records-page) .sidebar-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 40;
-  display: none;
-  border: 0;
-  background: rgba(3,10,21,.58);
-  backdrop-filter: blur(4px);
-}
-
-.credential-management-page .shell {
-  margin-left: var(--sidebar-width);
-}
-
-.student-records-page .main {
-  margin-left: var(--sidebar-width);
-}
-
-@media (max-width: 1024px) {
-  :is(.administration-dashboard, .credential-management-page, .student-records-page) .sidebar {
-    transform: translateX(-102%);
-    transition: transform 260ms cubic-bezier(.2,.75,.25,1);
-    box-shadow: 18px 0 55px rgba(4,12,25,.28);
-  }
-
-  :is(.administration-dashboard, .credential-management-page, .student-records-page) .sidebar.open {
-    transform: translateX(0);
-  }
-
-  :is(.administration-dashboard, .credential-management-page, .student-records-page) .sidebar-overlay.show {
-    display: block;
-  }
-
-  :is(.administration-dashboard, .credential-management-page, .student-records-page) .close-sidebar {
-    display: grid;
-    place-items: center;
-  }
-
-  .credential-management-page .shell, .student-records-page .main {
-    margin-left: 0;
-  }
-
-}
-/* =========================================================
-   STUDENT RECORDS CONTENT LAYOUT
-   Restores the content styles missing from the pasted CSS.
-   ========================================================= */
 .student-records-page .dashboard-content {
   padding: 28px 30px 42px;
 }
@@ -2112,8 +1422,11 @@
 }
 
 .student-records-page .summary-icon.burgundy { background: #fff0f0; color: #8d0e12; }
+
 .student-records-page .summary-icon.green { background: #e4f6e9; color: #218844; }
+
 .student-records-page .summary-icon.orange { background: #fff1d5; color: #a56a00; }
+
 .student-records-page .summary-icon.gray { background: #eef0f4; color: #626b79; }
 
 .student-records-page .summary-info span {
@@ -2141,7 +1454,9 @@
 }
 
 .student-records-page .search-wrapper { position: relative; }
+
 .student-records-page .search-wrapper > i { position: absolute; top: 50%; left: 14px; color: #8d0e12; transform: translateY(-50%); }
+
 .student-records-page .search-wrapper input,
 .student-records-page .search-panel select {
   width: 100%;
@@ -2153,8 +1468,11 @@
   color: #3e4759;
   font-size: 0.78rem;
 }
+
 .student-records-page .search-wrapper input { padding: 0 13px 0 40px; }
+
 .student-records-page .search-panel select { padding: 0 10px; }
+
 .student-records-page .search-wrapper input:focus,
 .student-records-page .search-panel select:focus { border-color: #b35457; box-shadow: 0 0 0 3px rgba(141, 14, 18, 0.08); }
 
@@ -2174,36 +1492,50 @@
   padding: 20px 22px;
   border-bottom: 1px solid #eceef2;
 }
+
 .student-records-page .table-left h3 { margin: 0; color: #263047; font-size: 1.05rem; }
+
 .student-records-page .table-left span { display: block; margin-top: 4px; color: #778091; font-size: 0.74rem; }
+
 .student-records-page .table-left strong { color: #8d0e12; }
+
 .student-records-page .table-responsive { overflow-x: auto; }
+
 .student-records-page #studentTable { width: 100%; min-width: 880px; border-collapse: collapse; }
+
 .student-records-page #studentTable th { padding: 13px 14px; background: #f7f8fa; color: #596274; font-size: 0.66rem; text-align: left; white-space: nowrap; }
+
 .student-records-page #studentTable td { padding: 13px 14px; border-top: 1px solid #eef0f3; color: #586174; font-size: 0.74rem; white-space: nowrap; }
+
 .student-records-page #studentTable tbody tr:hover { background: #fffafb; }
 
 @media (max-width: 1100px) {
-  .student-records-page .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .student-records-page .search-panel { grid-template-columns: 1fr 1fr; }
-  .student-records-page .search-wrapper { grid-column: 1 / -1; }
+.student-records-page .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+.student-records-page .search-panel { grid-template-columns: 1fr 1fr; }
+
+.student-records-page .search-wrapper { grid-column: 1 / -1; }
+
 }
 
 @media (max-width: 700px) {
-  .student-records-page .dashboard-content { padding: 18px 16px 32px; }
-  .student-records-page .page-header,
-  .student-records-page .table-header { align-items: flex-start; flex-direction: column; padding: 22px 20px; }
-  .student-records-page .page-actions,
-  .student-records-page .table-right { width: 100%; flex-wrap: wrap; }
-  .student-records-page .page-actions button,
-  .student-records-page .table-right button { flex: 1; }
-  .student-records-page .summary-grid,
-  .student-records-page .search-panel { grid-template-columns: 1fr; }
-  .student-records-page .search-wrapper { grid-column: auto; }
+.student-records-page .dashboard-content { padding: 18px 16px 32px; }
+
+.student-records-page .page-header,
+.student-records-page .table-header { align-items: flex-start; flex-direction: column; padding: 22px 20px; }
+
+.student-records-page .page-actions,
+.student-records-page .table-right { width: 100%; flex-wrap: wrap; }
+
+.student-records-page .page-actions button,
+.student-records-page .table-right button { flex: 1; }
+
+.student-records-page .summary-grid,
+.student-records-page .search-panel { grid-template-columns: 1fr; }
+
+.student-records-page .search-wrapper { grid-column: auto; }
+
 }
-/* =========================================================
-   STUDENT RECORDS ENHANCEMENTS
-   ========================================================= */
 
 .student-records-page .records-context {
   display: grid;
@@ -2260,13 +1592,21 @@
 }
 
 .student-records-page .page-title h1 { font-size: 2.35rem; }
+
 .student-records-page .page-title p { font-size: 0.93rem; }
+
 .student-records-page .summary-info span { font-size: 0.82rem; }
+
 .student-records-page .summary-info h2 { font-size: 1.9rem; }
+
 .student-records-page #studentTable th { font-size: 0.72rem; }
+
 .student-records-page #studentTable td { font-size: 0.81rem; }
+
 .student-records-page .student-name-cell strong { font-size: 0.82rem; }
+
 .student-records-page .student-name-cell small { font-size: 0.7rem; }
+
 .student-records-page .lrn-text { font-size: 0.76rem; }
 
 .student-records-page .status-badge {
@@ -2288,79 +1628,30 @@
 }
 
 .student-records-page .status-active { border-color: #ccefd7; }
+
 .student-records-page .status-graduated { border-color: #ffe0a5; }
+
 .student-records-page .status-transferred { border-color: #d4dcff; }
+
 .student-records-page .status-archived { border-color: #dddddf; }
 
 @media (max-width: 760px) {
-  .student-records-page .notification-button {
-    width: 42px;
-    height: 42px;
-    flex: 0 0 42px;
-  }
-
-  .student-records-page .notification-button b {
-    top: -3px;
-    right: -2px;
-    width: 18px;
-    height: 18px;
-    font-size: 0.54rem;
-  }
-
-  .student-records-page .records-context {
+.student-records-page .records-context {
     grid-template-columns: 44px minmax(0, 1fr);
     padding: 14px;
   }
 
-  .student-records-page .records-context-icon { width: 44px; height: 44px; }
-  .student-records-page .records-context-status { grid-column: 1 / -1; justify-self: start; }
-  .student-records-page .page-title h1 { font-size: 1.9rem; }
+.student-records-page .records-context-icon { width: 44px; height: 44px; }
+
+.student-records-page .records-context-status { grid-column: 1 / -1; justify-self: start; }
+
+.student-records-page .page-title h1 { font-size: 1.9rem; }
+
 }
 
 @media (max-width: 430px) {
-  .student-records-page .topbar { gap: 10px; padding-inline: 12px; }
-  .student-records-page .topbar-right { gap: 6px; }
-  .student-records-page .notification-button { width: 39px; height: 39px; flex-basis: 39px; }
-  .student-records-page .records-context > div:nth-child(2) span { font-size: 0.72rem; }
-}
+.student-records-page .records-context > div:nth-child(2) span { font-size: 0.72rem; }
 
-
-/* Topbar administrator menu */
-.student-records-page .admin-menu-wrap {
-  position: relative;
-}
-
-.student-records-page .admin-menu {
-  display: flex;
-  width: 100%;
-  min-width: 190px;
-  align-items: center;
-  gap: 11px;
-  padding: 5px 7px 5px 5px;
-  border: 0;
-  border-radius: 13px;
-  background: transparent;
-  text-align: left;
-  cursor: pointer;
-  transition: background 180ms ease;
-}
-
-.student-records-page .admin-menu:hover,
-.student-records-page .admin-menu[aria-expanded="true"] {
-  background: #faf3f3;
-}
-
-.student-records-page .admin-dropdown {
-  position: absolute;
-  top: calc(100% + 10px);
-  right: 0;
-  z-index: 120;
-  width: 210px;
-  padding: 8px;
-  border: 1px solid #eadedf;
-  border-radius: 13px;
-  background: #ffffff;
-  box-shadow: 0 16px 35px rgba(58, 20, 22, 0.16);
 }
 
 .student-records-page .admin-dropdown-heading {
@@ -2374,6 +1665,7 @@
 }
 
 .student-records-page .admin-dropdown-heading strong { color: #393f4d; font-size: 0.78rem; }
+
 .student-records-page .admin-dropdown-heading span { margin-top: 2px; color: #858994; font-size: 0.66rem; }
 
 .student-records-page .admin-logout {
@@ -2394,7 +1686,1069 @@
 
 .student-records-page .admin-logout:hover { background: #fff0f0; }
 
+
+/* Navigation copied from the approved AdministrationDashboard.css. */
+.student-records-page {
+  --navy-950: #710b0e;
+  --navy-900: #8d0e12;
+  --navy-850: #9f1519;
+  --navy-800: #ad2024;
+  --ink-950: #263047;
+  --ink-800: #353c4b;
+  --ink-600: #5b6270;
+  --ink-500: #686d79;
+  --line: #e8e9ee;
+  --line-strong: #dfe1e7;
+  --surface: #ffffff;
+  --surface-soft: #f5f6fa;
+  --surface-blue: #fff0f0;
+  --brand: #8d0e12;
+  --brand-hover: #710b0e;
+  --brand-soft: #fff0f0;
+  --focus-ring: #b24a50;
+  --blue: var(--brand);
+  --blue-dark: #710b0e;
+  --cyan: #c44248;
+  --red: #dc3545;
+  --amber: #eba500;
+  --green: #29a94d;
+  --purple: #7355b5;
+  --sidebar-width: 276px;
+  --topbar-height: 80px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --shadow-sm: 0 1px 2px rgba(31, 38, 57, 0.03), 0 9px 24px rgba(31, 38, 57, 0.06);
+  --shadow-md: 0 16px 42px rgba(31, 38, 57, 0.1);
+  --shadow-float: 0 24px 65px rgba(31, 38, 57, 0.2);
+  --ease: 220ms cubic-bezier(0.2, 0.75, 0.25, 1);
+}
+
+.student-records-page * {
+  box-sizing: border-box;
+}
+
+.student-records-page {
+  background: var(--surface-soft);
+  color: var(--ink-950);
+  font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+.student-records-page {
+  margin: 0;
+  min-width: 320px;
+  background:
+    radial-gradient(circle at 94% 3%, rgba(141, 14, 18, 0.06), transparent 24rem),
+    var(--surface-soft);
+  color: var(--ink-950);
+}
+
+.student-records-page a:focus-visible,
+.student-records-page button:focus-visible,
+.student-records-page input:focus-visible,
+.student-records-page select:focus-visible,
+.student-records-page textarea:focus-visible,
+.student-records-page [tabindex]:focus-visible {
+  outline: 3px solid rgba(141, 14, 18, 0.28);
+  outline-offset: 2px;
+}
+
+.student-records-page {
+  min-height: 100vh;
+  background: transparent;
+}
+
+.student-records-page .sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  width: var(--sidebar-width);
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  color: var(--ink-800);
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+  box-shadow: 4px 0 24px rgba(38, 48, 71, 0.025);
+}
+
+.student-records-page :is(.brand, .logo) {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 12px;
+  height: var(--topbar-height);
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.student-records-page :is(.brand-logo, .seal),
+.student-records-page .school-seal {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  overflow: hidden;
+  width: 44px;
+  height: 44px;
+}
+
+.student-records-page :is(.brand-logo, .seal) img,
+.student-records-page .school-seal img { width: 100%; height: 100%; object-fit: contain; }
+
+.student-records-page :is(.brand-copy, .logo-copy),
+.student-records-page :is(.school-name, .school),
+.student-records-page .profile-details,
+.student-records-page :is(.admin-menu-info, .admin-copy) { min-width: 0; }
+
+.student-records-page :is(.brand-copy, .logo-copy) h2 {
+  margin: 0;
+  color: var(--brand);
+  font-size: 1.22rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.035em;
+}
+
+.student-records-page :is(.brand-copy, .logo-copy) span {
+  display: block;
+  margin-top: 4px;
+  color: var(--ink-500);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+
+.student-records-page :is(.close-sidebar, .mobile-close),
+.student-records-page :is(.menu-button, .menu-btn),
+.student-records-page :is(.notification, .notification-button) {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--ink-600);
+  background: var(--surface);
+  cursor: pointer;
+  transition: color var(--ease), background var(--ease), border-color var(--ease);
+}
+
+.student-records-page :is(.close-sidebar, .mobile-close),
+.student-records-page :is(.menu-button, .menu-btn) { display: none; }
+
+.student-records-page :is(.close-sidebar, .mobile-close) { margin-left: auto; width: 36px; height: 36px; }
+
+.student-records-page .sidebar-system-card {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 16px 8px;
+  padding: 12px;
+  border: 1px solid #efdcdd;
+  border-radius: 14px;
+  background: #fff8f8;
+}
+
+.student-records-page .system-card-icon { display: grid; width: 36px; height: 36px; place-items: center; border-radius: 10px; color: var(--brand); background: #f6e4e5; }
+
+.student-records-page .sidebar-system-card strong,
+.student-records-page .sidebar-system-card span { display: block; }
+
+.student-records-page .sidebar-system-card strong { color: var(--ink-800); font-size: 0.76rem; line-height: 1.4; }
+
+.student-records-page .sidebar-system-card div > span { margin-top: 3px; color: var(--ink-500); font-size: 0.68rem; }
+
+.student-records-page .online-dot,
+.student-records-page .status-pulse { display: inline-block; flex: 0 0 auto; width: 8px; height: 8px; border-radius: 50%; background: #21865c; box-shadow: 0 0 0 4px #e6f4ed; }
+
+.student-records-page :is(.sidebar-navigation, .nav) { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 20px 14px; scrollbar-width: thin; scrollbar-color: #d8c6c8 transparent; }
+
+.student-records-page .navigation-group + .navigation-group { margin-top: 24px; }
+
+.student-records-page .menu-label { display: block; padding: 0 14px 10px; color: var(--ink-500); font-size: 0.65rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+
+.student-records-page .menu { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+
+.student-records-page :is(.menu-link, .nav > li > a, .nav > li > button) {
+  position: relative;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: var(--ink-600);
+  background: transparent;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color var(--ease), background var(--ease), border-color var(--ease);
+}
+
+.student-records-page :is(.menu-link, .nav > li > a, .nav > li > button):not(:disabled):not([aria-disabled="true"]):hover { color: var(--brand); background: #fbf0f1; }
+
+.student-records-page :is(.menu-item, .nav > li).active :is(.menu-link, .nav > li > a, .nav > li > button),
+.student-records-page :is(.menu-link, .nav > li > a, .nav > li > button)[aria-current="page"] {
+  color: #fff;
+  border-color: var(--brand);
+  background: var(--brand);
+  box-shadow: 0 5px 12px rgba(141, 14, 18, 0.14);
+}
+
+.student-records-page :is(.menu-item, .nav > li).active :is(.menu-link, .nav > li > a, .nav > li > button):hover,
+.student-records-page :is(.menu-link, .nav > li > a, .nav > li > button)[aria-current="page"]:hover { color: #fff; background: var(--brand-hover); }
+
+.student-records-page :is(.menu-link, .nav > li > a, .nav > li > button):disabled,
+.student-records-page :is(.menu-link, .nav > li > a, .nav > li > button)[aria-disabled="true"] { color: var(--ink-500); background: transparent; cursor: not-allowed; box-shadow: none; }
+
+.student-records-page :is(.menu-icon, .nav > li > a > i, .nav > li > button > i) { display: grid; width: 32px; height: 32px; place-items: center; border-radius: 9px; color: currentColor; }
+
+.student-records-page :is(.menu-item, .nav > li).active :is(.menu-icon, .nav > li > a > i, .nav > li > button > i),
+.student-records-page :is(.menu-link, .nav > li > a, .nav > li > button)[aria-current="page"] :is(.menu-icon, .nav > li > a > i, .nav > li > button > i) { background: rgba(255,255,255,0.12); }
+
+.student-records-page :is(.menu-text, .nav > li > a > span, .nav > li > button > span) { min-width: 0; font-size: 0.82rem; font-weight: 500; line-height: 1.45; overflow-wrap: anywhere; }
+
+.student-records-page .active-indicator { color: currentColor; font-size: 0.65rem; }
+
+.student-records-page .coming-soon { padding: 3px 6px; border-radius: 6px; color: #69616a; background: #f0edf0; font-size: 0.6rem; font-weight: 600; }
+
+.student-records-page .sidebar-profile { display: grid; grid-template-columns: 38px minmax(0,1fr) auto; flex-shrink: 0; align-items: center; gap: 10px; padding: 16px 20px; padding-bottom: max(16px, env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: #fcfafb; }
+
+.student-records-page .profile-avatar,
+.student-records-page .admin-avatar { display: grid; flex: 0 0 auto; place-items: center; width: 38px; height: 38px; border: 1px solid #efdcdd; border-radius: 12px; color: var(--brand); background: #f8e9ea; font-size: 0.75rem; font-weight: 700; }
+
+.student-records-page .admin-avatar.large { width: 45px; height: 45px; }
+
+.student-records-page .profile-details strong,
+.student-records-page .profile-details small,
+.student-records-page :is(.admin-menu-info, .admin-copy) strong,
+.student-records-page :is(.admin-menu-info, .admin-copy) small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.student-records-page .profile-details strong,
+.student-records-page :is(.admin-menu-info, .admin-copy) strong { color: var(--ink-800); font-size: 0.77rem; font-weight: 600; }
+
+.student-records-page .profile-details small,
+.student-records-page :is(.admin-menu-info, .admin-copy) small { margin-top: 3px; color: var(--ink-500); font-size: 0.67rem; }
+
+.student-records-page .profile-status { color: #21865c; font-size: 0.5rem; }
+
+.student-records-page :is(.sidebar-overlay, .sidebar-screen) { position: fixed; inset: 0; z-index: 40; display: none; border: 0; background: rgba(26, 20, 28, 0.42); backdrop-filter: blur(3px); }
+
+.student-records-page :is(.main, .shell) { min-width: 0; min-height: 100vh; margin-left: var(--sidebar-width); }
+
+.student-records-page .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  height: var(--topbar-height);
+  padding: 0 clamp(20px, 3vw, 30px);
+  border-bottom: 1px solid var(--line);
+  background: rgba(255,255,255,0.97);
+  box-shadow: 0 3px 14px rgba(38,48,71,0.025);
+  backdrop-filter: blur(16px);
+}
+
+.student-records-page .topbar-left,
+.student-records-page :is(.topbar-right, .top-actions) { display: flex; align-items: center; }
+
+.student-records-page .topbar-left { flex: 1; min-width: 0; gap: 12px; }
+
+.student-records-page :is(.topbar-right, .top-actions) { flex: 0 0 auto; gap: 12px; }
+
+.student-records-page .school-seal { padding: 3px; border: 1px solid var(--line); border-radius: 50%; }
+
+.student-records-page :is(.school-name-title, .school-name strong) { overflow: hidden; color: var(--brand); font-size: 0.82rem; font-weight: 600; line-height: 1.4; text-overflow: ellipsis; white-space: nowrap; }
+
+.student-records-page :is(.school-name-subtitle, .school-name span) { margin-top: 3px; color: var(--ink-500); font-size: 0.69rem; }
+
+.student-records-page .system-status { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border: 1px solid #e0eee6; border-radius: 12px; background: #f6fbf8; }
+
+.student-records-page .system-status strong,
+.student-records-page .system-status small { display: block; }
+
+.student-records-page .system-status strong { color: #236647; font-size: 0.72rem; font-weight: 600; }
+
+.student-records-page .system-status small { margin-top: 2px; color: var(--ink-500); font-size: 0.63rem; }
+
+.student-records-page .topbar-divider { width: 1px; height: 28px; background: var(--line); }
+
+.student-records-page .notification-wrapper,
+.student-records-page :is(.admin-menu-wrapper, .admin-menu-wrap) { position: relative; }
+
+.student-records-page :is(.notification, .notification-button) { position: relative; }
+
+.student-records-page :is(.notification, .notification-button):hover,
+.student-records-page :is(.notification, .notification-button).active,
+.student-records-page :is(.menu-button, .menu-btn):hover,
+.student-records-page :is(.close-sidebar, .mobile-close):hover { color: var(--brand); border-color: #e4bfc2; background: var(--brand-soft); }
+
+.student-records-page :is(.notification-badge, .notification-button b) { position: absolute; right: -4px; top: -5px; display: grid; min-width: 19px; height: 19px; place-items: center; padding: 0 4px; border: 2px solid #fff; border-radius: 12px; color: #fff; background: var(--brand); font-size: 0.6rem; font-weight: 700; }
+
+.student-records-page :is(.admin-menu, .admin) { display: grid; grid-template-columns: 38px minmax(0,1fr) auto; align-items: center; gap: 10px; min-width: 176px; min-height: 48px; padding: 4px 10px 4px 4px; border: 1px solid transparent; border-radius: 14px; color: var(--ink-800); background: transparent; text-align: left; cursor: pointer; transition: background var(--ease), border-color var(--ease); }
+
+.student-records-page :is(.admin-menu, .admin):hover,
+.student-records-page :is(.admin-menu, .admin).active { border-color: var(--line); background: #fcf8f8; }
+
+.student-records-page .admin-chevron { color: var(--ink-500); font-size: 0.65rem; transition: transform var(--ease); }
+
+.student-records-page :is(.admin-menu, .admin).active .admin-chevron { transform: rotate(180deg); }
+
+.student-records-page .notification-panel,
+.student-records-page .admin-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 12px);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: var(--shadow-float);
+  animation: pop-in 180ms ease-out;
+}
+
+.student-records-page .notification-panel {
+  width: min(390px, calc(100vw - 30px));
+}
+
+.student-records-page .notification-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.student-records-page .notification-header span:first-child {
+  color: var(--ink-500);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+}
+
+.student-records-page .notification-header h3 {
+  margin: 4px 0 0;
+  font: 700 1.02rem/1.3 "Poppins", sans-serif;
+}
+
+.student-records-page .notification-count {
+  padding: 5px 9px;
+  border-radius: 20px;
+  color: var(--blue);
+  background: var(--surface-blue);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.student-records-page .notification-list {
+  max-height: 345px;
+  overflow-y: auto;
+}
+
+.student-records-page .mini-notification {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 12px;
+  padding: 15px 20px;
+  border-bottom: 1px solid #eef1f5;
+  transition: background var(--ease);
+}
+
+.student-records-page .mini-notification:hover {
+  background: var(--surface-soft);
+}
+
+.student-records-page .notification-icon {
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+}
+
+.student-records-page .notification-icon {
+  width: 40px;
+  height: 40px;
+}
+
+.student-records-page .notification-icon.blue { color: var(--blue); background: var(--surface-blue); }
+
+.student-records-page .notification-icon.green { color: var(--green); background: #eaf9f3; }
+
+.student-records-page .notification-icon.purple { color: var(--purple); background: #f1edff; }
+
+.student-records-page .notification-copy strong,
+.student-records-page .notification-copy span,
+.student-records-page .notification-copy small {
+  display: block;
+}
+
+.student-records-page .notification-copy strong {
+  font-size: 0.79rem;
+}
+
+.student-records-page .notification-copy span {
+  margin-top: 3px;
+  color: var(--ink-600);
+  font-size: 0.73rem;
+  line-height: 1.45;
+}
+
+.student-records-page .notification-copy small {
+  margin-top: 5px;
+  color: #929fb0;
+  font-size: 0.64rem;
+}
+
+.student-records-page .view-notifications {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 13px;
+  border: 0;
+  color: var(--blue);
+  background: #fafcff;
+  font-size: 0.77rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.student-records-page .admin-dropdown {
+  width: 270px;
+  padding: 12px;
+}
+
+.student-records-page .dropdown-profile {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 8px;
+}
+
+.student-records-page .dropdown-profile strong,
+.student-records-page .dropdown-profile small {
+  display: block;
+}
+
+.student-records-page .dropdown-profile strong { font-size: 0.82rem; }
+
+.student-records-page .dropdown-profile small { margin-top: 2px; color: var(--ink-500); font-size: 0.68rem; }
+
+.student-records-page .dropdown-account-status {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 8px 6px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: #197352;
+  background: #eefaf5;
+  font-size: 0.71rem;
+  font-weight: 600;
+}
+
+.student-records-page .dropdown-divider {
+  height: 1px;
+  margin: 10px 0;
+  background: var(--line);
+}
+
+.student-records-page .admin-dropdown > button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+  padding: 11px;
+  border: 0;
+  border-radius: 10px;
+  color: #b4232c;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.student-records-page .admin-dropdown > button:hover { background: #fff2f3; }
+
+.student-records-page .admin-dropdown > button strong,
+.student-records-page .admin-dropdown > button small { display: block; }
+
+.student-records-page .admin-dropdown > button strong { font-size: 0.76rem; }
+
+.student-records-page .admin-dropdown > button small { margin-top: 2px; color: #8b5a5f; font-size: 0.65rem; }
+
+@keyframes pop-in {
+from { opacity: 0; transform: translateY(-7px) scale(0.98); }
+
+to { opacity: 1; transform: none; }
+
+}
+
+@keyframes fade-in {
+from { opacity: 0; }
+
+to { opacity: 1; }
+
+}
+
+@keyframes modal-in {
+from { opacity: 0; transform: translateY(14px) scale(0.985); }
+
+to { opacity: 1; transform: none; }
+
+}
+
+@media (max-width: 1240px) {
+.student-records-page .system-status { display: none; }
+
+.student-records-page .topbar-divider { display: none; }
+
+}
+
+@media (max-width: 1024px) {
+.student-records-page .sidebar { transform: translateX(-102%); transition: transform 260ms cubic-bezier(0.2, 0.75, 0.25, 1); box-shadow: 18px 0 55px rgba(4, 12, 25, 0.28); }
+
+.student-records-page .sidebar.open { transform: translateX(0); }
+
+.student-records-page :is(.sidebar-overlay, .sidebar-screen).show { display: block; }
+
+.student-records-page :is(.close-sidebar, .mobile-close),
+.student-records-page :is(.menu-button, .menu-btn) { display: grid; place-items: center; }
+
+.student-records-page :is(.main, .shell) { margin-left: 0; }
+
+}
+
 @media (max-width: 760px) {
-  .student-records-page .admin-menu { min-width: auto; padding: 4px; }
-  .student-records-page .admin-dropdown { position: fixed; top: 70px; right: 12px; width: 200px; }
+.student-records-page { --topbar-height: 68px; }
+
+.student-records-page .topbar { padding-inline: 16px; }
+
+.student-records-page .school-seal { display: none; }
+
+.student-records-page :is(.school-name-title, .school-name strong) { max-width: 300px; }
+
+.student-records-page :is(.admin-menu, .admin) { min-width: auto; grid-template-columns: 38px; padding: 4px; }
+
+.student-records-page :is(.admin-menu-info, .admin-copy),
+.student-records-page .admin-chevron { display: none; }
+
+}
+
+@media (max-width: 560px) {
+.student-records-page :is(.school-name-title, .school-name strong) { max-width: 180px; font-size: 0.75rem; }
+
+.student-records-page :is(.school-name-subtitle, .school-name span) { display: none; }
+
+.student-records-page .notification-panel { position: fixed; top: 76px; right: 12px; left: 12px; width: auto; }
+
+.student-records-page .admin-dropdown { position: fixed; top: 76px; right: 12px; }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+.student-records-page *,
+.student-records-page *::before,
+.student-records-page *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+}
+
+@media print {
+.student-records-page .sidebar,
+.student-records-page .topbar { display: none !important; }
+
+.student-records-page :is(.main, .shell) { margin: 0; }
+
+}
+
+@media (max-width: 1024px) {
+.student-records-page .sidebar { transform: translateX(-102%); }
+
+.student-records-page .sidebar.open { transform: translateX(0); }
+
+.student-records-page :is(.main, .shell) { margin-left: 0; }
+
+}
+
+.student-records-page :is(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+.student-records-page .notification-panel,
+.student-records-page .admin-dropdown {
+  max-height: calc(100dvh - var(--topbar-height) - 28px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.student-records-page .notification-list { max-height: min(345px, 50dvh); }
+
+@media (max-width: 1240px) {
+.student-records-page .system-status,
+.student-records-page .topbar-divider { display: none; }
+
+}
+
+@media (max-width: 1024px) {
+.student-records-page .sidebar {
+    width: min(var(--sidebar-width), calc(100vw - 48px));
+    visibility: hidden;
+    transform: translateX(-102%);
+    transition: transform var(--ease), visibility var(--ease);
+    box-shadow: 16px 0 48px rgba(38, 20, 26, 0.16);
+  }
+
+.student-records-page .sidebar.open { visibility: visible; transform: translateX(0); }
+
+.student-records-page :is(.sidebar-overlay, .sidebar-screen).show { display: block; }
+
+.student-records-page :is(.main, .shell) { margin-left: 0; }
+
+.student-records-page :is(.close-sidebar, .mobile-close),
+.student-records-page :is(.menu-button, .menu-btn) { display: grid; }
+
+body:has(.student-records-page .sidebar.open) { overflow: hidden; }
+
+}
+
+@media (max-width: 760px) {
+.student-records-page { --topbar-height: 68px; }
+
+.student-records-page .topbar { height: var(--topbar-height); min-height: 0; gap: 12px; padding-inline: 16px; }
+
+.student-records-page .topbar-left { gap: 10px; }
+
+.student-records-page :is(.topbar-right, .top-actions) { gap: 8px; }
+
+.student-records-page :is(.admin-menu, .admin) { min-width: 46px; width: 46px; grid-template-columns: 38px; padding: 3px; }
+
+.student-records-page :is(.admin-menu-info, .admin-copy),
+.student-records-page .admin-chevron { display: none; }
+
+.student-records-page :is(.school-name-title, .school-name strong) { max-width: 100%; }
+
+}
+
+@media (max-width: 560px) {
+.student-records-page .topbar { padding-inline: 12px; gap: 8px; }
+
+.student-records-page :is(.school-name-title, .school-name strong) { max-width: 100%; font-size: 0.72rem; }
+
+.student-records-page .notification-panel,
+.student-records-page .admin-dropdown {
+    position: fixed;
+    top: calc(var(--topbar-height) + 8px);
+    right: 12px;
+    left: 12px;
+    width: auto;
+  }
+
+}
+
+@media print {
+.student-records-page .sidebar,
+.student-records-page .topbar,
+.student-records-page :is(.sidebar-overlay, .sidebar-screen) { display: none !important; }
+
+.student-records-page :is(.main, .shell) { margin-left: 0; }
+
+}
+
+.student-records-page {
+  --maroon: #8d0e12;
+  --maroon-dark: #710b0e;
+  --maroon-deep: #5e0b0f;
+  --maroon-light: #fff0f0;
+  --sidebar-width: 276px;
+  --topbar-height: 78px;
+  width: 100%;
+  background: #f5f6fa;
+  font-family: "Poppins", "Inter", "Segoe UI", Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.student-records-page .sidebar {
+  color: #fff;
+  background: var(--maroon-dark);
+  border-right: 0;
+  box-shadow: none;
+  scrollbar-color: rgba(255,255,255,.2) transparent;
+}
+
+.student-records-page :is(.brand, .logo) {
+  height: var(--topbar-height);
+  min-height: var(--topbar-height);
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255,255,255,.12);
+}
+
+.student-records-page :is(.brand-logo, .seal) { width: 45px; height: 45px; padding: 0; }
+
+.student-records-page :is(.brand-copy, .logo-copy) h2,
+.student-records-page :is(.brand-copy, .logo-copy) > strong {
+  display: block;
+  margin: 0;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: 0;
+}
+
+.student-records-page :is(.brand-copy, .logo-copy) span {
+  margin-top: 3px;
+  color: rgba(255,255,255,.68);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .4px;
+}
+
+.student-records-page :is(.close-sidebar, .mobile-close) {
+  width: 35px;
+  height: 35px;
+  border: 0;
+  border-radius: 9px;
+  color: #fff;
+  background: rgba(255,255,255,.1);
+  font-size: 14px;
+}
+
+.student-records-page :is(.close-sidebar, .mobile-close):hover { background: rgba(255,255,255,.18); }
+
+.student-records-page :is(.sidebar-navigation, .nav) {
+  padding: 17px 13px 18px;
+  scrollbar-color: rgba(255,255,255,.2) transparent;
+}
+
+.student-records-page .navigation-group + .navigation-group { margin-top: 20px; }
+
+.student-records-page .menu-label {
+  padding: 0 12px 9px;
+  color: rgba(255,255,255,.6);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .1em;
+}
+
+.student-records-page .menu { gap: 5px; }
+
+.student-records-page :is(.menu-item, .nav > li) { width: 100%; }
+
+.student-records-page :is(.menu-link, .nav > li > a, .nav > li > button) {
+  grid-template-columns: 20px minmax(0,1fr) auto;
+  gap: 13px;
+  min-height: 47px;
+  padding: 8px 15px;
+  border: 0;
+  border-radius: 11px;
+  color: rgba(255,255,255,.78);
+  background: transparent;
+  box-shadow: none;
+  transition: background var(--ease), color var(--ease), transform var(--ease), box-shadow var(--ease);
+}
+
+.student-records-page :is(.menu-link, .nav > li > a, .nav > li > button):not(:disabled):not([aria-disabled="true"]):hover {
+  color: #fff;
+  background: rgba(255,255,255,.1);
+  transform: translateX(1px);
+}
+
+.student-records-page :is(.menu-link, .nav > li > a, .nav > li > button):not(:disabled):not([aria-disabled="true"]):active { transform: scale(.98); }
+
+.student-records-page :is(.menu-icon, .nav > li > a > i, .nav > li > button > i) {
+  width: 20px;
+  height: 20px;
+  color: inherit;
+  background: transparent;
+  border-radius: 0;
+  font-size: 14px;
+}
+
+.student-records-page :is(.menu-text, .nav > li > a > span, .nav > li > button > span) { color: inherit; font-size: 12px; font-weight: 500; }
+
+.student-records-page :is(.menu-item, .nav > li).active :is(.menu-link, .nav > li > a, .nav > li > button),
+.student-records-page :is(.menu-link, .nav > li > a, .nav > li > button).active,
+.student-records-page :is(.menu-link, .nav > li > a, .nav > li > button)[aria-current="page"],
+.student-records-page :is(.menu-item, .nav > li).active :is(.menu-link, .nav > li > a, .nav > li > button):hover,
+.student-records-page :is(.menu-link, .nav > li > a, .nav > li > button).active:hover,
+.student-records-page :is(.menu-link, .nav > li > a, .nav > li > button)[aria-current="page"]:hover {
+  color: #fff;
+  background: linear-gradient(135deg, #a91b20, #8d0e12);
+  box-shadow: inset 3px 0 0 rgba(255,255,255,.8), 0 8px 18px rgba(0,0,0,.12);
+}
+
+.student-records-page :is(.menu-item, .nav > li).active :is(.menu-icon, .nav > li > a > i, .nav > li > button > i),
+.student-records-page :is(.menu-link, .nav > li > a, .nav > li > button).active :is(.menu-icon, .nav > li > a > i, .nav > li > button > i),
+.student-records-page :is(.menu-link, .nav > li > a, .nav > li > button)[aria-current="page"] :is(.menu-icon, .nav > li > a > i, .nav > li > button > i) { color: #fff; background: transparent; }
+
+.student-records-page :is(.menu-link, .nav > li > a, .nav > li > button):disabled,
+.student-records-page :is(.menu-link, .nav > li > a, .nav > li > button)[aria-disabled="true"] { color: rgba(255,255,255,.55); box-shadow: none; cursor: not-allowed; }
+
+.student-records-page .coming-soon,
+.student-records-page .nav-badge { padding: 3px 6px; border-radius: 50px; color: #986400; background: #fff1d3; font-size: 10px; font-weight: 700; }
+
+.student-records-page .sidebar-system-card {
+  order: 2;
+  margin: 0 14px 14px;
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 13px;
+  background: rgba(255,255,255,.07);
+}
+
+.student-records-page .sidebar-system-card strong { color: #fff; font-size: 10px; }
+
+.student-records-page .sidebar-system-card div > span { color: rgba(255,255,255,.68); font-size: 9px; }
+
+.student-records-page .system-card-icon { color: #fff; background: rgba(255,255,255,.1); }
+
+.student-records-page .sidebar-profile {
+  order: 3;
+  padding: 14px;
+  padding-bottom: max(14px, env(safe-area-inset-bottom));
+  border-top: 1px solid rgba(255,255,255,.1);
+  background: transparent;
+}
+
+.student-records-page .profile-details strong { color: #fff; font-size: 11px; }
+
+.student-records-page .profile-details small { color: rgba(255,255,255,.68); font-size: 10px; }
+
+.student-records-page .sidebar .profile-avatar { color: #fff; border-color: rgba(255,255,255,.15); background: rgba(255,255,255,.1); }
+
+.student-records-page .sidebar :focus-visible { outline-color: #fff; }
+
+.student-records-page :is(.sidebar-overlay, .sidebar-screen) { background: rgba(20,23,32,.48); backdrop-filter: blur(2px); }
+
+.student-records-page .topbar {
+  height: var(--topbar-height);
+  min-height: var(--topbar-height);
+  gap: 20px;
+  padding: 0 30px;
+  background: rgba(255,255,255,.98);
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 5px 20px rgba(36,42,57,.04);
+  backdrop-filter: blur(10px);
+}
+
+.student-records-page .topbar-left { gap: 13px; }
+
+.student-records-page :is(.topbar-right, .top-actions) { gap: 16px; margin-left: 18px; }
+
+.student-records-page .system-status,
+.student-records-page .topbar-divider { display: none; }
+
+.student-records-page .school-seal { display: grid; width: 48px; height: 48px; flex: 0 0 48px; padding: 0; border: 0; border-radius: 0; }
+
+.student-records-page :is(.school-name-title, .school-name strong) { max-width: 760px; color: var(--maroon); font-size: 15px; font-weight: 700; text-transform: uppercase; }
+
+.student-records-page :is(.school-name-subtitle, .school-name span) { display: block; margin-top: 2px; color: #7d8190; font-size: 10px; }
+
+.student-records-page :is(.menu-button, .menu-btn) { width: 40px; height: 40px; flex: 0 0 40px; color: var(--maroon); border-radius: 10px; font-size: 14px; }
+
+.student-records-page :is(.notification, .notification-button) { width: 42px; height: 42px; color: #555b68; background: #fafafa; border-radius: 50%; font-size: 14px; }
+
+.student-records-page :is(.notification, .notification-button):hover,
+.student-records-page :is(.notification, .notification-button).active { color: var(--maroon); background: var(--maroon-light); border-color: #efd4d4; }
+
+.student-records-page :is(.notification-badge, .notification-button b) { top: -4px; right: -3px; min-width: 20px; height: 20px; background: #dc3545; border-radius: 50%; font-size: 9px; }
+
+.student-records-page :is(.admin-menu, .admin) {
+  grid-template-columns: 43px minmax(0,1fr) auto;
+  min-width: 195px;
+  min-height: 53px;
+  gap: 10px;
+  padding: 5px 6px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+}
+
+.student-records-page :is(.admin-menu, .admin):hover,
+.student-records-page :is(.admin-menu, .admin).active { background: #f8f8fa; }
+
+.student-records-page .admin-avatar { width: 43px; height: 43px; border: 1px solid var(--line); border-radius: 50%; color: var(--maroon); background: #fff; font-size: 11px; font-weight: 800; }
+
+.student-records-page .admin-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+
+.student-records-page :is(.admin-menu-info, .admin-copy) strong { font-size: 11px; font-weight: 700; }
+
+.student-records-page :is(.admin-menu-info, .admin-copy) small { margin-top: 2px; font-size: 9px; }
+
+.student-records-page .notification-panel { width: min(340px, calc(100vw - 24px)); border-radius: 15px; box-shadow: 0 20px 50px rgba(31,38,57,.15); }
+
+.student-records-page .notification-header { padding: 15px 17px; }
+
+.student-records-page .mini-notification { grid-template-columns: 34px minmax(0,1fr); gap: 11px; padding: 13px 16px; }
+
+.student-records-page .notification-icon { width: 34px; height: 34px; border-radius: 9px; font-size: 12px; }
+
+@media (max-width: 1200px) {
+.student-records-page :is(.school-name-title, .school-name strong) { max-width: 570px; }
+
+}
+
+@media (max-width: 1024px) {
+.student-records-page { --topbar-height: 74px; }
+
+.student-records-page .topbar { padding-inline: 20px; }
+
+.student-records-page :is(.school-name-title, .school-name strong) { max-width: 500px; font-size: 13px; }
+
+}
+
+@media (max-width: 760px) {
+.student-records-page { --topbar-height: 68px; }
+
+.student-records-page .topbar { padding-inline: 14px; gap: 10px; }
+
+.student-records-page .topbar-left { gap: 10px; }
+
+.student-records-page :is(.topbar-right, .top-actions) { gap: 10px; margin-left: 0; }
+
+.student-records-page .school-seal { width: 40px; height: 40px; flex-basis: 40px; }
+
+.student-records-page :is(.school-name-title, .school-name strong) { max-width: 100%; font-size: 11px; }
+
+.student-records-page :is(.school-name-subtitle, .school-name span) { font-size: 8px; }
+
+.student-records-page :is(.admin-menu, .admin) { grid-template-columns: 38px; min-width: 44px; width: 44px; min-height: 44px; padding: 3px; }
+
+.student-records-page :is(.admin-menu-info, .admin-copy),
+.student-records-page .admin-chevron { display: none; }
+
+.student-records-page :is(.admin-menu, .admin) .admin-avatar { width: 38px; height: 38px; }
+
+}
+
+@media (max-width: 560px) {
+.student-records-page .topbar { gap: 8px; padding-inline: 12px; }
+
+.student-records-page .topbar-left,
+.student-records-page :is(.topbar-right, .top-actions) { gap: 8px; }
+
+.student-records-page .school-seal { display: none; }
+
+.student-records-page :is(.school-name-subtitle, .school-name span) { display: none; }
+
+.student-records-page :is(.school-name-title, .school-name strong) { font-size: 10px; }
+
+.student-records-page .notification-panel { width: auto; }
+
+}
+
+.student-records-page :is(.brand-logo, .seal),
+.student-records-page :is(.brand-logo, .seal) img,
+.student-records-page .school-seal,
+.student-records-page .school-seal img {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+  outline: none;
+  filter: none;
+}
+
+.student-records-page :is(.brand-logo, .seal),
+.student-records-page .school-seal {
+  overflow: visible;
+}
+
+.student-records-page :is(.brand-logo, .seal) img,
+.student-records-page .school-seal img {
+  display: block;
+  object-fit: contain;
+}
+
+.student-records-page :is(.brand-logo, .seal)::before,
+.student-records-page :is(.brand-logo, .seal)::after,
+.student-records-page .school-seal::before,
+.student-records-page .school-seal::after {
+  content: none;
+}
+
+/* Student records markup adapters and dashboard-aligned content spacing. */
+.student-records-page { --shell-sidebar: var(--sidebar-width); --shell-maroon: var(--maroon); --shell-line: var(--line); overflow-x: clip; }
+.student-records-page,
+.student-records-page *,
+.student-records-page *::before,
+.student-records-page *::after { box-sizing: border-box; }
+.student-records-page button,
+.student-records-page input,
+.student-records-page select,
+.student-records-page textarea { font-family: inherit; }
+.student-records-page .academic-year { display: none; }
+.student-records-page .logo > img { display: block; width: 45px; height: 45px; flex: 0 0 45px; object-fit: contain; }
+.student-records-page .brand-logo,
+.student-records-page .brand-logo img,
+.student-records-page .logo > img,
+.student-records-page .school-seal,
+.student-records-page .school-seal img,
+.student-records-page .admin-avatar,
+.student-records-page .admin-menu img {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  filter: none;
+}
+.student-records-page .admin-menu > img { display: block; width: 43px; height: 43px; object-fit: contain; }
+.student-records-page .admin-menu strong { display: block; color: #353c4b; font-size: 11px; font-weight: 700; }
+.student-records-page .admin-menu small { display: block; margin-top: 2px; color: #686d79; font-size: 9px; }
+.student-records-page .school-name strong { display: block; }
+.student-records-page .sidebar > .menu { flex: 1; align-content: start; overflow-y: auto; padding: 17px 13px 18px; }
+.student-records-page .menu > li { margin: 0; list-style: none; }
+/* Legacy menu links use the same dimensions as dashboard menu-link buttons. */
+.student-records-page .menu > li > :is(a, button):not(.menu-link) {
+  display: flex; align-items: center; gap: 13px; width: 100%; min-height: 47px;
+  padding: 8px 15px; border: 0; border-radius: 11px; background: transparent;
+  color: rgba(255,255,255,.78); font-size: 12px; font-weight: 500;
+  text-align: left; text-decoration: none; cursor: pointer;
+}
+.student-records-page .menu > li > :is(a, button):not(.menu-link) > span { display: flex; align-items: center; gap: 13px; }
+.student-records-page .menu > li > :is(a, button):not(.menu-link) i { width: 20px; text-align: center; font-size: 14px; }
+.student-records-page .menu > li > :is(a, button):not(.menu-link):hover { color: #fff; background: rgba(255,255,255,.1); }
+.student-records-page .menu > li.active > :is(a, button):not(.menu-link),
+.student-records-page .menu > li > :is(a, button)[aria-current="page"]:not(.menu-link) { color: #fff; background: linear-gradient(135deg,#a91b20,#8d0e12); box-shadow: inset 3px 0 rgba(255,255,255,.8),0 8px 18px rgba(0,0,0,.12); }
+.student-records-page .page-header { min-height: 124px; margin: 0; padding: 26px clamp(20px,3vw,30px); border: 0; background: #f5f6fa; }
+.student-records-page .page-title h1 { color: #8d0e12; font-size: clamp(1.8rem,3vw,2.15rem); font-weight: 700; letter-spacing: -.035em; }
+.student-records-page .page-title p { color: #5b6270; font-size: .9rem; line-height: 1.65; }
+.student-records-page .dashboard-content { width: min(100%,1600px); margin: 0 auto; padding: 0 clamp(20px,3vw,30px) 18px; }
+.student-records-page .summary-grid { gap: 18px; }
+.student-records-page .summary-card { min-height: 128px; padding: 21px; gap: 15px; border: 0; border-radius: 17px; box-shadow: 0 12px 30px rgba(31,38,57,.07); }
+.student-records-page .summary-icon { width: 57px; height: 57px; flex-basis: 57px; border-radius: 16px; }
+.student-records-page .summary-info h2 { font-size: 1.72rem; }
+@media (max-width: 1024px) {
+  .student-records-page .sidebar.show { visibility: visible; transform: translateX(0); }
+}
+@media (max-width: 760px) {
+  .student-records-page .admin-menu > img { width: 38px; height: 38px; }
+  .student-records-page .admin-menu > div:not(.admin-avatar) { display: none; }
+  .student-records-page .page-header { min-height: auto; align-items: stretch; flex-direction: column; padding: 24px 18px 20px; }
+  .student-records-page .dashboard-content { padding: 0 16px 12px; }
+  .student-records-page .page-actions { flex-wrap: wrap; }
 }

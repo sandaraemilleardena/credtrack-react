@@ -1,0 +1,89 @@
+@import "./ictDashboard.css";
+
+/* A backup vault: recovery summary, capacity ring, job history, policy, audit. */
+.ict-protection-page .dp-overview { display:grid; grid-template-columns:minmax(0,1.7fr) minmax(0,1fr); gap:20px; margin-bottom:19px; }
+.ict-protection-page .dp-vault { padding:27px 30px 0; border:1px solid #dce8df; border-radius:18px; background:linear-gradient(115deg,#f1f7f2,#fcfdfb); overflow:hidden; }
+.ict-protection-page .dp-vault-header { display:flex; align-items:center; gap:13px; }
+.ict-protection-page .dp-shield { display:grid; place-items:center; width:54px; height:54px; color:#4f7b60; background:#e1eee4; border:1px solid #d4e6d9; border-radius:15px; }
+.ict-protection-page .dp-vault-header .ov-pill { color:#63816a; }
+.ict-protection-page .dp-vault h2 { margin:20px 0 12px; font-size:28px; font-weight:600; line-height:1.3; color:#314e3d; letter-spacing:-.045em; }
+.ict-protection-page .dp-vault > p { color:#7b8c80; font-size:12px; max-width:450px; line-height:1.9; margin:0 0 26px; }
+.ict-protection-page .dp-vault-footer { display:flex; align-items:center; justify-content:space-between; gap:12px; border-top:1px solid #dfe9df; margin:0 -30px; padding:19px 30px; background:#ffffff55; }
+.ict-protection-page .dp-vault-footer > div > span { display:block; color:#8a968c; font-size:10px; }
+.ict-protection-page .dp-vault-footer strong { display:block; color:#516557; font-size:12px; font-weight:500; margin-top:4px; }
+.ict-protection-page .dp-capacity { padding:24px; border:1px solid #e7e9ef; border-radius:18px; background:#fff; text-align:center; }
+.ict-protection-page .dp-card-top { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.ict-protection-page .dp-card-top h2 { margin:0; font-size:14px; font-weight:600; letter-spacing:-.02em; }
+.ict-protection-page .dp-card-top > svg { color:#a4acb8; }
+.ict-protection-page .dp-storage-ring { width:145px; height:145px; padding:10px; border-radius:50%; background:conic-gradient(#638b72 var(--storage),#edf2ee 0); margin:20px auto 16px; }
+.ict-protection-page .dp-storage-ring > div { width:100%; height:100%; display:flex; align-items:center; justify-content:center; flex-direction:column; border-radius:50%; background:#fff; }
+.ict-protection-page .dp-storage-ring strong { font-size:30px; letter-spacing:-.045em; color:#364d3e; font-weight:600; }
+.ict-protection-page .dp-storage-ring span { color:#94a196; font-size:10px; }
+.ict-protection-page .dp-capacity > p { color:#87918c; font-size:11px; margin:0; }
+.ict-protection-page .dp-capacity > p strong { color:#58685d; font-weight:500; }
+.ict-protection-page .dp-capacity > small { display:block; margin-top:7px; color:#9aa39d; font-size:10px; }
+.ict-protection-page .dp-controls { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-bottom:21px; }
+.ict-protection-page .dp-controls article { display:flex; align-items:center; gap:10px; padding:17px; background:#fff; border:1px solid #e7e9ef; border-radius:11px; min-width:0; flex-wrap:wrap; }
+.ict-protection-page .dp-control-icon { width:31px; height:31px; display:grid; place-items:center; color:#74927d; background:#f1f6f2; border-radius:8px; flex-shrink:0; }
+.ict-protection-page .dp-controls article > div { flex:1; }
+.ict-protection-page .dp-controls h3 { margin:0; font-size:11px; font-weight:500; }
+.ict-protection-page .dp-controls p { font-size:10px; color:#9299a5; margin:4px 0 0; line-height:1.6; }
+.ict-protection-page .dp-controls .ix-badge { font-size:9px; }
+.ict-protection-page .dp-attention { display:flex; align-items:center; gap:12px; padding:14px 17px; margin-bottom:23px; border:1px solid #ecdfc7; border-radius:10px; background:#fffaf0; }
+.ict-protection-page .dp-attention > svg { color:#b18c48; flex-shrink:0; }
+.ict-protection-page .dp-attention p { margin:0; flex:1; color:#9b8660; font-size:11px; line-height:1.8; }
+.ict-protection-page .dp-attention strong { font-weight:500; color:#8c743e; }
+.ict-protection-page .dp-attention button { flex-shrink:0; }
+.ict-protection-page .dp-workspace { display:grid; grid-template-columns:minmax(0,1fr) 280px; gap:21px; align-items:start; }
+.ict-protection-page .dp-history { scroll-margin-top:95px; }
+.ict-protection-page .dp-filters { display:flex; gap:10px; flex-wrap:wrap; padding:16px 20px; border-bottom:1px solid #edf0f4; }
+.ict-protection-page .dp-filters .ix-search { flex:1; min-width:150px; }
+.ict-protection-page .dp-filters input { width:100%; }
+.ict-protection-page .dp-filters select { min-height:37px; font-size:10px; padding:8px; border:1px solid #e5e8ee; border-radius:8px; color:#7a8495; background:#fff; }
+.ict-protection-page .dp-backup-list { padding:0 20px; }
+.ict-protection-page .dp-backup-row { display:flex; align-items:center; gap:13px; width:100%; padding:20px 0; background:transparent; border:0; border-bottom:1px solid #edf0f4; text-align:left; }
+.ict-protection-page .dp-backup-row:last-child { border-bottom:0; }
+.ict-protection-page .dp-backup-row:hover .dp-job-copy strong { color:#8d0e12; }
+.ict-protection-page .dp-job-icon { display:grid; place-items:center; width:37px; height:42px; color:#728c7b; background:#eef4f0; border-radius:9px; flex-shrink:0; }
+.ict-protection-page .dp-job-icon.failed { color:#b56b6e; background:#fbf0f0; }
+.ict-protection-page .dp-job-copy { display:flex; flex-direction:column; flex:1; min-width:0; }
+.ict-protection-page .dp-job-copy strong { font-size:12px; font-weight:500; color:#465165; }
+.ict-protection-page .dp-job-copy > span { font-size:10px; color:#858e9e; margin:4px 0; overflow-wrap:anywhere; }
+.ict-protection-page .dp-job-copy small { font-size:10px; color:#a0a7b2; }
+.ict-protection-page .dp-job-state { display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
+.ict-protection-page .dp-job-state small { color:#96a095; font-size:9px; }
+.ict-protection-page .dp-backup-row > svg { color:#a3abb7; flex-shrink:0; }
+.ict-protection-page .dp-policy { background:#fff; border:1px solid #e7e9ef; padding:22px; border-radius:14px; }
+.ict-protection-page .dp-policy > p { color:#8a93a1; font-size:11px; line-height:1.8; margin:11px 0 17px; }
+.ict-protection-page .dp-policy dl { margin:0 0 19px; }
+.ict-protection-page .dp-policy dl > div { padding:13px 0; border-bottom:1px solid #eff1f5; }
+.ict-protection-page .dp-policy dt { color:#9ba2af; font-size:10px; }
+.ict-protection-page .dp-policy dd { margin:5px 0 0; color:#5d697c; font-size:12px; line-height:1.7; }
+.ict-protection-page .dp-policy dd small { display:block; color:#9ca4b1; font-size:9px; }
+.ict-protection-page .dp-policy > button { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; font-size:11px; }
+.ict-protection-page .dp-policy-note { display:flex; align-items:flex-start; gap:9px; padding:15px 0 0; margin-top:15px; border-top:1px solid #eff1f5; color:#8b968f; font-size:10px; line-height:1.8; }
+.ict-protection-page .dp-policy-note svg { flex-shrink:0; margin-top:3px; }
+.ict-protection-page .dp-audit { display:grid; grid-template-columns:230px 1fr; gap:27px; margin-top:23px; padding:25px; border:1px solid #e7e9ef; border-radius:14px; background:#fff; }
+.ict-protection-page .dp-audit h2 { margin:8px 0; font-size:17px; letter-spacing:-.02em; font-weight:600; }
+.ict-protection-page .dp-audit > div > p { font-size:11px; line-height:1.8; color:#9098a5; margin:0; }
+.ict-protection-page .dp-audit ol { display:grid; grid-template-columns:1fr 1fr; gap:21px; margin:0; padding:0; list-style:none; }
+.ict-protection-page .dp-audit li { display:flex; align-items:flex-start; gap:10px; }
+.ict-protection-page .dp-audit-dot { width:6px; height:6px; border-radius:50%; background:#8baf96; margin-top:6px; flex-shrink:0; }
+.ict-protection-page .dp-audit li strong { font-size:11px; font-weight:500; color:#5f6b79; }
+.ict-protection-page .dp-audit li p { margin:4px 0; font-size:10px; color:#8994a0; overflow-wrap:anywhere; }
+.ict-protection-page .dp-audit time { font-size:9px; color:#a8afb9; }
+.ict-protection-page .dp-empty { padding:30px 15px; text-align:center; color:#839082; }
+.ict-protection-page .dp-empty h3 { font-size:14px; font-weight:500; }
+.ict-protection-page .dp-empty p { font-size:11px; }
+.ict-protection-page .dp-details dl > div { display:flex; justify-content:space-between; gap:15px; padding:11px 0; border-bottom:1px solid #edf0f4; font-size:12px; }
+.ict-protection-page .dp-details dt { color:#8b95a4; }
+.ict-protection-page .dp-details dd { margin:0; text-align:right; color:#536376; }
+.ict-protection-page .dp-detail-note { background:#f7f9f7; padding:15px; border-radius:8px; color:#7d8d81; font-size:12px; line-height:1.8; white-space:pre-wrap; overflow-wrap:anywhere; }
+.ict-protection-page .dp-detail-actions { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:9px; margin-top:21px; }
+.ict-protection-page .dp-target { display:flex; align-items:center; gap:12px; padding:17px; border-radius:10px; background:#f2f7f3; color:#7d9583; font-size:11px; }
+.ict-protection-page .dp-target > svg { flex-shrink:0; }
+.ict-protection-page .dp-target strong { display:block; font-size:12px; color:#55725e; margin-top:5px; font-weight:500; }
+.ict-protection-page .dp-error { color:#a2343c; background:#fff0f1; border-radius:8px; padding:12px; font-size:12px; }
+@media (max-width:1250px) { .ict-protection-page .dp-workspace { grid-template-columns:minmax(0,1fr); } .ict-protection-page .dp-policy dl { display:grid; grid-template-columns:1fr 1fr; gap:0 25px; } .ict-protection-page .dp-controls article { align-items:flex-start; } }
+@media (max-width:760px) { .ict-protection-page .dp-overview { grid-template-columns:1fr; } .ict-protection-page .dp-controls { grid-template-columns:1fr; } .ict-protection-page .dp-controls article { align-items:center; } .ict-protection-page .dp-audit { grid-template-columns:1fr; } .ict-protection-page .dp-attention { flex-wrap:wrap; } .ict-protection-page .dp-attention p { flex-basis:80%; } }
+@media (max-width:460px) { .ict-protection-page .dp-vault { padding:23px 21px 0; } .ict-protection-page .dp-vault h2 { font-size:24px; } .ict-protection-page .dp-vault-footer { margin-inline:-21px; padding:16px 21px; flex-wrap:wrap; } .ict-protection-page .dp-backup-row { flex-wrap:wrap; gap:11px; } .ict-protection-page .dp-job-copy { flex-basis:calc(100% - 55px); } .ict-protection-page .dp-job-state { align-items:flex-start; margin-left:48px; } .ict-protection-page .dp-audit ol { grid-template-columns:1fr; } .ict-protection-page .dp-policy dl { grid-template-columns:1fr; } }

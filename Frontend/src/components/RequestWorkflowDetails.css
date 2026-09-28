@@ -1,0 +1,25 @@
+/* Additions only: original page, sidebar, topbar and table styles stay intact. */
+:is(.credential-management-page,.principal-approvals-page) .request-workflow-notice{padding:12px 15px;margin:12px 0;border:1px solid #ead8b4;border-radius:10px;background:#fff9ec;color:#786039;font-size:12px;line-height:1.6;overflow-wrap:anywhere}
+:is(.credential-management-page,.principal-approvals-page) .request-workflow-error{background:#fff0f0;color:#a31625;border-color:#eac6cc}
+:is(.credential-management-page,.principal-approvals-page) .request-workflow-notice button{margin-left:10px;padding:5px 10px;border-radius:6px;background:#fff;color:inherit;border:1px solid currentColor;font:inherit}
+:is(.credential-management-page,.principal-approvals-page) .request-workflow-details{padding:16px 0;border-top:1px solid #e8e9ee;margin-top:16px;font-size:12px;line-height:1.6;overflow-wrap:anywhere}
+:is(.credential-management-page,.principal-approvals-page) .request-workflow-details h3{font-size:14px;margin:12px 0 8px;color:inherit}
+:is(.credential-management-page,.principal-approvals-page) .request-workflow-details p{white-space:pre-wrap;margin:6px 0}
+:is(.credential-management-page,.principal-approvals-page) .request-workflow-details ol{padding-left:20px}
+:is(.credential-management-page,.principal-approvals-page) .request-workflow-details li{padding:8px 0}
+:is(.credential-management-page,.principal-approvals-page) .request-workflow-details small{display:block;color:#7d8190}
+.credential-management-page .workflow-note{display:block;margin-top:18px;font-size:13px;font-weight:600}
+.credential-management-page .workflow-note textarea{display:block;width:100%;min-height:90px;margin-top:8px;padding:12px;border:1px solid #e8e9ee;border-radius:10px;font:inherit;resize:vertical;color:inherit}
+.credential-management-page .decision.workflow-actions{display:flex;flex-wrap:wrap;gap:8px}
+.credential-management-page .decision.workflow-actions button{flex:1 1 180px;white-space:normal}
+.credential-management-page .decision.workflow-actions .workflow-secondary{background:#fff7e5;color:#805600;border:1px solid #e8d5ad}
+:is(.credential-management-page,.principal-approvals-page) .workflow-confirm{padding:14px;border:1px solid #e4c7cb;border-radius:10px;background:#fff9fa;margin-top:12px;font-size:12px}
+:is(.credential-management-page,.principal-approvals-page) .workflow-confirm button{padding:8px 12px;margin:10px 8px 0 0;border-radius:8px;background:#8d0e12;color:white;font:inherit;border:0}
+:is(.credential-management-page,.principal-approvals-page) button:disabled{cursor:not-allowed;opacity:.55}
+:is(.credential-management-page,.principal-approvals-page) .workflow-reference{display:inline-block;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
+:is(.credential-management-page,.principal-approvals-page) .workflow-drawer-reference{overflow-wrap:anywhere;font-size:16px}
+.credential-management-page .workflow-sms-status{display:block;margin-top:5px;max-width:150px;color:#7d8190;font-size:10px;white-space:normal}
+.principal-approvals-page .workflow-preparation-note{white-space:pre-wrap;overflow-wrap:anywhere}
+.credential-management-page .panel .filters{grid-template-columns:minmax(0,1.5fr) repeat(2,minmax(0,1fr)) auto}
+.credential-management-page .panel .filters :is(input,select,.search){min-width:0;max-width:100%}
+@media(max-width:680px){.credential-management-page .panel .filters{grid-template-columns:1fr}}

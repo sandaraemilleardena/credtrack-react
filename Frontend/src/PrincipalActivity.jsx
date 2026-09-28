@@ -1,3 +1,6 @@
+import { logoutUser } from './auth/session';
+import {usePortal} from './hooks/PortalContext';
+import {auditRows,localDay} from './api/portalData';
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./PrincipalActivity.css";
@@ -6,118 +9,9 @@ import "./PrincipalActivity.css";
    ACTIVITY DATA
    ========================================================= */
 
-const activities = [
-  {
-    id: "ACT-2026-0812",
-    date: "July 21, 2026 · 11:12 AM",
-    day: "Today",
-    action: "Approved",
-    title: "SF10 request approved",
-    requestId: "REQ-2026-0120",
-    student: "Maria Santos",
-    result: "Success",
-    source: "Principal Portal",
-    description:
-      "The Principal approved and authorized the verified SF10 Permanent Record request.",
-  },
-  {
-    id: "ACT-2026-0811",
-    date: "July 21, 2026 · 10:46 AM",
-    day: "Today",
-    action: "Viewed",
-    title: "Supporting records reviewed",
-    requestId: "REQ-2026-0121",
-    student: "Daniel Santos",
-    result: "Success",
-    source: "Principal Portal",
-    description:
-      "The Principal opened the verified request and reviewed its supporting records.",
-  },
-  {
-    id: "ACT-2026-0810",
-    date: "July 21, 2026 · 8:02 AM",
-    day: "Today",
-    action: "Signed In",
-    title: "Principal account signed in",
-    requestId: "—",
-    student: "—",
-    result: "Success",
-    source: "Chrome · School Network",
-    description:
-      "A successful sign-in was recorded for the Principal account.",
-  },
-  {
-    id: "ACT-2026-0809",
-    date: "July 20, 2026 · 3:40 PM",
-    day: "Yesterday",
-    action: "Approved",
-    title: "Good Moral Certificate approved",
-    requestId: "REQ-2026-0119",
-    student: "John Ramos",
-    result: "Success",
-    source: "Principal Portal",
-    description:
-      "The Principal approved and authorized the verified Good Moral Certificate.",
-  },
-  {
-    id: "ACT-2026-0808",
-    date: "July 20, 2026 · 1:25 PM",
-    day: "Yesterday",
-    action: "Returned",
-    title: "Request returned for correction",
-    requestId: "REQ-2026-0118",
-    student: "Carlo Mendoza",
-    result: "Needs Correction",
-    source: "Principal Portal",
-    description:
-      "The request was returned to the Records Administrator because a supporting school record was incomplete.",
-  },
-  {
-    id: "ACT-2026-0807",
-    date: "July 20, 2026 · 9:20 AM",
-    day: "Yesterday",
-    action: "Approved",
-    title: "Enrollment certificate approved",
-    requestId: "REQ-2026-0117",
-    student: "Angela Reyes",
-    result: "Success",
-    source: "Principal Portal",
-    description:
-      "The Principal approved the verified Certificate of Enrollment request.",
-  },
-  {
-    id: "ACT-2026-0806",
-    date: "July 19, 2026 · 2:14 PM",
-    day: "Earlier",
-    action: "Viewed",
-    title: "Student credential history viewed",
-    requestId: "REQ-2026-0116",
-    student: "Sophia Garcia",
-    result: "Success",
-    source: "Student Records",
-    description:
-      "The Principal reviewed the student's credential history using read-only access.",
-  },
-  {
-    id: "ACT-2026-0805",
-    date: "July 19, 2026 · 8:05 AM",
-    day: "Earlier",
-    action: "Signed In",
-    title: "Principal account signed in",
-    requestId: "—",
-    student: "—",
-    result: "Success",
-    source: "Chrome · School Network",
-    description:
-      "A successful sign-in was recorded for the Principal account.",
-  },
-];
-
-/* =========================================================
-   PRINCIPAL ACTIVITY
-   ========================================================= */
-
 function PrincipalActivity() {
+  const system=usePortal();
+  const activities=useMemo(()=>auditRows(system.data).filter(e=>e.role==='Principal').map(e=>({...e,date:new Date(e.created_at).toLocaleString(),day:localDay(e.created_at)===localDay(system.data.updatedAt)?'Today':localDay(e.created_at)===localDay(new Date(system.data.updatedAt).getTime()-86400000)?'Yesterday':'Earlier',action:e.action==='approve'?'Approved':e.action==='return'?'Returned':e.action==='Signed in'?'Signed In':e.action,title:e.action,requestId:e.requestId||e.target||'—',student:e.student||'—',result:e.action==='return'?'Needs Correction':'Success',source:'Principal Portal'})),[system.data]);
   const navigate = useNavigate();
 
   /* =======================================================
@@ -188,6 +82,7 @@ function PrincipalActivity() {
       );
     });
   }, [
+    activities,
     search,
     actionFilter,
     dateFilter,
@@ -286,8 +181,8 @@ function PrincipalActivity() {
      LOGOUT
      ======================================================= */
 
-  const handleLogout = () => {
-    sessionStorage.removeItem("credtrackSession");
+  const handleLogout = async () => {
+    await logoutUser();
     localStorage.removeItem("credtrackPrincipalSession");
 
     navigate("/");
@@ -793,7 +688,7 @@ function PrincipalActivity() {
                 </span>
 
                 <strong>
-                  128
+                  {activities.length}
                 </strong>
 
               </div>
@@ -815,7 +710,7 @@ function PrincipalActivity() {
                 </span>
 
                 <strong>
-                  54
+                  {activities.filter(e=>e.action==='Approved'&&localDay(e.created_at).slice(0,7)===localDay(system.data.updatedAt).slice(0,7)).length}
                 </strong>
 
               </div>
@@ -837,7 +732,7 @@ function PrincipalActivity() {
                 </span>
 
                 <strong>
-                  6
+                  {activities.filter(e=>e.action==='Returned').length}
                 </strong>
 
               </div>
@@ -859,7 +754,7 @@ function PrincipalActivity() {
                 </span>
 
                 <strong>
-                  18
+                  {activities.filter(e=>e.action==='Signed In').length}
                 </strong>
 
               </div>

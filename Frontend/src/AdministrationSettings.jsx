@@ -1,72 +1,14 @@
+import { logoutUser } from './auth/session';
+import {usePortal} from './hooks/PortalContext';
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./AdministrationSettings.css";
 
-const defaultSettings = {
-  schoolName:
-    "President Manuel Roxas Memorial Integrated School – South",
-  schoolId: "301905",
-  division: "Division of Manila",
-  schoolEmail: "records@pmrmis.edu.ph",
-  schoolPhone: "(02) 8123 4567",
-  address: "Manila, Philippines",
-  academicYear: "2026–2027",
-  timezone: "Asia/Manila (UTC+8)",
-
-  principalApproval: true,
-  documentVerification: true,
-  releaseAcknowledgment: true,
-  processingDays: "3 working days",
-  referencePrefix: "REQ-2026-",
-
-  notifyNewRequest: true,
-  notifyApproval: true,
-  notifyRelease: true,
-  notifySecurity: true,
-  notifyBackup: true,
-
-  passwordLength: "12 characters",
-  mfa: true,
-  lockout: "5 failed attempts",
-  sessionTimeout: "30 minutes",
-  auditActions: true,
-
-  automaticBackups: true,
-  backupFrequency: "Every day",
-  logRetention: "3 years",
-};
-
-const initialNotifications = [
-  {
-    id: 1,
-    title: "New credential request",
-    message:
-      "Sophia Garcia submitted a Certificate of Enrollment request.",
-    time: "5 minutes ago",
-    icon: "fa-file-circle-plus",
-    unread: true,
-  },
-  {
-    id: 2,
-    title: "Credential approved",
-    message:
-      "The SF10 request for Juan Dela Cruz was approved.",
-    time: "18 minutes ago",
-    icon: "fa-circle-check",
-    unread: true,
-  },
-  {
-    id: 3,
-    title: "Security alert",
-    message:
-      "Multiple failed login attempts were recorded.",
-    time: "32 minutes ago",
-    icon: "fa-shield-halved",
-    unread: true,
-  },
-];
-
 function AdministrationSettings() {
+  const system=usePortal();
+  const defaultSettings=system.data.settings;
+  const settingsVersion=useRef(system.data.settings_version);
+  const initialNotifications=[];
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState("general");
@@ -87,20 +29,7 @@ function AdministrationSettings() {
   const adminMenuRef = useRef(null);
   const notificationRef = useRef(null);
 
-  useEffect(() => {
-    const saved = localStorage.getItem("credtrackSettings");
 
-    if (saved) {
-      try {
-        setSettings({
-          ...defaultSettings,
-          ...JSON.parse(saved),
-        });
-      } catch {
-        setSettings(defaultSettings);
-      }
-    }
-  }, []);
 
   useEffect(() => {
     if (!toast) return;
@@ -162,20 +91,14 @@ function AdministrationSettings() {
   };
 
   const updateSetting = (key, value) => {
+    if(!['schoolName','schoolId','division','schoolEmail','schoolPhone','address','academicYear','processingDays','pickupInstructions','acceptRequests'].includes(key)){notify('This policy is enforced by the server or requires deployment configuration.');return;}
     setSettings((previous) => ({
       ...previous,
       [key]: value,
     }));
   };
 
-  const saveAll = () => {
-    localStorage.setItem(
-      "credtrackSettings",
-      JSON.stringify(settings)
-    );
-
-    notify("System settings saved");
-  };
+  const saveAll=async()=>{try{await system.mutate('settings/',{settings,version:settingsVersion.current});settingsVersion.current++;notify('School workflow settings saved.');}catch(e){notify(e.message);}};
 
   const openConfirm = (message) => {
     setPendingAction(message);
@@ -187,17 +110,7 @@ function AdministrationSettings() {
     setPendingAction("");
   };
 
-  const proceedConfirm = () => {
-    if (pendingAction.includes("Reset")) {
-      localStorage.removeItem("credtrackSettings");
-      setSettings(defaultSettings);
-      notify("Local settings reset");
-    } else {
-      notify("Restricted action confirmed");
-    }
-
-    closeConfirm();
-  };
+  const proceedConfirm=()=>{setSettings(system.data.settings);settingsVersion.current=system.data.settings_version;notify('Reloaded saved settings. Backup and security operations require configured infrastructure.');closeConfirm();};
 
   const closeSidebar = () => {
     setSidebarOpen(false);
@@ -215,8 +128,8 @@ function AdministrationSettings() {
     setNotificationOpen(false);
   };
 
-  const logout = () => {
-    localStorage.removeItem("credtrackSession");
+  const logout = async () => {
+    await logoutUser();
     sessionStorage.removeItem("credtrackSession");
 
     setAdminMenuOpen(false);
@@ -772,7 +685,8 @@ function AdministrationSettings() {
             <div className="settings-content">
 
               {/* GENERAL */}
-              {activeTab === "general" && (
+              <div className="settings-card" style={{padding:20,marginBottom:16}}><label><input type="checkbox" checked={settings.acceptRequests!==false} onChange={e=>updateSetting('acceptRequests',e.target.checked)}/> Accept student/alumni requests</label><label style={{display:'block',marginTop:12}}>Pickup instructions<input style={{width:'100%'}} value={settings.pickupInstructions||''} onChange={e=>updateSetting('pickupInstructions',e.target.value)}/></label><p>Principal approval, release acknowledgment, and audit history are mandatory. SMS is queued until Semaphore is configured.</p></div>
+{activeTab === "general" && (
                 <section className="settings-section active">
                   <article className="panel">
 
@@ -1233,7 +1147,7 @@ function AdministrationSettings() {
 
                       <SettingSwitch
                         title="Audit all privileged actions"
-                        description="Record approvals, exports, account changes, imports, and system configuration updates."
+                        description="Record approvals, account changes, imports, and system configuration updates."
                         checked={
                           settings.auditActions
                         }
@@ -1273,17 +1187,15 @@ function AdministrationSettings() {
 
                         <div>
                           <strong>
-                            Last backup completed
-                            successfully
+                            Backup service not configured
                           </strong>
 
                           <span>
-                            July 21, 2026 at 2:47 PM ·
-                            Encrypted database backup
+                            No backup or restore has been verified. Configure protected storage with ICT.
                           </span>
                         </div>
 
-                        <b>HEALTHY</b>
+                        <b>PENDING</b>
                       </div>
 
                       <SettingSwitch
@@ -1683,7 +1595,7 @@ function SettingSelect({
           onChange(e.target.value)
         }
       >
-        {options.map((option) => (
+        {[...new Set([value,...options])].map((option) => (
           <option key={option}>
             {option}
           </option>

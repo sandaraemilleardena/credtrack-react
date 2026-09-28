@@ -1,120 +1,26 @@
+import WorkflowSupport from './components/WorkflowSupport';
+import useCredentialQueue from "./hooks/useCredentialQueue";
+import RequestWorkflowDetails, { QueueNotice } from "./components/RequestWorkflowDetails";
+import { logoutUser } from "./auth/session";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./AdministrationCredManagement.css";
 
-const exampleRequests = [
-  {
-    id: "REQ-2026-0127",
-    name: "Juan Dela Cruz",
-    lrn: "136512340001",
-    type: "SF10",
-    date: "May 25, 2026",
-    status: "Pending",
-  },
-  {
-    id: "REQ-2026-0126",
-    name: "Maria Santos",
-    lrn: "136512340002",
-    type: "Good Moral Certificate",
-    date: "May 24, 2026",
-    status: "Approved",
-  },
-  {
-    id: "REQ-2026-0125",
-    name: "John Ramos",
-    lrn: "136512340003",
-    type: "Certificate of Enrollment",
-    date: "May 23, 2026",
-    status: "Released",
-  },
-  {
-    id: "REQ-2026-0123",
-    name: "Carlo Mendoza",
-    lrn: "136512340005",
-    type: "Certificate of Enrollment",
-    date: "May 21, 2026",
-    status: "Pending",
-  },
-  {
-    id: "REQ-2026-0122",
-    name: "Sophia Garcia",
-    lrn: "136512340006",
-    type: "SF10",
-    date: "May 20, 2026",
-    status: "Approved",
-  },
-  {
-    id: "REQ-2026-0121",
-    name: "Mark Bautista",
-    lrn: "136512340007",
-    type: "SF9",
-    date: "May 19, 2026",
-    status: "Pending",
-  },
-  {
-    id: "REQ-2026-0120",
-    name: "Bea Navarro",
-    lrn: "136512340008",
-    type: "Good Moral Certificate",
-    date: "May 18, 2026",
-    status: "Released",
-  },
-  {
-    id: "REQ-2026-0119",
-    name: "Luis Aquino",
-    lrn: "136512340009",
-    type: "SF10",
-    date: "May 17, 2026",
-    status: "Released",
-  },
-  {
-    id: "REQ-2026-0118",
-    name: "Chloe Villanueva",
-    lrn: "136512340010",
-    type: "Certificate of Enrollment",
-    date: "May 16, 2026",
-    status: "Pending",
-  },
-];
-
-function readStoredRequests() {
-  try {
-    return JSON.parse(
-      localStorage.getItem("credtrackCredentialRequests") || "[]"
-    );
-  } catch {
-    return [];
-  }
-}
-
-function formatSubmittedDate(value) {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "Recently submitted";
-  }
-
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-function convertSubmittedRequest(request) {
-  return {
-    id: request.id,
-    name: request.fullName || request.studentName || "Unknown Requester",
-    lrn: request.lrn || "No LRN provided",
-    type: request.credential || "Credential Request",
-    date: formatSubmittedDate(request.submittedAt),
-    status:
-      request.administratorVerification === "Verified"
-        ? "Approved"
-        : request.status === "Rejected"
-        ? "Rejected"
-        : "Pending",
-    submittedFromPortal: true,
+const ADMIN_ACTIONS = {
+  SUBMITTED: [["prepare", "Start preparation"], ["unavailable", "Unavailable / needs information"]],
+  PREPARING: [["submit_review", "Prepared — send to Principal"], ["unavailable", "Unavailable / needs information"]],
+  UNAVAILABLE: [["prepare", "Resume preparation"]],
+  RETURNED: [["prepare", "Correct and prepare again"], ["unavailable", "Unavailable / needs information"]],
+  PRINCIPAL_APPROVED: [["ready", "Confirm ready for release & queue SMS"]],
+  READY: [["collect", "Record collection"]],
+};
+const STATUS_LABELS = { SUBMITTED: "Submitted", PREPARING: "Preparing", UNAVAILABLE: "Unavailable / needs information", PRINCIPAL_REVIEW: "Principal review", RETURNED: "Returned for correction", PRINCIPAL_APPROVED: "Principal approved", READY: "Ready for release", COLLECTED: "Collected" };
+function convertRequest(item) {
+  return { ...item, name: item.full_name, type: item.credential,
+    stage: item.status, status: item.status_label,
+    badgeClass: ["PRINCIPAL_APPROVED", "READY"].includes(item.status) ? "approved" : item.status === "COLLECTED" ? "released" : "pending",
+    date: new Date(item.created_at).toLocaleDateString("en-US", {month: "short", day: "numeric", year: "numeric"}),
+    grade: item.requester_type === "Student" ? [item.grade_level, item.section].filter(Boolean).join(" – ") : "Alumni · " + item.graduation_year,
   };
 }
 
@@ -161,24 +67,14 @@ function AdministrationCredManagement() {
   const [typeFilter, setTypeFilter] = useState("all");
   const [adminMenuOpen, setAdminMenuOpen] = useState(false);
 
-  const [requests, setRequests] = useState([]);
-
-  useEffect(() => {
-    const submittedRequests = readStoredRequests().map(
-      convertSubmittedRequest
-    );
-
-    const submittedIds = new Set(
-      submittedRequests.map((request) => request.id)
-    );
-
-    setRequests([
-      ...submittedRequests,
-      ...exampleRequests.filter(
-        (request) => !submittedIds.has(request.id)
-      ),
-    ]);
-  }, []);
+  const queue = useCredentialQueue("ADMIN");
+  const requests = useMemo(() => queue.items.map(convertRequest), [queue.items]);
+  const [decisionNote, setDecisionNote] = useState("");
+  const [pendingAction, setPendingAction] = useState(null);
+  const [actionError, setActionError] = useState("");
+  const [page, setPage] = useState(1);
+  const recentEvents = requests.flatMap(request => request.events.map(event => ({ ...event, requestName: request.name, requestId: request.id }))).sort((a,b) => new Date(b.created_at) - new Date(a.created_at)).slice(0,3);
+  const credentialTypes = [...new Set(requests.map(request => request.type))];
 
   const notify = (message) => {
     setToast(message);
@@ -201,7 +97,7 @@ function AdministrationCredManagement() {
           .includes(q);
 
       const matchesStatus =
-        statusFilter === "all" || request.status === statusFilter;
+        statusFilter === "all" || request.stage === statusFilter;
 
       const matchesType =
         typeFilter === "all" || request.type === typeFilter;
@@ -213,7 +109,7 @@ function AdministrationCredManagement() {
   useEffect(() => {
     const handleEscape = (event) => {
       if (event.key === "Escape") {
-        closeDrawer();
+        setDrawerOpen(false);
         setAdminMenuOpen(false);
       }
     };
@@ -241,6 +137,9 @@ function AdministrationCredManagement() {
     if (!request) return;
 
     setCurrentRequest(request);
+    setDecisionNote("");
+    setPendingAction(null);
+    setActionError("");
     setDrawerOpen(true);
   };
 
@@ -257,104 +156,44 @@ function AdministrationCredManagement() {
     closeSidebar();
   };
 
-  const updateStoredRequest = (requestId, updates) => {
-    const storedRequests = readStoredRequests();
-
-    const storedRequest = storedRequests.find(
-      (request) => request.id === requestId
-    );
-
-    if (!storedRequest) return;
-
-    Object.assign(storedRequest, updates);
-
-    storedRequest.audit = Array.isArray(storedRequest.audit)
-      ? storedRequest.audit
-      : [];
-
-    storedRequest.audit.unshift({
-      at: new Date().toISOString(),
-      actor: "Administrator",
-      action:
-        updates.administratorVerification === "Verified"
-          ? "Request verified and forwarded for Principal approval"
-          : "Request rejected by Administrator",
-    });
-
-    localStorage.setItem(
-      "credtrackCredentialRequests",
-      JSON.stringify(storedRequests)
-    );
-
-    const principalInbox = JSON.parse(
-      localStorage.getItem("credtrackPrincipalInbox") || "[]"
-    );
-
-    const principalItem = principalInbox.find(
-      (item) => item.requestId === requestId
-    );
-
-    if (principalItem) {
-      principalItem.status = updates.status;
-
-      principalItem.nextAction =
-        updates.administratorVerification === "Verified"
-          ? "Review and approve the verified credential request"
-          : "No Principal action available";
-
-      principalItem.unread = true;
-
-      localStorage.setItem(
-        "credtrackPrincipalInbox",
-        JSON.stringify(principalInbox)
-      );
+  const handleApprove = async () => {
+    if (!currentRequest || !pendingAction || queue.busy) return;
+    setActionError("");
+    try {
+      const updated = await queue.perform(currentRequest, pendingAction[0], decisionNote);
+      if (!updated) return;
+      setCurrentRequest(convertRequest(updated));
+      setPendingAction(null);
+      setDecisionNote("");
+      notify(updated.status_label);
+    } catch (error) {
+      setActionError(error.message);
+      setPendingAction(null);
     }
-  };
-
-  const handleApprove = () => {
-    if (!currentRequest) return;
-
-    const updatedRequest = {
-      ...currentRequest,
-      status: "Approved",
-    };
-
-    setRequests((previous) =>
-      previous.map((request) =>
-        request.id === currentRequest.id ? updatedRequest : request
-      )
-    );
-
-    updateStoredRequest(currentRequest.id, {
-      status: "Pending Principal Approval",
-      stage: "Administrator Verified",
-      administratorVerification: "Verified",
-      principalApproval: "Pending",
-    });
-
-    closeDrawer();
-
-    notify(
-      `${currentRequest.id} verified and sent to the Principal`
-    );
   };
 
   const handleReset = () => {
     setSearch("");
+    setPage(1);
     setStatusFilter("all");
     setTypeFilter("all");
   };
 
   const handlePrint = (id) => {
-    notify(`Preparing ${id} for printing`);
+    openRequest(id);
+    notify("Review the request details. Credential document generation is not yet connected.");
   };
 
   const handleExport = () => {
+    const cell = value => '"' + String(value ?? "").replace(/^[=+@-]/, "'" + String(value ?? "")[0]).replaceAll('"', '""') + '"';
+    const rows = [["Request ID", "Requester", "LRN", "Credential", "Status"], ...filteredRequests.map(item => [item.id, item.name, item.lrn, item.type, item.status])];
+    const url = URL.createObjectURL(new Blob([rows.map(row => row.map(cell).join(",")).join("\r\n")], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a"); link.href = url; link.download = "credential-requests.csv"; link.click(); URL.revokeObjectURL(url);
     notify("Credential request list exported");
   };
 
-  const handleLogout = () => {
-    sessionStorage.removeItem("credtrackSession");
+  const handleLogout = async () => {
+    await logoutUser();
     navigate("/");
   };
 
@@ -460,7 +299,9 @@ function AdministrationCredManagement() {
                   setAdminMenuOpen((previous) => !previous)
                 }
               >
-                <div className="admin-avatar">AD</div>
+                <div className="admin-avatar">
+                  <img src="/logo.png" alt="PMRMIS-South school logo" />
+                </div>
 
                 <div className="admin-copy">
                   <strong>Administrator</strong>
@@ -477,11 +318,9 @@ function AdministrationCredManagement() {
                   aria-label="Administrator account menu"
                 >
                   <div className="dropdown-profile">
-                    <div className="admin-avatar large">AD</div>
 
                     <div>
-                      <strong>Administrator</strong>
-                      <small>System Administrator</small>
+                
                     </div>
                   </div>
 
@@ -509,6 +348,8 @@ function AdministrationCredManagement() {
 
         {/* CONTENT */}
         <main className="content">
+          <QueueNotice queue={queue} loginPath="/admin-login" />
+          <WorkflowSupport />
           <section className="page-head">
             <div>
               <h1>Credential Management</h1>
@@ -529,8 +370,8 @@ function AdministrationCredManagement() {
 
               <div>
                 <span>Total Requests</span>
-                <strong>127</strong>
-                <small>+12% this month</small>
+                <strong>{requests.length}</strong>
+                <small>Saved requests</small>
               </div>
             </article>
 
@@ -541,7 +382,7 @@ function AdministrationCredManagement() {
 
               <div>
                 <span>Pending</span>
-                <strong>32</strong>
+                <strong>{requests.filter(item => !["PRINCIPAL_APPROVED", "READY", "COLLECTED"].includes(item.stage)).length}</strong>
                 <small>Waiting for approval</small>
               </div>
             </article>
@@ -553,8 +394,8 @@ function AdministrationCredManagement() {
 
               <div>
                 <span>Approved</span>
-                <strong>54</strong>
-                <small>Ready for release</small>
+                <strong>{requests.filter(item => ["PRINCIPAL_APPROVED", "READY"].includes(item.stage)).length}</strong>
+                <small>Principal approved / ready for release</small>
               </div>
             </article>
 
@@ -565,7 +406,7 @@ function AdministrationCredManagement() {
 
               <div>
                 <span>Released</span>
-                <strong>35</strong>
+                <strong>{requests.filter(item => item.stage === "COLLECTED").length}</strong>
                 <small>Successfully claimed</small>
               </div>
             </article>
@@ -580,7 +421,7 @@ function AdministrationCredManagement() {
                 <div>
                   <h2>Credential Requests</h2>
                   <p>
-                    Showing {filteredRequests.length} of 127
+                    Showing {filteredRequests.length} of {requests.length}
                     requests
                   </p>
                 </div>
@@ -601,7 +442,7 @@ function AdministrationCredManagement() {
                     placeholder="Search request, LRN, or student..."
                     value={search}
                     onChange={(event) =>
-                      setSearch(event.target.value)
+                      (setSearch(event.target.value), setPage(1))
                     }
                   />
                 </div>
@@ -610,35 +451,26 @@ function AdministrationCredManagement() {
                   aria-label="Filter by status"
                   value={statusFilter}
                   onChange={(event) =>
-                    setStatusFilter(event.target.value)
+                    (setStatusFilter(event.target.value), setPage(1))
                   }
                 >
                   <option value="all">
                     All Statuses
                   </option>
-                  <option value="Pending">Pending</option>
-                  <option value="Approved">Approved</option>
-                  <option value="Released">Released</option>
+                  {Object.entries(STATUS_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
                 </select>
 
                 <select
                   aria-label="Filter by credential"
                   value={typeFilter}
                   onChange={(event) =>
-                    setTypeFilter(event.target.value)
+                    (setTypeFilter(event.target.value), setPage(1))
                   }
                 >
                   <option value="all">
                     All Credentials
                   </option>
-                  <option value="SF10">SF10</option>
-                  <option value="SF9">SF9</option>
-                  <option value="Certificate of Enrollment">
-                    Certificate of Enrollment
-                  </option>
-                  <option value="Good Moral Certificate">
-                    Good Moral Certificate
-                  </option>
+                  {credentialTypes.map(type => <option value={type} key={type}>{type}</option>)}
                 </select>
 
                 <button
@@ -665,10 +497,10 @@ function AdministrationCredManagement() {
                   </thead>
 
                   <tbody>
-                    {filteredRequests.map((request) => (
+                    {filteredRequests.slice((Math.min(page, Math.max(1, Math.ceil(filteredRequests.length / 10))) - 1) * 10, Math.min(page, Math.max(1, Math.ceil(filteredRequests.length / 10))) * 10).map((request) => (
                       <tr key={request.id}>
                         <td>
-                          <strong>{request.id}</strong>
+                          <strong className="workflow-reference" title={request.id}>{request.id}</strong>
                         </td>
 
                         <td>
@@ -698,7 +530,7 @@ function AdministrationCredManagement() {
 
                         <td>
                           <span
-                            className={`badge ${request.status.toLowerCase()}`}
+                            className={`badge ${request.badgeClass}`}
                           >
                             {request.status}
                           </span>
@@ -757,15 +589,13 @@ function AdministrationCredManagement() {
                 </span>
 
                 <div className="pages">
-                  <button>
+                  <button aria-label="Previous page" disabled={page <= 1} onClick={() => setPage(value => Math.max(1, value - 1))}>
                     <i className="fas fa-chevron-left"></i>
                   </button>
 
-                  <button className="current">1</button>
-                  <button>2</button>
-                  <button>3</button>
+                  <button className="current">{Math.min(page, Math.max(1, Math.ceil(filteredRequests.length / 10)))}</button>
 
-                  <button>
+                  <button aria-label="Next page" disabled={page >= Math.ceil(filteredRequests.length / 10)} onClick={() => setPage(value => value + 1)}>
                     <i className="fas fa-chevron-right"></i>
                   </button>
                 </div>
@@ -778,68 +608,13 @@ function AdministrationCredManagement() {
                 <div className="panel-title">
                   <div>
                     <h2>Credential Types</h2>
-                    <p>Requests this month</p>
+                    <p>Saved credential requests</p>
                   </div>
                 </div>
 
                 <div className="type-list">
-                  <div className="type">
-                    <div className="type-icon">
-                      <i className="fas fa-file-lines"></i>
-                    </div>
-
-                    <div>
-                      <strong>
-                        SF10 Permanent Record
-                      </strong>
-                      <small>38 completed</small>
-                    </div>
-
-                    <b>41</b>
-                  </div>
-
-                  <div className="type">
-                    <div className="type-icon">
-                      <i className="fas fa-file-invoice"></i>
-                    </div>
-
-                    <div>
-                      <strong>SF9 Report Card</strong>
-                      <small>26 completed</small>
-                    </div>
-
-                    <b>30</b>
-                  </div>
-
-                  <div className="type">
-                    <div className="type-icon">
-                      <i className="fas fa-certificate"></i>
-                    </div>
-
-                    <div>
-                      <strong>
-                        Certificate of Enrollment
-                      </strong>
-                      <small>17 completed</small>
-                    </div>
-
-                    <b>19</b>
-                  </div>
-
-                  <div className="type">
-                    <div className="type-icon">
-                      <i className="fas fa-award"></i>
-                    </div>
-
-                    <div>
-                      <strong>
-                        Good Moral Certificate
-                      </strong>
-                      <small>21 completed</small>
-                    </div>
-
-                    <b>24</b>
-                  </div>
+                  {credentialTypes.map(type => <div className="type" key={type}><div className="type-icon"><i className="fas fa-file-lines"></i></div><div><strong>{type}</strong><small>{requests.filter(item => item.type === type && item.stage === "COLLECTED").length} completed</small></div><b>{requests.filter(item => item.type === type).length}</b></div>)}
+                  {!credentialTypes.length && <p>No requests yet.</p>}
                 </div>
               </article>
 
@@ -852,7 +627,7 @@ function AdministrationCredManagement() {
 
                   <button
                     onClick={() =>
-                      notify("Activity logs opened")
+                      navigate("/admin-activity-logs")
                     }
                   >
                     View all
@@ -860,45 +635,8 @@ function AdministrationCredManagement() {
                 </div>
 
                 <div className="activity">
-                  <div className="event">
-                    <i className="fas fa-circle-check"></i>
-
-                    <div>
-                      <strong>Request approved</strong>
-                      <p>
-                        Maria Santos' Good Moral
-                        Certificate
-                      </p>
-                      <time>12 minutes ago</time>
-                    </div>
-                  </div>
-
-                  <div className="event">
-                    <i className="fas fa-box-open"></i>
-
-                    <div>
-                      <strong>
-                        Credential released
-                      </strong>
-                      <p>REQ-2026-0119 was claimed</p>
-                      <time>35 minutes ago</time>
-                    </div>
-                  </div>
-
-                  <div className="event">
-                    <i className="fas fa-file-circle-plus"></i>
-
-                    <div>
-                      <strong>
-                        New request received
-                      </strong>
-                      <p>
-                        Juan Dela Cruz requested an
-                        SF10
-                      </p>
-                      <time>1 hour ago</time>
-                    </div>
-                  </div>
+                  {recentEvents.map((event, index) => <div className="event" key={index}><i className="fas fa-circle-check"></i><div><strong>{STATUS_LABELS[event.to_status]}</strong><p>{event.requestName}</p><time>{new Date(event.created_at).toLocaleString()}</time></div></div>)}
+                  {!recentEvents.length && <p>No activity yet.</p>}
                 </div>
               </article>
             </aside>
@@ -917,8 +655,8 @@ function AdministrationCredManagement() {
               REQUEST DETAILS
             </small>
 
-            <h2>
-              {currentRequest?.id || "REQ-2026-0127"}
+            <h2 className="workflow-drawer-reference">
+              {currentRequest?.id || "Request details"}
             </h2>
           </div>
 
@@ -962,59 +700,23 @@ function AdministrationCredManagement() {
 
               <div className="detail">
                 <span>Grade & Section</span>
-                <strong>Grade 10 – Rizal</strong>
+                <strong>{currentRequest.grade}</strong>
               </div>
             </div>
 
             <div className="documents">
-              <h3>Submitted Documents</h3>
-
-              <div className="file">
-                <i className="fas fa-file-pdf"></i>
-
-                <div>
-                  <strong>Request Form.pdf</strong>
-                  <small>PDF · 1.2 MB</small>
-                </div>
-
-                <button
-                  aria-label="Preview request form"
-                  onClick={() =>
-                    notify("Preview opened")
-                  }
-                >
-                  <i className="fas fa-eye"></i>
-                </button>
-              </div>
-
-              <div className="file">
-                <i className="fas fa-id-card"></i>
-
-                <div>
-                  <strong>Student ID.jpg</strong>
-                  <small>JPG · 860 KB</small>
-                </div>
-
-                <button
-                  aria-label="Preview student ID"
-                  onClick={() =>
-                    notify("Preview opened")
-                  }
-                >
-                  <i className="fas fa-eye"></i>
-                </button>
-              </div>
+              <h3>Request information</h3>
+              <div className="file"><i className="fas fa-file-lines"></i><div><strong>Purpose</strong><small>{currentRequest.purpose}</small></div></div>
+              <p className="request-workflow-notice">Verify the school records and prepare the credential before submitting it for Principal approval. No supporting files have been uploaded through this form.</p>
             </div>
-
-            <div className="decision">
-              <button
-                className="approve"
-                onClick={handleApprove}
-              >
-                <i className="fas fa-check"></i>
-                Approve Request
-              </button>
+            <RequestWorkflowDetails request={currentRequest} />
+            {actionError && <p className="request-workflow-notice request-workflow-error" role="alert">{actionError} Close and reopen this request if it has changed.</p>}
+            {ADMIN_ACTIONS[currentRequest.stage]?.length > 0 && <label className="workflow-note">Verification / decision notes<textarea maxLength={2000} value={decisionNote} disabled={queue.busy} onChange={event => setDecisionNote(event.target.value)} placeholder="Record availability, preparation, corrections or collection details." /></label>}
+            {currentRequest.stage === "PRINCIPAL_APPROVED" && !queue.smsEnabled && <p className="request-workflow-notice">Semaphore is not activated yet. Final release confirmation will queue an SMS without sending it.</p>}
+            <div className="decision workflow-actions">
+              {(ADMIN_ACTIONS[currentRequest.stage] || []).map((action, index) => <button key={action[0]} className={index ? "workflow-secondary" : "approve"} disabled={queue.busy} onClick={() => { setPendingAction(action); setActionError(""); }}><i className="fas fa-check"></i>{action[1]}</button>)}
             </div>
+            {pendingAction && <div className="workflow-confirm"><strong>{pendingAction[1]}?</strong><p>{pendingAction[0] === "ready" ? "Confirm that the Principal-approved credentials are ready for collection. One SMS will be queued for the requester." : "This action and your notes will be recorded in the request history."}</p><button disabled={queue.busy} onClick={handleApprove}>{queue.busy ? "Saving…" : "Confirm"}</button><button disabled={queue.busy} onClick={() => setPendingAction(null)}>Cancel</button></div>}
           </>
         )}
       </aside>

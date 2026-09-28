@@ -53,7 +53,7 @@ def login_view(request):
         )
 
 
-    login(request, user)
+
 
 
     try:
@@ -66,7 +66,7 @@ def login_view(request):
 
     except UserProfile.DoesNotExist:
 
-        logout(request)
+
 
         return Response(
             {
@@ -76,7 +76,20 @@ def login_view(request):
         )
 
 
+    requested_role = request.data.get("role")
+    if requested_role is not None and requested_role != role:
+        return Response(
+            {"error": "This account is not authorized for the selected role."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    login(request, user)
+    from operations.models import AuditEvent
+    AuditEvent.objects.create(actor=user, role=role, module="Authentication", action="Signed in")
+
     return Response({
+
+        "authenticated": True,
 
         "message": "Login successful.",
 
@@ -99,6 +112,10 @@ def login_view(request):
 @api_view(["POST"])
 def logout_view(request):
 
+    from operations.models import AuditEvent
+    from credentials.services import user_role
+    if request.user.is_authenticated:
+        AuditEvent.objects.create(actor=request.user, role=user_role(request.user) or "", module="Authentication", action="Signed out")
     logout(request)
 
     return Response({
@@ -108,9 +125,13 @@ def logout_view(request):
     }) 
 
 @api_view(["GET"])
+@permission_classes([AllowAny])
 def current_user(request):
 
     user = request.user
+
+    if not user.is_authenticated:
+        return Response({"authenticated": False, "user": None})
 
     profile = UserProfile.objects.get(
         user=user

@@ -1,3 +1,6 @@
+import { logoutUser } from './auth/session';
+import {usePortal} from './hooks/PortalContext';
+import {metrics} from './api/portalData';
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./PrincipalReports.css";
@@ -6,71 +9,8 @@ import "./PrincipalReports.css";
    REPORT DATA
    ========================================================= */
 
-const reportData = {
-  month: {
-    requests: 127,
-    approved: 54,
-    released: 35,
-    average: "2.4 days",
-    trend: [
-      [58, 43],
-      [72, 55],
-      [66, 52],
-      [81, 64],
-      [88, 70],
-      [76, 61],
-      [92, 74],
-    ],
-  },
-
-  quarter: {
-    requests: 348,
-    approved: 296,
-    released: 251,
-    average: "2.7 days",
-    trend: [
-      [62, 45],
-      [70, 54],
-      [75, 61],
-      [82, 66],
-      [78, 64],
-      [86, 72],
-      [91, 78],
-    ],
-  },
-
-  year: {
-    requests: 1042,
-    approved: 934,
-    released: 861,
-    average: "2.9 days",
-    trend: [
-      [55, 42],
-      [64, 51],
-      [72, 57],
-      [68, 56],
-      [80, 67],
-      [86, 73],
-      [93, 81],
-    ],
-  },
-};
-
-const months = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-];
-
-/* =========================================================
-   PRINCIPAL REPORTS
-   ========================================================= */
-
 function PrincipalReports() {
+  const system=usePortal();
   const navigate = useNavigate();
 
   /* =======================================================
@@ -93,9 +33,13 @@ function PrincipalReports() {
      REPORT STATE
      ======================================================= */
 
-  const [activeReport, setActiveReport] = useState(
-    reportData.month
-  );
+  const now=new Date(system.data.updatedAt),start=new Date(now.getFullYear(),period==='year'?0:period==='quarter'?Math.floor(now.getMonth()/3)*3:now.getMonth(),1);
+  const filtered=system.data.requests.filter(r=>new Date(r.created_at)>=start&&(gradeLevel==='all'||r.grade_level===gradeLevel)&&(credentialType==='all'||r.credential.toLowerCase().includes(credentialType.toLowerCase())));
+  const totals=metrics(filtered);
+  const months=Array.from({length:7},(_,i)=>{const d=new Date(now.getFullYear(),now.getMonth()-6+i,1);return d.toLocaleDateString(undefined,{month:'short'});});
+  const activeReport={requests:totals.total,approved:totals.approved,released:totals.released,average:totals.average+' days',trend:Array.from({length:7},(_,i)=>{const d=new Date(now.getFullYear(),now.getMonth()-6+i,1);const group=filtered.filter(r=>new Date(r.created_at).getFullYear()===d.getFullYear()&&new Date(r.created_at).getMonth()===d.getMonth());return [group.length,group.filter(r=>r.approved_at).length];})};
+  const pct=(needle,completed=false)=>{const group=filtered.filter(r=>r.credential.toLowerCase().includes(needle.toLowerCase()));return completed?(group.length?Math.round(group.filter(r=>r.status==='COLLECTED').length/group.length*100):0):(filtered.length?Math.round(group.length/filtered.length*100):0);};
+  const gradePct=grade=>{const group=filtered.filter(r=>r.grade_level===grade);return group.length?Math.round(group.filter(r=>r.status==='COLLECTED').length/group.length*100):0;};
 
   const [toast, setToast] = useState("");
 
@@ -109,7 +53,7 @@ function PrincipalReports() {
     }
 
     if (period === "year") {
-      return "School Year 2026–2027";
+      return "Current calendar year";
     }
 
     return "This Month";
@@ -166,10 +110,7 @@ function PrincipalReports() {
      ======================================================= */
 
   const applyReportFilters = () => {
-    const selectedReport =
-      reportData[period] || reportData.month;
-
-    setActiveReport(selectedReport);
+    system.refresh();
 
     const selectedFilters = [currentPeriodLabel];
 
@@ -257,8 +198,8 @@ function PrincipalReports() {
      LOGOUT
      ======================================================= */
 
-  const handleLogout = () => {
-    sessionStorage.removeItem("credtrackSession");
+  const handleLogout = async () => {
+    await logoutUser();
     localStorage.removeItem("credtrackPrincipalSession");
 
     navigate("/");
@@ -883,7 +824,7 @@ function PrincipalReports() {
                 </strong>
 
                 <small>
-                  +12% from previous period
+                  Saved requests in selected period
                 </small>
 
               </div>
@@ -909,7 +850,7 @@ function PrincipalReports() {
                 </strong>
 
                 <small>
-                  92% approval rate
+                  {totals.total?Math.round(totals.approved/totals.total*100):0}% approval rate
                 </small>
 
               </div>
@@ -935,7 +876,7 @@ function PrincipalReports() {
                 </strong>
 
                 <small>
-                  65% of approved requests
+                  {totals.approved?Math.round(totals.released/totals.approved*100):0}% of approved requests
                 </small>
 
               </div>
@@ -1023,7 +964,7 @@ function PrincipalReports() {
                           className="principal-bar"
                           style={{
                             "--height":
-                              `${values[0]}%`,
+                              `${Math.min(100,values[0]/Math.max(1,...activeReport.trend.flat())*100)}%`,
                           }}
                           title={`${values[0]} requests`}
                         />
@@ -1032,7 +973,7 @@ function PrincipalReports() {
                           className="principal-bar released-bar"
                           style={{
                             "--height":
-                              `${values[1]}%`,
+                              `${Math.min(100,values[1]/Math.max(1,...activeReport.trend.flat())*100)}%`,
                           }}
                           title={`${values[1]} released`}
                         />
@@ -1072,7 +1013,7 @@ function PrincipalReports() {
 
               <div className="principal-donut-area">
 
-                <div className="principal-donut">
+                <div className="principal-donut" style={{background:activeReport.requests?'conic-gradient(#1965c4 0 '+pct('SF10')+'%, #29a94d '+pct('SF10')+'% '+(pct('SF10')+pct('SF9'))+'%, #e3a008 '+(pct('SF10')+pct('SF9'))+'% '+(pct('SF10')+pct('SF9')+pct('Enrollment'))+'%, #8d0e12 '+(pct('SF10')+pct('SF9')+pct('Enrollment'))+'% '+(pct('SF10')+pct('SF9')+pct('Enrollment')+pct('Good Moral'))+'%, #7652b5 0)':'#e5e7eb'}}>
 
                   <div className="principal-donut-center">
 
@@ -1098,7 +1039,7 @@ function PrincipalReports() {
                           "#176cf4",
                       }}
                     />
-                    SF10 · 32%
+                    SF10 · {pct('SF10')}%
                   </div>
 
                   <div>
@@ -1109,7 +1050,7 @@ function PrincipalReports() {
                           "#29a94d",
                       }}
                     />
-                    SF9 · 26%
+                    SF9 · {pct('SF9')}%
                   </div>
 
                   <div>
@@ -1120,7 +1061,7 @@ function PrincipalReports() {
                           "#e3a008",
                       }}
                     />
-                    Enrollment · 20%
+                    Enrollment · {pct('Enrollment')}%
                   </div>
 
                   <div>
@@ -1131,7 +1072,7 @@ function PrincipalReports() {
                           "#8d0e12",
                       }}
                     />
-                    Good Moral · 14%
+                    Good Moral · {pct('Good Moral')}%
                   </div>
 
                   <div>
@@ -1142,7 +1083,7 @@ function PrincipalReports() {
                           "#7652b5",
                       }}
                     />
-                    Other · 8%
+                    Other · {activeReport.requests?Math.max(0,100-pct('SF10')-pct('SF9')-pct('Enrollment')-pct('Good Moral')):0}%
                   </div>
 
                 </div>
@@ -1189,7 +1130,7 @@ function PrincipalReports() {
                     </span>
 
                     <strong>
-                      93%
+                      {pct('SF10',true)}%
                     </strong>
 
                   </div>
@@ -1199,7 +1140,7 @@ function PrincipalReports() {
                     <div
                       className="principal-fill"
                       style={{
-                        "--width": "93%",
+                        "--width": `${pct('SF10',true)}%`,
                         "--bar-color":
                           "#176cf4",
                       }}
@@ -1218,7 +1159,7 @@ function PrincipalReports() {
                     </span>
 
                     <strong>
-                      87%
+                      {pct('SF9',true)}%
                     </strong>
 
                   </div>
@@ -1228,7 +1169,7 @@ function PrincipalReports() {
                     <div
                       className="principal-fill"
                       style={{
-                        "--width": "87%",
+                        "--width": `${pct('SF9',true)}%`,
                         "--bar-color":
                           "#29a94d",
                       }}
@@ -1247,7 +1188,7 @@ function PrincipalReports() {
                     </span>
 
                     <strong>
-                      89%
+                      {pct('Enrollment',true)}%
                     </strong>
 
                   </div>
@@ -1257,7 +1198,7 @@ function PrincipalReports() {
                     <div
                       className="principal-fill"
                       style={{
-                        "--width": "89%",
+                        "--width": `${pct('Enrollment',true)}%`,
                         "--bar-color":
                           "#e3a008",
                       }}
@@ -1276,7 +1217,7 @@ function PrincipalReports() {
                     </span>
 
                     <strong>
-                      88%
+                      {pct('Good Moral',true)}%
                     </strong>
 
                   </div>
@@ -1286,7 +1227,7 @@ function PrincipalReports() {
                     <div
                       className="principal-fill"
                       style={{
-                        "--width": "88%",
+                        "--width": `${pct('Good Moral',true)}%`,
                         "--bar-color":
                           "#8d0e12",
                       }}
@@ -1351,67 +1292,19 @@ function PrincipalReports() {
 
                   </thead>
 
-                  <tbody>
+                  <tbody>{['Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'].map(grade=>{const m=metrics(filtered.filter(r=>r.grade_level===grade));return <tr key={grade}><td>{grade}</td><td>{m.total}</td><td>{m.approved}</td><td>{m.released}</td><td className="principal-rate">{gradePct(grade)}%</td></tr>;})}
 
-                    <tr>
-                      <td>Grade 7</td>
-                      <td>18</td>
-                      <td>16</td>
-                      <td>13</td>
-                      <td className="principal-rate">
-                        89%
-                      </td>
-                    </tr>
+                    
 
-                    <tr>
-                      <td>Grade 8</td>
-                      <td>17</td>
-                      <td>15</td>
-                      <td>12</td>
-                      <td className="principal-rate">
-                        88%
-                      </td>
-                    </tr>
+                    
 
-                    <tr>
-                      <td>Grade 9</td>
-                      <td>22</td>
-                      <td>20</td>
-                      <td>16</td>
-                      <td className="principal-rate">
-                        91%
-                      </td>
-                    </tr>
+                    
 
-                    <tr>
-                      <td>Grade 10</td>
-                      <td>28</td>
-                      <td>26</td>
-                      <td>21</td>
-                      <td className="principal-rate">
-                        93%
-                      </td>
-                    </tr>
+                    
 
-                    <tr>
-                      <td>Grade 11</td>
-                      <td>19</td>
-                      <td>17</td>
-                      <td>14</td>
-                      <td className="principal-rate">
-                        89%
-                      </td>
-                    </tr>
+                    
 
-                    <tr>
-                      <td>Grade 12</td>
-                      <td>23</td>
-                      <td>21</td>
-                      <td>18</td>
-                      <td className="principal-rate">
-                        91%
-                      </td>
-                    </tr>
+                    
 
                   </tbody>
 

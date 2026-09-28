@@ -1,139 +1,9 @@
+import { logoutUser } from './auth/session';
+import {usePortal} from './hooks/PortalContext';
+import {downloadCSV} from './api/operations';
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./AdministrationStudRecord.css";
-
-const STORAGE_KEY = "credtrackStudents";
-
-const initialStudents = [
-  {
-    id: 1,
-    lrn: "123456789001",
-    firstName: "Juan",
-    middleName: "Santos",
-    lastName: "Dela Cruz",
-    sex: "Male",
-    birthday: "2010-05-12",
-    grade: "Grade 10",
-    section: "Rizal",
-    status: "Active",
-    schoolYear: "2025-2026",
-    guardian: "Maria Dela Cruz",
-    contact: "09171234567",
-    address: "Bacolod City, Negros Occidental",
-  },
-  {
-    id: 2,
-    lrn: "123456789002",
-    firstName: "Maria",
-    middleName: "Lopez",
-    lastName: "Santos",
-    sex: "Female",
-    birthday: "2011-02-18",
-    grade: "Grade 9",
-    section: "Mabini",
-    status: "Active",
-    schoolYear: "2025-2026",
-    guardian: "Pedro Santos",
-    contact: "09181234567",
-    address: "Bacolod City, Negros Occidental",
-  },
-  {
-    id: 3,
-    lrn: "123456789003",
-    firstName: "John",
-    middleName: "Reyes",
-    lastName: "Ramos",
-    sex: "Male",
-    birthday: "2009-11-08",
-    grade: "Grade 10",
-    section: "Bonifacio",
-    status: "Graduated",
-    schoolYear: "2024-2025",
-    guardian: "Ana Ramos",
-    contact: "09191234567",
-    address: "Bacolod City, Negros Occidental",
-  },
-  {
-    id: 4,
-    lrn: "123456789004",
-    firstName: "Angela",
-    middleName: "Garcia",
-    lastName: "Reyes",
-    sex: "Female",
-    birthday: "2012-07-22",
-    grade: "Grade 8",
-    section: "Luna",
-    status: "Active",
-    schoolYear: "2025-2026",
-    guardian: "Jose Reyes",
-    contact: "09201234567",
-    address: "Talisay City, Negros Occidental",
-  },
-  {
-    id: 5,
-    lrn: "123456789005",
-    firstName: "Carlo",
-    middleName: "Mendoza",
-    lastName: "Aquino",
-    sex: "Male",
-    birthday: "2013-01-15",
-    grade: "Grade 7",
-    section: "Rizal",
-    status: "Active",
-    schoolYear: "2025-2026",
-    guardian: "Lorna Aquino",
-    contact: "09211234567",
-    address: "Bacolod City, Negros Occidental",
-  },
-  {
-    id: 6,
-    lrn: "123456789006",
-    firstName: "Sophia",
-    middleName: "Navarro",
-    lastName: "Garcia",
-    sex: "Female",
-    birthday: "2010-09-30",
-    grade: "Grade 10",
-    section: "Mabini",
-    status: "Active",
-    schoolYear: "2025-2026",
-    guardian: "Ramon Garcia",
-    contact: "09221234567",
-    address: "Bacolod City, Negros Occidental",
-  },
-  {
-    id: 7,
-    lrn: "123456789007",
-    firstName: "Mark",
-    middleName: "Bautista",
-    lastName: "Navarro",
-    sex: "Male",
-    birthday: "2011-04-03",
-    grade: "Grade 9",
-    section: "Bonifacio",
-    status: "Transferred",
-    schoolYear: "2025-2026",
-    guardian: "Elena Navarro",
-    contact: "09231234567",
-    address: "Silay City, Negros Occidental",
-  },
-  {
-    id: 8,
-    lrn: "123456789008",
-    firstName: "Bea",
-    middleName: "Villanueva",
-    lastName: "Navarro",
-    sex: "Female",
-    birthday: "2012-12-10",
-    grade: "Grade 8",
-    section: "Luna",
-    status: "Archived",
-    schoolYear: "2024-2025",
-    guardian: "Mario Navarro",
-    contact: "09241234567",
-    address: "Bacolod City, Negros Occidental",
-  },
-];
 
 const emptyStudent = {
   lrn: "",
@@ -152,6 +22,8 @@ const emptyStudent = {
 };
 
 function AdministrationStudRecord() {
+  const system=usePortal();
+  const students=system.data.students;
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -175,15 +47,6 @@ function AdministrationStudRecord() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [adminMenuOpen, setAdminMenuOpen] = useState(false);
-  const [students, setStudents] = useState(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      return saved ? JSON.parse(saved) : initialStudents;
-    } catch {
-      return initialStudents;
-    }
-  });
-
   const [search, setSearch] = useState("");
   const [gradeFilter, setGradeFilter] = useState("");
   const [sectionFilter, setSectionFilter] = useState("");
@@ -209,9 +72,7 @@ function AdministrationStudRecord() {
   const [page, setPage] = useState(1);
   const studentsPerPage = 8;
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(students));
-  }, [students]);
+
 
   useEffect(() => {
     if (!toast) return;
@@ -320,8 +181,8 @@ function AdministrationStudRecord() {
     navigate(path);
   };
 
-  const handleLogout = () => {
-    sessionStorage.removeItem("credtrackSession");
+  const handleLogout = async () => {
+    await logoutUser();
     navigate("/");
   };
 
@@ -385,21 +246,7 @@ function AdministrationStudRecord() {
     }));
   };
 
-  const handleAddStudent = (event) => {
-    event.preventDefault();
-
-    const newStudent = {
-      ...studentForm,
-      id: Date.now(),
-    };
-
-    setStudents((previous) => [newStudent, ...previous]);
-    setShowAddModal(false);
-    setStudentForm(emptyStudent);
-    setPage(1);
-
-    showToast("Student record added successfully.");
-  };
+  const handleAddStudent = async (event) => {event.preventDefault();try {await system.mutate('students/',{action:'save',student:studentForm});setShowAddModal(false);setStudentForm(emptyStudent);setPage(1);showToast('Student record saved.');}catch(e){showToast(e.message);}};
 
   const openViewStudent = (student) => {
     setCurrentStudent(student);
@@ -414,194 +261,24 @@ function AdministrationStudRecord() {
     setShowEditModal(true);
   };
 
-  const handleEditStudent = (event) => {
-    event.preventDefault();
-
-    setStudents((previous) =>
-      previous.map((student) =>
-        student.id === currentStudent.id
-          ? {
-              ...studentForm,
-              id: currentStudent.id,
-            }
-          : student
-      )
-    );
-
-    setShowEditModal(false);
-    setCurrentStudent(null);
-    setStudentForm(emptyStudent);
-
-    showToast("Student record updated successfully.");
-  };
+  const handleEditStudent = async (event) => {event.preventDefault();try {await system.mutate('students/',{action:'save',student:{...studentForm,id:currentStudent.id,version:currentStudent.version}});setShowEditModal(false);setCurrentStudent(null);showToast('Student record updated.');}catch(e){showToast(e.message);}};
 
   const openDeleteStudent = (student) => {
     setCurrentStudent(student);
     setShowDeleteModal(true);
   };
 
-  const confirmDelete = () => {
-    if (!currentStudent) return;
+  const archiveRecords=async(ids)=>{try{await system.mutate('students/',{action:'archive',ids});setSelectedIds([]);setShowDeleteModal(false);setCurrentStudent(null);showToast('Records archived; history preserved.');}catch(e){showToast(e.message);}};
+  const confirmDelete=()=>currentStudent&&archiveRecords([currentStudent.id]);
+  const handleBulkDelete=()=>selectedIds.length&&archiveRecords(selectedIds);
 
-    setStudents((previous) =>
-      previous.filter(
-        (student) => student.id !== currentStudent.id
-      )
-    );
-
-    setSelectedIds((previous) =>
-      previous.filter((id) => id !== currentStudent.id)
-    );
-
-    setShowDeleteModal(false);
-
-    showToast("Student record deleted successfully.");
-
-    setCurrentStudent(null);
-  };
-
-  const handleBulkDelete = () => {
-    if (selectedIds.length === 0) {
-      showToast("Please select at least one student.");
-      return;
-    }
-
-    const confirmed = window.confirm(
-      `Delete ${selectedIds.length} selected student record(s)?`
-    );
-
-    if (!confirmed) return;
-
-    setStudents((previous) =>
-      previous.filter(
-        (student) => !selectedIds.includes(student.id)
-      )
-    );
-
-    setSelectedIds([]);
-
-    showToast(
-      `${selectedIds.length} student record(s) deleted.`
-    );
-  };
-
-  const exportCSV = () => {
-    if (filteredStudents.length === 0) {
-      showToast("No student records to export.");
-      return;
-    }
-
-    const headers = [
-      "LRN",
-      "First Name",
-      "Middle Name",
-      "Last Name",
-      "Sex",
-      "Birthday",
-      "Grade",
-      "Section",
-      "Status",
-      "School Year",
-      "Guardian",
-      "Contact",
-      "Address",
-    ];
-
-    const rows = filteredStudents.map((student) =>
-      [
-        student.lrn,
-        student.firstName,
-        student.middleName,
-        student.lastName,
-        student.sex,
-        student.birthday,
-        student.grade,
-        student.section,
-        student.status,
-        student.schoolYear,
-        student.guardian,
-        student.contact,
-        student.address,
-      ].map((value) =>
-        `"${String(value ?? "").replace(/"/g, '""')}"`
-      )
-    );
-
-    const csv = [
-      headers.join(","),
-      ...rows.map((row) => row.join(",")),
-    ].join("\n");
-
-    const blob = new Blob([csv], {
-      type: "text/csv;charset=utf-8;",
-    });
-
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-
-    link.href = url;
-    link.download = "CredTrack_Student_Records.csv";
-    link.click();
-
-    URL.revokeObjectURL(url);
-
-    showToast("Student records exported successfully.");
-  };
+  const exportCSV=()=>downloadCSV('CredTrack_Student_Records.csv',[['LRN','First Name','Middle Name','Last Name','Sex','Birthday','Grade','Section','Status','School Year','Guardian','Contact','Address','Available Credentials'],...filteredStudents.map(r=>[r.lrn,r.firstName,r.middleName,r.lastName,r.sex,r.birthday,r.grade,r.section,r.status,r.schoolYear,r.guardian,r.contact,r.address,(r.availableCredentials||[]).join(';')])]);
 
   const printStudents = () => {
     window.print();
   };
 
-  const handleExcelFile = (file) => {
-    if (!file) return;
-
-    const validTypes = [
-      ".xlsx",
-      ".xls",
-      ".csv",
-    ];
-
-    const fileName = file.name.toLowerCase();
-    const isValid = validTypes.some((type) =>
-      fileName.endsWith(type)
-    );
-
-    if (!isValid) {
-      showToast(
-        "Please select an Excel or CSV file."
-      );
-      return;
-    }
-
-    setExcelFile(file);
-    setExcelStep(2);
-
-    /*
-      Frontend-only preview.
-
-      Later, when Django is connected, this area can send
-      the spreadsheet to the backend for validation/import.
-    */
-
-    const demoRows = [
-      {
-        lrn: "123456789101",
-        student: "Sample Student",
-        gradeSection: "Grade 10 - Rizal",
-        credential: "SF10",
-        status: "Valid",
-      },
-      {
-        lrn: "123456789102",
-        student: "Another Student",
-        gradeSection: "Grade 9 - Mabini",
-        credential: "SF9",
-        status: "Valid",
-      },
-    ];
-
-    setExcelRows(demoRows);
-  };
+  const handleExcelFile=async(file)=>{if(!file)return; if(!file.name.toLowerCase().endsWith('.csv')){showToast('Save your spreadsheet as CSV, then upload the CSV file.');return;} if(file.size>2*1024*1024){showToast('File limit is 2 MB.');return;}try{const {parseStudentCSV}=await import('./api/studentCSV');const rows=parseStudentCSV(await file.text());setExcelFile(file);setExcelRows(rows);setExcelStep(2);}catch(e){showToast(e.message);}};
 
   const handleFileInput = (event) => {
     const file = event.target.files?.[0];
@@ -619,19 +296,7 @@ function AdministrationStudRecord() {
     handleExcelFile(file);
   };
 
-  const importExcel = () => {
-    if (!excelFile) return;
-
-    setExcelStep(3);
-
-    setTimeout(() => {
-      setExcelStep(4);
-
-      showToast(
-        "Spreadsheet imported successfully."
-      );
-    }, 700);
-  };
+  const importExcel=async()=>{if(!excelRows.length)return;setExcelStep(3);try{await system.mutate('students/',{action:'import',rows:excelRows});setExcelStep(4);showToast('Student records imported.');}catch(e){setExcelStep(2);showToast(e.message);}};
 
   const closeExcelModal = () => {
     setShowExcelModal(false);
@@ -651,9 +316,9 @@ function AdministrationStudRecord() {
       "Section",
       "Sex",
       "Status",
-      "Credential Type",
-      "Credential Status",
-      "Date Issued",
+      "School Year",
+      "Contact",
+      "Available Credentials",
     ];
 
     const csv = headers.join(",") + "\n";
@@ -992,7 +657,7 @@ function AdministrationStudRecord() {
                   onClick={handleBulkDelete}
                 >
                   <i className="fas fa-trash" />
-                  Delete Selected
+                  Archive Selected
                 </button>
 
                 <button
@@ -1389,7 +1054,7 @@ function AdministrationStudRecord() {
 
             </div>
 
-            <div className="profile-grid">
+            <p><strong>Available credentials:</strong> {(currentStudent.availableCredentials||[]).join(", ")||"Not recorded"}</p><p><strong>Principal authorizations:</strong> {system.data.requests.filter(r=>r.lrn===currentStudent.lrn&&r.approved_at).map(r=>r.credential+" — "+r.status_label).join("; ")||"None yet"}</p><div className="profile-grid">
 
               <div>
                 <label>Grade</label>
@@ -1570,10 +1235,10 @@ function AdministrationStudRecord() {
               <i className="fas fa-trash-alt" />
             </div>
 
-            <h2>Delete Student?</h2>
+            <h2>Archive Student?</h2>
 
             <p>
-              This action cannot be undone. The
+              The transaction history will be preserved. The
               selected student record will be
               permanently removed.
             </p>
@@ -1600,7 +1265,7 @@ function AdministrationStudRecord() {
                 onClick={confirmDelete}
               >
                 <i className="fas fa-trash" />
-                Delete Student
+                Archive Student
               </button>
 
             </div>
@@ -1963,7 +1628,7 @@ function StudentForm({
   prefix,
 }) {
   return (
-    <div className="form-grid">
+    <div className="form-grid"><div className="form-group"><label htmlFor={prefix+'Available'}>Available credentials (verified by records staff)</label><input id={prefix+'Available'} value={(form.availableCredentials||[]).join(';')} onChange={e=>onChange({target:{name:'availableCredentials',value:e.target.value.split(';')}})} placeholder="SF10; SF9; Good Moral Certificate" /></div>
 
       <div className="form-group">
         <label htmlFor={`${prefix}LRN`}>

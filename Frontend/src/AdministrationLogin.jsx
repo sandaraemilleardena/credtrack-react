@@ -1,7 +1,9 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./AdministrationLogin.css";
+
+// Django session utility
+import { loginUser } from "./auth/session.js";
 
 function AdministrationLogin() {
   const navigate = useNavigate();
@@ -12,51 +14,92 @@ function AdministrationLogin() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     setError("");
+
+    // --------------------------------------------------------
+    // BASIC VALIDATION
+    // --------------------------------------------------------
 
     if (!username.trim() || !password) {
       setError("Please enter your username and password.");
       return;
     }
 
-    // DEMO ONLY
-    // Replace this with Django authentication later.
-    const administrationAccount = {
-      username: "admin",
-      password: "admin123",
-    };
-
-    const validUsername =
-      username.trim() === administrationAccount.username;
-
-    const validPassword =
-      password === administrationAccount.password;
-
-    if (!validUsername || !validPassword) {
-      setError("Incorrect username or password.");
-      return;
-    }
-
-    // Store temporary session information
-    sessionStorage.setItem(
-      "credtrackSession",
-      JSON.stringify({
-        role: "Administration",
-        username: administrationAccount.username,
-        signedInAt: new Date().toISOString(),
-      })
-    );
-
     setLoading(true);
 
-    // Temporary dashboard navigation
-    // We will replace this with your React Admin Dashboard later.
-    setTimeout(() => {
-      navigate("/admin-dashboard");
-    }, 700);
+    try {
+      // ------------------------------------------------------
+      // LOGIN THROUGH DJANGO
+      // ------------------------------------------------------
+
+      const data = await loginUser(
+        username.trim(),
+        password,
+        "ADMIN"
+      );
+
+      // ------------------------------------------------------
+      // CHECK DJANGO RESPONSE
+      // ------------------------------------------------------
+
+      if (!data.authenticated) {
+        setError(
+          data.error ||
+          data.message ||
+          "Login failed."
+        );
+
+        setLoading(false);
+        return;
+      }
+
+      // ------------------------------------------------------
+      // VERIFY THE ROLE RETURNED BY DJANGO
+      // ------------------------------------------------------
+
+      const userRole = String(
+        data.user?.role || ""
+      ).toUpperCase();
+
+      if (
+        userRole !== "ADMIN" &&
+        userRole !== "ADMINISTRATION"
+      ) {
+        setError(
+          "This account is not authorized for Administration."
+        );
+
+        setLoading(false);
+        return;
+      }
+
+      // ------------------------------------------------------
+      // LOGIN SUCCESSFUL
+      //
+      // Django now owns the authenticated session.
+      // We do NOT store the password.
+      // ------------------------------------------------------
+
+      navigate("/admin-dashboard", {
+        replace: true,
+      });
+
+    } catch (error) {
+      console.error(
+        "Administration login error:",
+        error
+      );
+
+      setError(
+        error.message ||
+        "Unable to connect to the server. Please make sure the Django backend is running."
+      );
+
+      setLoading(false);
+    }
   };
 
   const handleBack = () => {
@@ -87,7 +130,10 @@ function AdministrationLogin() {
           </h1>
 
           {/* DIVIDER */}
-          <div className="admin-divider" aria-hidden="true">
+          <div
+            className="admin-divider"
+            aria-hidden="true"
+          >
             <span></span>
             <i>★</i>
             <span></span>
@@ -151,7 +197,11 @@ function AdministrationLogin() {
               <input
                 id="admin-password"
                 name="password"
-                type={showPassword ? "text" : "password"}
+                type={
+                  showPassword
+                    ? "text"
+                    : "password"
+                }
                 autoComplete="current-password"
                 placeholder="Enter your password"
                 value={password}
@@ -224,7 +274,9 @@ function AdministrationLogin() {
               ></i>
 
               <span>
-                {loading ? "Signing in..." : "Login"}
+                {loading
+                  ? "Signing in..."
+                  : "Login"}
               </span>
             </button>
           </form>
@@ -266,4 +318,3 @@ function AdministrationLogin() {
 }
 
 export default AdministrationLogin;
-

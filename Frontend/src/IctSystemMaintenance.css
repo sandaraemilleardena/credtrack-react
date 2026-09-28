@@ -1,0 +1,82 @@
+@import "./ictDashboard.css";
+
+/* A service operations desk: command panel, health strip, and date planner. */
+.ict-maintenance-page .mt-command { display:grid; grid-template-columns:1.5fr 1fr; overflow:hidden; border-radius:18px; background:#293343; color:#fff; margin-bottom:21px; }
+.ict-maintenance-page .mt-command-copy { padding:30px 32px; background:radial-gradient(ellipse at top right,#49526366,transparent 65%); }
+.ict-maintenance-page .mt-eyebrow { display:flex; align-items:center; gap:8px; font-size:10px; font-weight:500; letter-spacing:.13em; color:#d8c2ba; }
+.ict-maintenance-page .mt-eyebrow > span { width:6px; height:6px; border-radius:50%; background:#dfb678; box-shadow:0 0 0 4px #dfb67813; }
+.ict-maintenance-page .mt-command h2 { font-size:30px; line-height:1.25; letter-spacing:-.045em; font-weight:600; margin:16px 0 12px; }
+.ict-maintenance-page .mt-command p { max-width:400px; color:#bdc4d0; font-size:12px; line-height:1.9; margin:0 0 22px; }
+.ict-maintenance-page .mt-light-button { display:inline-flex; gap:8px; align-items:center; min-height:42px; padding:10px 15px; border:1px solid #ffffff35; border-radius:8px; color:#fff; background:#ffffff0b; font-size:11px; }
+.ict-maintenance-page .mt-light-button:hover { background:#ffffff18; }
+.ict-maintenance-page .mt-command-copy > small { display:block; color:#a5afbe; font-size:10px; margin-top:11px; }
+.ict-maintenance-page .mt-command-stats { border-left:1px solid #ffffff14; padding:34px 32px; display:flex; flex-direction:column; justify-content:center; }
+.ict-maintenance-page .mt-command-stats > div:first-child > span:first-child { display:block; color:#c0c7d3; font-size:11px; }
+.ict-maintenance-page .mt-command-stats > div:first-child > strong { display:block; font-size:48px; font-weight:500; line-height:1.5; letter-spacing:-.05em; }
+.ict-maintenance-page .mt-command-stats strong small { font-size:25px; color:#8493a8; font-weight:400; }
+.ict-maintenance-page .mt-stat-caption { font-size:11px; color:#e2c897; }
+.ict-maintenance-page .mt-stat-pair { display:grid; grid-template-columns:1fr 1fr; gap:22px; border-top:1px solid #ffffff18; margin-top:23px; padding-top:20px; }
+.ict-maintenance-page .mt-stat-pair strong { display:block; font-size:24px; font-weight:500; }
+.ict-maintenance-page .mt-stat-pair span { font-size:10px; color:#aeb8c8; }
+.ict-maintenance-page .mt-services { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin-bottom:26px; scroll-margin-top:100px; }
+.ict-maintenance-page .mt-service { padding:18px; background:#fff; border:1px solid #e7e9ef; border-radius:12px; min-width:0; }
+.ict-maintenance-page .mt-service-top { display:flex; align-items:center; justify-content:space-between; }
+.ict-maintenance-page .mt-led { height:7px; width:7px; border-radius:50%; }
+.ict-maintenance-page .mt-led.good { background:#599570; box-shadow:0 0 0 4px #59957012; }
+.ict-maintenance-page .mt-led.warn { background:#cc9c4b; box-shadow:0 0 0 4px #cc9c4b12; }
+.ict-maintenance-page .mt-service h3 { font-size:12px; margin:15px 0 4px; font-weight:600; }
+.ict-maintenance-page .mt-service p { font-size:10px; color:#7b8493; margin:0 0 15px; min-height:30px; line-height:1.65; }
+.ict-maintenance-page .mt-service > div:last-child { display:flex; align-items:center; justify-content:space-between; gap:6px; flex-wrap:wrap; }
+.ict-maintenance-page .mt-service small { font-size:10px; color:#9299a6; }
+.ict-maintenance-page .mt-workspace { display:grid; grid-template-columns:minmax(0,1fr) 285px; gap:22px; align-items:start; }
+.ict-maintenance-page .mt-week { display:grid; grid-template-columns:1.3fr repeat(7,1fr); padding:20px; gap:5px; border-bottom:1px solid #eef0f4; }
+.ict-maintenance-page .mt-week button { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; border:1px solid transparent; border-radius:9px; background:transparent; color:#798294; padding:9px 3px 5px; min-width:0; }
+.ict-maintenance-page .mt-week button > span { font-size:10px; }
+.ict-maintenance-page .mt-week button > strong { font-size:16px; font-weight:500; color:#3c4557; }
+.ict-maintenance-page .mt-week button[aria-pressed="true"] { border-color:#ead2d3; background:#fff4f3; color:#8d0e12; }
+.ict-maintenance-page .mt-week button[aria-pressed="true"] > strong { color:#8d0e12; }
+.ict-maintenance-page .mt-week i { height:4px; width:4px; border-radius:50%; background:transparent; }
+.ict-maintenance-page .mt-week i.has-work { background:#b68a8c; }
+.ict-maintenance-page .mt-tabs { display:flex; flex-wrap:wrap; gap:5px; padding:15px 20px 4px; }
+.ict-maintenance-page .mt-tabs button { background:transparent; border:0; border-radius:6px; color:#7b8495; padding:7px 10px; font-size:10px; }
+.ict-maintenance-page .mt-tabs button[aria-pressed="true"] { color:#8d0e12; background:#f8eeee; font-weight:500; }
+.ict-maintenance-page .mt-task-list { padding:10px 20px 18px; }
+.ict-maintenance-page .mt-task-card { display:flex; position:relative; align-items:center; gap:13px; width:100%; padding:18px 13px 18px 17px; margin-bottom:10px; border:1px solid #e9ebf1; border-radius:10px; background:#fff; text-align:left; }
+.ict-maintenance-page .mt-task-card:last-child { margin-bottom:0; }
+.ict-maintenance-page .mt-task-card:hover { border-color:#c9a5a7; }
+.ict-maintenance-page .mt-task-rail { position:absolute; left:-1px; top:18px; bottom:18px; width:3px; border-radius:3px; background:#aab8cf; }
+.ict-maintenance-page .mt-task-rail.running { background:#c9a058; }
+.ict-maintenance-page .mt-task-rail.completed { background:#79a489; }
+.ict-maintenance-page .mt-task-main { display:flex; flex-direction:column; flex:1; min-width:0; }
+.ict-maintenance-page .mt-task-meta { color:#8c94a2; font-size:9px; margin-bottom:5px; }
+.ict-maintenance-page .mt-task-main strong { color:#394256; font-size:12px; line-height:1.7; font-weight:500; overflow-wrap:anywhere; }
+.ict-maintenance-page .mt-task-time { display:flex; align-items:center; flex-wrap:wrap; gap:5px; color:#707b8e; font-size:10px; margin:8px 0 3px; }
+.ict-maintenance-page .mt-task-owner { color:#8d95a3; font-size:10px; line-height:1.7; }
+.ict-maintenance-page .mt-task-card > svg { color:#a0a6b1; flex-shrink:0; }
+.ict-maintenance-page .mt-side { display:grid; gap:17px; }
+.ict-maintenance-page .mt-next { padding:23px; border-radius:14px; background:#fcf9f3; border:1px solid #ece4d8; }
+.ict-maintenance-page .mt-next-icon { display:grid; place-items:center; width:49px; height:49px; border:1px solid #eddfc7; border-radius:12px; margin:23px 0 15px; color:#a1854c; background:#fffcf6; }
+.ict-maintenance-page .mt-next h2 { font-size:17px; line-height:1.6; font-weight:600; margin:0 0 7px; letter-spacing:-.025em; overflow-wrap:anywhere; }
+.ict-maintenance-page .mt-next p { margin:0; color:#947d55; font-size:11px; }
+.ict-maintenance-page .mt-next dl { margin:20px 0; padding:13px 0; border-block:1px solid #ede6d8; }
+.ict-maintenance-page .mt-next dl > div { display:flex; justify-content:space-between; gap:12px; font-size:10px; margin:8px 0; }
+.ict-maintenance-page .mt-next dt { color:#979184; }
+.ict-maintenance-page .mt-next dd { margin:0; text-align:right; color:#635e53; }
+.ict-maintenance-page .mt-checklist { padding:21px; border:1px solid #e7e9ef; border-radius:13px; background:#fff; }
+.ict-maintenance-page .mt-checklist h3 { font-size:13px; margin:0; font-weight:600; }
+.ict-maintenance-page .mt-checklist p { color:#8992a1; font-size:10px; line-height:1.8; margin:5px 0 15px; }
+.ict-maintenance-page .mt-checklist ul { list-style:none; margin:0; padding:0; display:grid; gap:13px; }
+.ict-maintenance-page .mt-checklist li { display:flex; align-items:center; gap:10px; font-size:10px; color:#747f92; }
+.ict-maintenance-page .mt-checklist li svg { width:15px; height:15px; color:#a27c7f; flex-shrink:0; }
+.ict-maintenance-page .mt-empty { text-align:center; padding:32px 16px; color:#778395; }
+.ict-maintenance-page .mt-empty h3 { font-size:14px; font-weight:500; }
+.ict-maintenance-page .mt-empty p { font-size:11px; line-height:1.8; }
+.ict-maintenance-page .mt-modal { width:min(600px,calc(100% - 32px)); }
+.ict-maintenance-page .mt-diagnostics > div { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 0; border-bottom:1px solid #eef0f4; font-size:12px; }
+.ict-maintenance-page .mt-diagnostics small { display:block; color:#8b94a3; font-size:10px; margin-top:5px; }
+.ict-maintenance-page .mt-diagnostics .ov-primary { margin-top:15px; }
+.ict-maintenance-page .mt-record-summary { padding:17px; border-radius:10px; background:#f8f9fc; }
+.ict-maintenance-page .mt-record-summary p { font-size:11px; line-height:1.8; color:#748094; white-space:pre-wrap; overflow-wrap:anywhere; }
+.ict-maintenance-page .mt-error { padding:12px; border-radius:8px; color:#a2343c; background:#fff0f1; font-size:12px; }
+@media (max-width:1250px) { .ict-maintenance-page .mt-workspace { grid-template-columns:minmax(0,1fr); } .ict-maintenance-page .mt-side { grid-template-columns:1fr 1fr; } .ict-maintenance-page .mt-services { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:650px) { .ict-maintenance-page .mt-command { grid-template-columns:1fr; } .ict-maintenance-page .mt-command-copy { padding:25px; } .ict-maintenance-page .mt-command-stats { border-left:0; border-top:1px solid #ffffff14; padding:23px 25px; } .ict-maintenance-page .mt-command h2 { font-size:27px; } .ict-maintenance-page .mt-side { grid-template-columns:1fr; } .ict-maintenance-page .mt-week { gap:2px; padding:13px 9px; } .ict-maintenance-page .mt-task-list { padding:10px 14px 15px; } .ict-maintenance-page .mt-task-card { flex-wrap:wrap; } .ict-maintenance-page .mt-task-main { flex-basis:calc(100% - 25px); } .ict-maintenance-page .mt-task-card > .ix-badge { margin-left:0; } .ict-maintenance-page .mt-service { padding:15px; } }

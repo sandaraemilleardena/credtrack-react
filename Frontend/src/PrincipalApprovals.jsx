@@ -1,212 +1,18 @@
+import WorkflowSupport from './components/WorkflowSupport';
+import useCredentialQueue from "./hooks/useCredentialQueue";
+import RequestWorkflowDetails, { QueueNotice } from "./components/RequestWorkflowDetails";
+import { logoutUser } from "./auth/session";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./PrincipalApprovals.css";
 
-/* =========================================================
-   SAMPLE REQUESTS
-   ========================================================= */
-
-const exampleRequests = [
-  {
-    id: "REQ-2026-0127",
-    name: "Juan Dela Cruz",
-    lrn: "136512340001",
-    credential: "SF10 Permanent Record",
-    verifiedBy: "Andrea Mendoza",
-    date: "July 18, 2026",
-    grade: "Grade 10 – Rizal",
-    purpose: "College Admission",
-    priority: "Overdue",
-    readyForApproval: true,
-  },
-  {
-    id: "REQ-2026-0126",
-    name: "Sophia Garcia",
-    lrn: "136512340006",
-    credential: "Good Moral Certificate",
-    verifiedBy: "Andrea Mendoza",
-    date: "July 19, 2026",
-    grade: "Grade 9 – Mabini",
-    purpose: "Scholarship",
-    priority: "Due Today",
-    readyForApproval: true,
-  },
-  {
-    id: "REQ-2026-0125",
-    name: "Carlo Mendoza",
-    lrn: "136512340005",
-    credential: "Certificate of Enrollment",
-    verifiedBy: "Andrea Mendoza",
-    date: "July 20, 2026",
-    grade: "Grade 8 – Luna",
-    purpose: "School Transfer",
-    priority: "Standard",
-    readyForApproval: true,
-  },
-  {
-    id: "REQ-2026-0124",
-    name: "Bea Navarro",
-    lrn: "136512340008",
-    credential: "SF9 Report Card",
-    verifiedBy: "Andrea Mendoza",
-    date: "July 20, 2026",
-    grade: "Grade 7 – Bonifacio",
-    purpose: "Personal Copy",
-    priority: "Standard",
-    readyForApproval: true,
-  },
-  {
-    id: "REQ-2026-0123",
-    name: "Miguel Torres",
-    lrn: "136512340011",
-    credential: "SF10 Permanent Record",
-    verifiedBy: "Liza Ramos",
-    date: "July 18, 2026",
-    grade: "Grade 10 – Mabini",
-    purpose: "College Admission",
-    priority: "Overdue",
-    readyForApproval: true,
-  },
-  {
-    id: "REQ-2026-0122",
-    name: "Angela Reyes",
-    lrn: "136512340014",
-    credential: "Certificate of Enrollment",
-    verifiedBy: "Liza Ramos",
-    date: "July 20, 2026",
-    grade: "Grade 11 – STEM",
-    purpose: "Scholarship",
-    priority: "Due Today",
-    readyForApproval: true,
-  },
-  {
-    id: "REQ-2026-0121",
-    name: "Daniel Santos",
-    lrn: "136512340017",
-    credential: "Good Moral Certificate",
-    verifiedBy: "Andrea Mendoza",
-    date: "July 21, 2026",
-    grade: "Grade 12 – HUMSS",
-    purpose: "Employment",
-    priority: "Standard",
-    readyForApproval: true,
-  },
-];
-
-/* =========================================================
-   SAFE LOCAL STORAGE
-   ========================================================= */
-
-function readStoredRequests() {
-  try {
-    const stored = localStorage.getItem(
-      "credtrackCredentialRequests"
-    );
-
-    if (!stored) {
-      return [];
-    }
-
-    const parsed = JSON.parse(stored);
-
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-
-    return parsed.filter(
-      (request) =>
-        request !== null &&
-        typeof request === "object"
-    );
-  } catch (error) {
-    console.error(
-      "CredTrack: Failed to read stored credential requests.",
-      error
-    );
-
-    return [];
-  }
-}
-
-/* =========================================================
-   FORMAT DATE
-   ========================================================= */
-
-function formatSubmittedDate(value) {
-  if (!value) {
-    return "Recently submitted";
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "Recently submitted";
-  }
-
-  return date.toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-/* =========================================================
-   CONVERT SUBMITTED REQUEST
-   ========================================================= */
-
-function convertSubmittedRequest(request) {
-  const isVerified =
-    request?.administratorVerification === "Verified";
-
-  return {
-    id:
-      request?.id ||
-      `REQ-${Date.now()}`,
-
-    name:
-      request?.fullName ||
-      request?.studentName ||
-      "Unknown Requester",
-
-    lrn:
-      request?.lrn ||
-      "No LRN provided",
-
-    credential:
-      request?.credential ||
-      "Credential Request",
-
-    verifiedBy: isVerified
-      ? "Records Administrator"
-      : "Waiting for verification",
-
-    date: formatSubmittedDate(
-      request?.submittedAt
-    ),
-
-    grade:
-      request?.details ||
-      request?.lastSchoolYear ||
-      request?.gradeSection ||
-      "Not provided",
-
-    purpose:
-      request?.purpose ||
-      "Not provided",
-
-    priority: isVerified
-      ? "Ready for Approval"
-      : "Waiting for Verification",
-
-    readyForApproval: isVerified,
-
-    submittedFromPortal: true,
+function convertRequest(item) {
+  return { ...item, name: item.full_name, verifiedBy: item.prepared_by || "Records Administrator",
+    date: new Date(item.created_at).toLocaleDateString("en-US", {month: "long", day: "numeric", year: "numeric"}),
+    grade: item.requester_type === "Student" ? [item.grade_level, item.section].filter(Boolean).join(" – ") : "Alumni · " + item.graduation_year,
+    priority: "Ready for Approval", readyForApproval: item.status === "PRINCIPAL_REVIEW",
   };
 }
-
-/* =========================================================
-   INITIALS
-   ========================================================= */
 
 function getInitials(name) {
   if (!name) {
@@ -253,7 +59,9 @@ function PrincipalApprovals() {
      REQUESTS
      ======================================================= */
 
-  const [requests, setRequests] = useState([]);
+  const queue = useCredentialQueue("PRINCIPAL");
+  const requests = useMemo(() => queue.items.filter(item => item.status === "PRINCIPAL_REVIEW").map(convertRequest), [queue.items]);
+  const [actionError, setActionError] = useState("");
   const [currentRequest, setCurrentRequest] =
     useState(null);
 
@@ -277,48 +85,10 @@ function PrincipalApprovals() {
      DAILY COUNTS
      ======================================================= */
 
-  const [approvedToday, setApprovedToday] =
-    useState(5);
-
-  const [returnedToday, setReturnedToday] =
-    useState(1);
-
-  /* =======================================================
-     LOAD REQUESTS
-     ======================================================= */
-
-  useEffect(() => {
-    const storedRequests = readStoredRequests();
-
-    const submittedRequests = storedRequests
-      .filter(
-        (request) =>
-          request.status !== "Rejected" &&
-          request.principalApproval !== "Approved"
-      )
-      .map(convertSubmittedRequest);
-
-    const submittedIds = new Set(
-      submittedRequests.map(
-        (request) => request.id
-      )
-    );
-
-    const sampleRequests = exampleRequests
-      .filter(
-        (request) =>
-          !submittedIds.has(request.id)
-      )
-      .map((request) => ({
-        ...request,
-        readyForApproval: true,
-      }));
-
-    setRequests([
-      ...submittedRequests,
-      ...sampleRequests,
-    ]);
-  }, []);
+  const todayKey = new Date().toDateString();
+  const todayEvents = queue.items.flatMap(item => item.events).filter(event => new Date(event.created_at).toDateString() === todayKey);
+  const approvedToday = todayEvents.filter(event => event.action === "approve").length;
+  const returnedToday = todayEvents.filter(event => event.action === "return").length;
 
   /* =======================================================
      BODY CLASS
@@ -426,66 +196,6 @@ function PrincipalApprovals() {
      UPDATE STORED REQUEST
      ======================================================= */
 
-  const updateStoredRequest = (
-    requestId,
-    updates
-  ) => {
-    try {
-      const storedRequests =
-        readStoredRequests();
-
-      const requestIndex =
-        storedRequests.findIndex(
-          (request) =>
-            request.id === requestId
-        );
-
-      if (requestIndex === -1) {
-        return;
-      }
-
-      const storedRequest =
-        storedRequests[requestIndex];
-
-      Object.assign(
-        storedRequest,
-        updates
-      );
-
-      storedRequest.audit =
-        Array.isArray(
-          storedRequest.audit
-        )
-          ? storedRequest.audit
-          : [];
-
-      storedRequest.audit.unshift({
-        at: new Date().toISOString(),
-        actor: "Principal",
-        action:
-          updates.principalApproval ===
-          "Approved"
-            ? "Credential request approved and authorized"
-            : "Credential request returned for correction",
-        note: decisionNote || "",
-      });
-
-      localStorage.setItem(
-        "credtrackCredentialRequests",
-        JSON.stringify(storedRequests)
-      );
-    } catch (error) {
-      console.error(
-        "CredTrack: Failed to update stored request.",
-        error
-      );
-    }
-  };
-
-  /* =======================================================
-     OPEN REVIEW
-     ======================================================= */
-
   const openReview = (request) => {
     if (!request?.readyForApproval) {
       showToast(
@@ -494,6 +204,7 @@ function PrincipalApprovals() {
       return;
     }
 
+    setActionError("");
     setCurrentRequest(request);
     setDecisionNote("");
     setDrawerOpen(true);
@@ -515,64 +226,17 @@ function PrincipalApprovals() {
      FINISH REVIEW
      ======================================================= */
 
-  const finishReview = (action) => {
-    if (
-      !currentRequest ||
-      !currentRequest.readyForApproval
-    ) {
-      return;
+  const finishReview = async (action) => {
+    if (!currentRequest?.readyForApproval || queue.busy) return;
+    setActionError("");
+    try {
+      const updated = await queue.perform(currentRequest, action === "approved" ? "approve" : "return", decisionNote);
+      if (!updated) return;
+      closeReview();
+      showToast(action === "approved" ? "Approved and returned to Admin for final release confirmation." : "Returned to Admin for correction.");
+    } catch (error) {
+      setActionError(error.message);
     }
-
-    const completedRequest =
-      currentRequest;
-
-    setRequests((previousRequests) =>
-      previousRequests.filter(
-        (request) =>
-          request.id !== completedRequest.id
-      )
-    );
-
-    if (action === "approved") {
-      updateStoredRequest(
-        completedRequest.id,
-        {
-          status: "Approved",
-          stage: "Principal Approved",
-          principalApproval: "Approved",
-        }
-      );
-
-      setApprovedToday(
-        (value) => value + 1
-      );
-
-      showToast(
-        `${completedRequest.id} approved and authorized`
-      );
-    } else {
-      updateStoredRequest(
-        completedRequest.id,
-        {
-          status:
-            "Returned for Correction",
-          stage:
-            "Returned by Principal",
-          principalApproval:
-            "Returned for Correction",
-        }
-      );
-
-      setReturnedToday(
-        (value) => value + 1
-      );
-
-      showToast(
-        `${completedRequest.id} returned for correction`
-      );
-    }
-
-    closeReview();
   };
 
   /* =======================================================
@@ -591,15 +255,8 @@ function PrincipalApprovals() {
      LOGOUT
      ======================================================= */
 
-  const handleLogout = () => {
-    sessionStorage.removeItem(
-      "credtrackSession"
-    );
-
-    localStorage.removeItem(
-      "credtrackPrincipalSession"
-    );
-
+  const handleLogout = async () => {
+    await logoutUser();
     navigate("/");
   };
 
@@ -1060,6 +717,8 @@ function PrincipalApprovals() {
             ================================================= */}
 
         <main className="principal-content">
+          <QueueNotice queue={queue} loginPath="/principal-login" />
+          <WorkflowSupport />
 
           {/* PAGE HEADER */}
           <section className="principal-page-heading">
@@ -1253,22 +912,7 @@ function PrincipalApprovals() {
                   All Credentials
                 </option>
 
-                <option value="SF10 Permanent Record">
-                  SF10 Permanent Record
-                </option>
-
-                <option value="SF9 Report Card">
-                  SF9 Report Card
-                </option>
-
-                <option value="Good Moral Certificate">
-                  Good Moral Certificate
-                </option>
-
-                <option value="Certificate of Enrollment">
-                  Certificate of Enrollment
-                </option>
-
+                {[...new Set(requests.map(item => item.credential))].map(credential => <option value={credential} key={credential}>{credential}</option>)}
               </select>
 
             </div>
@@ -1289,26 +933,7 @@ function PrincipalApprovals() {
                   All Priorities
                 </option>
 
-                <option value="Overdue">
-                  Overdue
-                </option>
-
-                <option value="Due Today">
-                  Due Today
-                </option>
-
-                <option value="Standard">
-                  Standard
-                </option>
-
-                <option value="Ready for Approval">
-                  Ready for Approval
-                </option>
-
-                <option value="Waiting for Verification">
-                  Waiting for Verification
-                </option>
-
+                <option value="Ready for Approval">Ready for Approval</option>
               </select>
 
             </div>
@@ -1441,7 +1066,7 @@ function PrincipalApprovals() {
                           {/* REQUEST ID */}
                           <td>
 
-                            <span className="request-id">
+                            <span className="request-id workflow-reference" title={request.id}>
                               {request.id}
                             </span>
 
@@ -1668,7 +1293,7 @@ function PrincipalApprovals() {
               PRINCIPAL REVIEW
             </small>
 
-            <h2>
+            <h2 className="workflow-drawer-reference">
               {currentRequest?.id ||
                 "Credential Review"}
             </h2>
@@ -1794,102 +1419,19 @@ function PrincipalApprovals() {
                 </strong>
 
                 <p>
-                  The Records Administrator verified the student's
-                  identity, enrollment record, and supporting files.
+                  Prepared by {currentRequest.verifiedBy}. Review the preparation notes before making your decision.
                 </p>
 
               </div>
 
             </div>
 
-            {/* DOCUMENTS */}
             <div className="principal-documents">
-
-              <div className="principal-drawer-section-title">
-
-                <div>
-
-                  <span>
-                    DOCUMENTS
-                  </span>
-
-                  <h3>
-                    Supporting Documents
-                  </h3>
-
-                </div>
-
-                <span className="document-count">
-                  2 Files
-                </span>
-
-              </div>
-
-              {/* FILE 1 */}
-              <div className="principal-file">
-
-                <div className="principal-file-icon pdf">
-
-                  <i className="fas fa-file-pdf" />
-
-                </div>
-
-                <div className="principal-file-info">
-
-                  <strong>
-                    Verified Request Form.pdf
-                  </strong>
-
-                  <small>
-                    Verified · 1.2 MB
-                  </small>
-
-                </div>
-
-                <button
-                  type="button"
-                  aria-label="View verified request form"
-                >
-
-                  <i className="fas fa-eye" />
-
-                </button>
-
-              </div>
-
-              {/* FILE 2 */}
-              <div className="principal-file">
-
-                <div className="principal-file-icon document">
-
-                  <i className="fas fa-file-lines" />
-
-                </div>
-
-                <div className="principal-file-info">
-
-                  <strong>
-                    Student Record Summary.pdf
-                  </strong>
-
-                  <small>
-                    Verified · 940 KB
-                  </small>
-
-                </div>
-
-                <button
-                  type="button"
-                  aria-label="View student record summary"
-                >
-
-                  <i className="fas fa-eye" />
-
-                </button>
-
-              </div>
-
+              <div className="principal-drawer-section-title"><div><span>ADMINISTRATOR VERIFICATION</span><h3>Preparation notes</h3></div></div>
+              <div className="principal-file"><div className="principal-file-icon document"><i className="fas fa-file-lines" /></div><div className="workflow-preparation-note">{[...currentRequest.events].reverse().find(event => event.action === "submit_review")?.note || "No preparation notes provided."}</div></div>
             </div>
+            <RequestWorkflowDetails request={currentRequest} />
+            {actionError && <p className="request-workflow-notice request-workflow-error" role="alert">{actionError} Close and reopen the request if it has changed.</p>}
 
             {/* DECISION NOTE */}
             <div className="principal-decision-note">
@@ -1900,6 +1442,8 @@ function PrincipalApprovals() {
 
               <textarea
                 id="decisionNote"
+                maxLength={2000}
+                disabled={queue.busy}
                 value={decisionNote}
                 onChange={(event) =>
                   setDecisionNote(
@@ -1917,6 +1461,7 @@ function PrincipalApprovals() {
               <button
                 type="button"
                 className="principal-return-button"
+                disabled={queue.busy}
                 onClick={() =>
                   finishReview("returned")
                 }
@@ -1931,6 +1476,7 @@ function PrincipalApprovals() {
               <button
                 type="button"
                 className="principal-approve-button"
+                disabled={queue.busy}
                 onClick={() =>
                   finishReview("approved")
                 }

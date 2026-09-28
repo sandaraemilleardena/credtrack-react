@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { loginUser } from "./auth/session.js";
 import { useNavigate } from "react-router-dom";
 import "./PrincipalLogin.css";
 
@@ -11,9 +12,9 @@ function PrincipalLogin() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-
+    if (loading) return;
     setError("");
 
     if (!username.trim() || !password) {
@@ -21,34 +22,26 @@ function PrincipalLogin() {
       return;
     }
 
-    // DEMO ACCOUNT
-    const principalAccount = {
-      username: "principal",
-      password: "principal123",
-    };
-
-    if (
-      username.trim() !== principalAccount.username ||
-      password !== principalAccount.password
-    ) {
-      setError("Incorrect username or password.");
-      return;
-    }
-
-    // Save login session
-    sessionStorage.setItem(
-      "credtrackSession",
-      JSON.stringify({
-        role: "Principal",
-        username: principalAccount.username,
-        signedInAt: new Date().toISOString(),
-      })
-    );
-
     setLoading(true);
+    try {
+      const data = await loginUser(username.trim(), password, "PRINCIPAL");
 
-    // GO DIRECTLY TO PRINCIPAL DASHBOARD
-    navigate("/principal-dashboard");
+      if (data.authenticated !== true) {
+        setError(data.error || "Unable to establish a login session.");
+        return;
+      }
+
+      if (String(data.user?.role || "").toUpperCase() !== "PRINCIPAL") {
+        setError("This account is not authorized for Principal.");
+        return;
+      }
+
+      navigate("/principal-dashboard", { replace: true });
+    } catch (error) {
+      setError(error.message || "Unable to connect to the login server.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleBack = () => {

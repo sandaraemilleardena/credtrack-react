@@ -1,207 +1,18 @@
+import { logoutUser } from './auth/session';
+import {usePortal} from './hooks/PortalContext';
+import {auditRows,localDay} from './api/portalData';
+import {downloadCSV} from './api/operations';
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./AdministrationActLogs.css";
 
-const logs = [
-  {
-    id: "LOG-2026-1048",
-    time: "4:42 PM",
-    date: "2026-07-21",
-    actor: "Dr. Elena Reyes",
-    role: "Principal",
-    action: "Credential approved",
-    description:
-      "Approved the SF10 credential request after record verification.",
-    module: "Credentials",
-    level: "Success",
-    ip: "192.168.1.24",
-    target: "REQ-2026-0127 · Juan Dela Cruz",
-    icon: "fa-circle-check",
-  },
-  {
-    id: "LOG-2026-1047",
-    time: "4:31 PM",
-    date: "2026-07-21",
-    actor: "Andrea Mendoza",
-    role: "Administrator",
-    action: "User account updated",
-    description:
-      "Updated the contact number and account status of an ICT Personnel account.",
-    module: "User Management",
-    level: "Info",
-    ip: "192.168.1.18",
-    target: "User: mgarcia",
-    icon: "fa-user-pen",
-  },
-  {
-    id: "LOG-2026-1046",
-    time: "4:18 PM",
-    date: "2026-07-21",
-    actor: "Miguel Garcia",
-    role: "ICT Personnel",
-    action: "Student records imported",
-    description:
-      "Imported 126 student credential rows from an approved Excel spreadsheet.",
-    module: "Student Records",
-    level: "Success",
-    ip: "192.168.1.31",
-    target: "Import batch IMP-2026-007",
-    icon: "fa-file-import",
-  },
-  {
-    id: "LOG-2026-1045",
-    time: "3:56 PM",
-    date: "2026-07-21",
-    actor: "Unknown user",
-    role: "Administrator",
-    action: "Failed login attempt",
-    description:
-      "Sign-in failed because the supplied password was incorrect.",
-    module: "Authentication",
-    level: "Warning",
-    ip: "192.168.1.44",
-    target: "Username: amendoza",
-    icon: "fa-triangle-exclamation",
-  },
-  {
-    id: "LOG-2026-1044",
-    time: "3:25 PM",
-    date: "2026-07-21",
-    actor: "Andrea Mendoza",
-    role: "Administrator",
-    action: "Credential request created",
-    description:
-      "Created a Certificate of Enrollment request for a student.",
-    module: "Credentials",
-    level: "Info",
-    ip: "192.168.1.18",
-    target: "REQ-2026-0128 · Sophia Garcia",
-    icon: "fa-file-circle-plus",
-  },
-  {
-    id: "LOG-2026-1043",
-    time: "2:47 PM",
-    date: "2026-07-21",
-    actor: "Miguel Garcia",
-    role: "ICT Personnel",
-    action: "Database backup completed",
-    description:
-      "Scheduled encrypted database backup completed successfully.",
-    module: "System",
-    level: "Success",
-    ip: "192.168.1.31",
-    target: "Backup BKP-2026-0721",
-    icon: "fa-database",
-  },
-  {
-    id: "LOG-2026-1042",
-    time: "1:40 PM",
-    date: "2026-07-21",
-    actor: "Unknown user",
-    role: "ICT Personnel",
-    action: "Multiple failed logins",
-    description:
-      "Five unsuccessful sign-in attempts were recorded within ten minutes.",
-    module: "Authentication",
-    level: "Critical",
-    ip: "203.177.45.19",
-    target: "Username: techsupport",
-    icon: "fa-shield-halved",
-  },
-  {
-    id: "LOG-2026-1041",
-    time: "11:12 AM",
-    date: "2026-07-21",
-    actor: "Dr. Elena Reyes",
-    role: "Principal",
-    action: "Report exported",
-    description:
-      "Exported the monthly Credential Completion Report as PDF.",
-    module: "System",
-    level: "Info",
-    ip: "192.168.1.24",
-    target: "Report RPT-2026-051",
-    icon: "fa-file-pdf",
-  },
-  {
-    id: "LOG-2026-1040",
-    time: "10:35 AM",
-    date: "2026-07-21",
-    actor: "Andrea Mendoza",
-    role: "Administrator",
-    action: "Credential released",
-    description:
-      "Marked an approved credential as released to the authorized claimant.",
-    module: "Credentials",
-    level: "Success",
-    ip: "192.168.1.18",
-    target: "REQ-2026-0125 · John Ramos",
-    icon: "fa-box-open",
-  },
-  {
-    id: "LOG-2026-1039",
-    time: "8:42 AM",
-    date: "2026-07-21",
-    actor: "Andrea Mendoza",
-    role: "Administrator",
-    action: "Successful login",
-    description:
-      "Authenticated successfully using the administrator account.",
-    module: "Authentication",
-    level: "Success",
-    ip: "192.168.1.18",
-    target: "Session SES-2026-8841",
-    icon: "fa-right-to-bracket",
-  },
-];
-
-const notifications = [
-  {
-    id: 1,
-    title: "New credential request",
-    message:
-      "A new Certificate of Enrollment request is waiting for review.",
-    time: "5 minutes ago",
-    icon: "fa-file-circle-plus",
-    type: "request",
-  },
-  {
-    id: 2,
-    title: "Credential approved",
-    message:
-      "An SF10 credential request has been approved by the Principal.",
-    time: "18 minutes ago",
-    icon: "fa-circle-check",
-    type: "success",
-  },
-  {
-    id: 3,
-    title: "Security alert",
-    message:
-      "Multiple unsuccessful login attempts were detected.",
-    time: "32 minutes ago",
-    icon: "fa-shield-halved",
-    type: "warning",
-  },
-];
-
-const getRoleClass = (role) => {
-  if (role === "Administrator") return "admin";
-  if (role === "Principal") return "principal";
-  return "ict";
-};
-
-const getInitials = (name) => {
-  return name
-    .split(" ")
-    .map((word) => word[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-};
-
+const getInitials=name=>name.split(' ').filter(Boolean).map(x=>x[0]).slice(0,2).join('').toUpperCase();
+const getRoleClass=role=>role==='Administrator'?'admin':role==='Principal'?'principal':'ict';
 function AdministrationActLogs() {
+  const system=usePortal();
+  const logs=useMemo(()=>auditRows(system.data),[system.data]);
+  const notifications=logs.slice(0,5).map(e=>({...e,title:e.action,message:e.description,unread:true}));
   const navigate = useNavigate();
 
   const notificationRef = useRef(null);
@@ -219,8 +30,9 @@ function AdministrationActLogs() {
   const [roleFilter, setRoleFilter] = useState("all");
   const [moduleFilter, setModuleFilter] = useState("all");
   const [levelFilter, setLevelFilter] = useState("all");
-  const [dateFilter, setDateFilter] = useState("2026-07-21");
+  const [dateFilter, setDateFilter] = useState("");
 
+  const [logPage,setLogPage]=useState(1);
   const [toast, setToast] = useState("");
 
   const unreadCount =
@@ -257,6 +69,7 @@ function AdministrationActLogs() {
       );
     });
   }, [
+    logs,
     search,
     roleFilter,
     moduleFilter,
@@ -305,6 +118,7 @@ function AdministrationActLogs() {
     };
   }, []);
 
+  const pages=Math.max(1,Math.ceil(filteredLogs.length/20)),currentPage=Math.min(logPage,pages);
   const openDetail = (log) => {
     setSelectedLog(log);
     setDrawerOpen(true);
@@ -319,19 +133,19 @@ function AdministrationActLogs() {
     setRoleFilter("all");
     setModuleFilter("all");
     setLevelFilter("all");
-    setDateFilter("2026-07-21");
+    setDateFilter("");
   };
 
   const refreshLogs = () => {
-    showToast("Activity logs refreshed");
+    system.refresh();showToast("Refreshing saved activity…");
   };
 
   const exportLogs = () => {
-    showToast("Audit log export prepared");
+    downloadCSV('CredTrack_Audit.csv',[['Date','Time','Actor','Role','Action','Module','Target','Detail'],...filteredLogs.map(e=>[e.date,e.time,e.actor,e.role,e.action,e.module,e.target,e.description])]);
   };
 
-  const logout = () => {
-    sessionStorage.removeItem("credtrackSession");
+  const logout = async () => {
+    await logoutUser();
     navigate("/");
   };
 
@@ -756,7 +570,7 @@ function AdministrationActLogs() {
 
               <div>
                 <span>Events Today</span>
-                <strong>48</strong>
+                <strong>{logs.filter(e=>e.date===localDay(system.data.updatedAt)).length}</strong>
               </div>
             </article>
 
@@ -765,7 +579,7 @@ function AdministrationActLogs() {
 
               <div>
                 <span>Security Events</span>
-                <strong>3</strong>
+                <strong>{logs.filter(e=>e.module==='Authentication').length}</strong>
               </div>
             </article>
 
@@ -773,8 +587,8 @@ function AdministrationActLogs() {
               <i className="fas fa-user-clock"></i>
 
               <div>
-                <span>Active Users</span>
-                <strong>3</strong>
+                <span>Actors in audit history</span>
+                <strong>{new Set(logs.map(e=>e.actor)).size}</strong>
               </div>
             </article>
 
@@ -784,7 +598,7 @@ function AdministrationActLogs() {
               <div>
                 <span>System Status</span>
                 <strong className="healthy">
-                  Healthy
+                  Connected
                 </strong>
               </div>
             </article>
@@ -1021,25 +835,7 @@ function AdministrationActLogs() {
                 shown
               </span>
 
-              <div className="pages">
-                <button type="button">
-                  <i className="fas fa-chevron-left"></i>
-                </button>
-
-                <button
-                  type="button"
-                  className="current"
-                >
-                  1
-                </button>
-
-                <button type="button">2</button>
-                <button type="button">3</button>
-
-                <button type="button">
-                  <i className="fas fa-chevron-right"></i>
-                </button>
-              </div>
+              <div className="pages"><button disabled={currentPage===1} onClick={()=>setLogPage(currentPage-1)}><i className="fas fa-chevron-left"/></button><button className="current">{currentPage}</button><button disabled={currentPage===pages} onClick={()=>setLogPage(currentPage+1)}><i className="fas fa-chevron-right"/></button></div>
             </div>
           </section>
         </main>

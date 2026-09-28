@@ -1,9 +1,19 @@
+import { logoutUser } from './auth/session';
+import {usePortal} from './hooks/PortalContext';
+import {metrics,auditRows,statusName} from './api/portalData';
+import {submitCredential} from './api/credentials';
+
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./AdministrationDashboard.css";
 
 function AdministrationDashboard() {
+  const system=usePortal();
+  const totals=metrics(system.data.requests);
+  const [modalError,setModalError]=useState('');
+  const modalBusy=useRef(false);
+  const submissionKey=useRef(crypto.randomUUID());
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -51,112 +61,9 @@ function AdministrationDashboard() {
      STATIC DATA
   ========================================================= */
 
-  const requests = useMemo(
-    () => [
-      {
-        id: "REQ-2026-0127",
-        initials: "JD",
-        student: "Juan Dela Cruz",
-        credential: "SF10",
-        status: "Pending",
-        date: "May 25, 2026",
-      },
-      {
-        id: "REQ-2026-0126",
-        initials: "MS",
-        student: "Maria Santos",
-        credential: "Good Moral",
-        status: "Approved",
-        date: "May 24, 2026",
-      },
-      {
-        id: "REQ-2026-0125",
-        initials: "JR",
-        student: "John Ramos",
-        credential: "Certificate of Enrollment",
-        status: "Released",
-        date: "May 23, 2026",
-      },
-      {
-        id: "REQ-2026-0123",
-        initials: "MR",
-        student: "Michael Reyes",
-        credential: "Certificate of Completion",
-        status: "Pending",
-        date: "May 21, 2026",
-      },
-    ],
-    []
-  );
-
-  const notifications = useMemo(
-    () => [
-      {
-        id: 1,
-        icon: "fa-file-circle-plus",
-        color: "blue",
-        title: "New credential request",
-        description: "Juan Dela Cruz requested an SF10.",
-        time: "Just now",
-      },
-      {
-        id: 2,
-        icon: "fa-circle-check",
-        color: "green",
-        title: "Credential approved",
-        description: "Maria Santos' request was approved.",
-        time: "15 minutes ago",
-      },
-      {
-        id: 3,
-        icon: "fa-file-arrow-up",
-        color: "purple",
-        title: "Records uploaded",
-        description: "42 student records were imported.",
-        time: "1 hour ago",
-      },
-    ],
-    []
-  );
-
-  const statistics = useMemo(
-    () => [
-      {
-        title: "Total Requests",
-        value: "121",
-        period: "This month",
-        description: "12% increase this month",
-        icon: "fa-folder-open",
-        className: "total",
-        trend: true,
-      },
-      {
-        title: "Pending",
-        value: "32",
-        period: "Current",
-        description: "Waiting for approval",
-        icon: "fa-clock",
-        className: "pending",
-      },
-      {
-        title: "Approved",
-        value: "54",
-        period: "Current",
-        description: "Ready for release",
-        icon: "fa-circle-check",
-        className: "approved",
-      },
-      {
-        title: "Released",
-        value: "35",
-        period: "Current",
-        description: "Successfully claimed",
-        icon: "fa-box-open",
-        className: "released",
-      },
-    ],
-    []
-  );
+  const requests=system.data.requests.slice(0,6).map(r=>({...r,student:r.full_name,initials:r.full_name.split(' ').map(x=>x[0]).slice(0,2).join(''),status:statusName(r),date:new Date(r.created_at).toLocaleDateString()}));
+  const notifications=auditRows(system.data).slice(0,5).map(e=>({...e,icon:'fa-clock',color:'blue',title:e.action,description:e.description,time:new Date(e.created_at).toLocaleString()}));
+  const statistics=[{title:'Total Requests',value:totals.total,period:'All saved requests',description:'Student and alumni requests',icon:'fa-folder-open',className:'total'},{title:'Pending',value:totals.pending,period:'Current',description:'Preparation or Principal review',icon:'fa-clock',className:'pending'},{title:'Approved',value:totals.approved,period:'All saved requests',description:totals.ready+' ready for pickup',icon:'fa-circle-check',className:'approved'},{title:'Released',value:totals.released,period:'Completed',description:'Collection acknowledged',icon:'fa-box-open',className:'released'}];
 
   const quickActions = useMemo(
     () => [
@@ -289,8 +196,8 @@ function AdministrationDashboard() {
     [navigate, closeMenus]
   );
 
-  const handleLogout = useCallback(() => {
-    sessionStorage.removeItem("credtrackSession");
+  const handleLogout = useCallback(async () => {
+    await logoutUser();
     navigate("/");
   }, [navigate]);
 
@@ -299,7 +206,7 @@ function AdministrationDashboard() {
   ========================================================= */
 
   const openModal = useCallback((modalName) => {
-    setModalSuccess(false);
+    setModalSuccess(false);setModalError('');submissionKey.current=crypto.randomUUID();
     setActiveModal(modalName);
     closeMenus();
   }, [closeMenus]);
@@ -309,10 +216,26 @@ function AdministrationDashboard() {
     setModalSuccess(false);
   }, []);
 
-  const handleModalSubmit = useCallback((event) => {
-    event.preventDefault();
-    setModalSuccess(true);
-  }, []);
+  const handleModalSubmit=async(event)=>{event.preventDefault();if(modalBusy.current)return;modalBusy.current=true;setModalError('');try{
+   if(activeModal==='credential'){
+    const student=system.data.students.find(r=>r.lrn===credentialForm.studentId.trim());
+    if(!student)throw Error('Save this student in Student Records first, then enter their 12-digit LRN here.');
+    await submitCredential({submission_key:submissionKey.current,requester_type:student.status==='Graduated'?'Alumni':'Student',full_name:[student.firstName,student.middleName,student.lastName].filter(Boolean).join(' '),lrn:student.lrn,grade_level:student.grade,section:student.section,graduation_year:student.status==='Graduated'?(student.schoolYear||'').slice(-4):'',credential:credentialForm.type,purpose:credentialForm.purpose,phone:student.contact,email:'',additional_details:'Submitted by the records office.'});
+    await system.refresh();
+   }else if(activeModal==='user'){
+    await system.mutate('accounts/',{action:'create',values:{username:userForm.username,name:userForm.fullName,email:userForm.email,role:userForm.role,password:userForm.password}});
+    setUserForm({...userForm,password:''});
+   }else if(activeModal==='records'){
+    if(!recordForm.file)throw Error('Choose a CSV file. Save Excel spreadsheets as CSV before importing.');
+    if(!recordForm.file.name.toLowerCase().endsWith('.csv'))throw Error('Save the spreadsheet as CSV before importing.');
+    const {parseStudentCSV}=await import('./api/studentCSV');
+    const rows=parseStudentCSV(await recordForm.file.text()).map(r=>({...r,schoolYear:r.schoolYear||recordForm.schoolYear,grade:r.grade||recordForm.gradeLevel}));
+    await system.mutate('students/',{action:'import',rows});
+   }else if(activeModal==='report'){
+    navigate('/admin-reports');return;
+   }
+   setModalSuccess(true);
+  }catch(e){setModalError(e.message);}finally{modalBusy.current=false;}};
 
   const handleModalInput = useCallback(
     (setter, field, value) => {
@@ -355,7 +278,7 @@ function AdministrationDashboard() {
 
             datasets: [
               {
-                data: [32, 54, 35],
+                data: [totals.pending, totals.total-totals.pending-totals.released, totals.released],
 
                 backgroundColor: [
                   "#f59e0b",
@@ -431,7 +354,7 @@ function AdministrationDashboard() {
                   "800 32px 'Poppins', sans-serif";
 
                 ctx.fillText(
-                  "121",
+                  String(totals.total),
                   centerX,
                   centerY - 10
                 );
@@ -471,7 +394,7 @@ function AdministrationDashboard() {
         chartInstance.current = null;
       }
     };
-  }, []);
+  }, [totals.total, totals.pending, totals.released]);
 
   /* =========================================================
      KEYBOARD + OUTSIDE CLICK
@@ -792,7 +715,7 @@ function AdministrationDashboard() {
                 <i className="far fa-bell"></i>
 
                 <span className="notification-badge">
-                  3
+                  {notifications.length}
                 </span>
 
               </button>
@@ -822,7 +745,7 @@ function AdministrationDashboard() {
                     </div>
 
                     <span className="notification-count">
-                      3 New
+                      {notifications.length} recent
                     </span>
 
                   </div>
@@ -940,24 +863,6 @@ function AdministrationDashboard() {
                   }
                 >
 
-                  <div className="dropdown-profile">
-
-                    <div className="admin-avatar large">
-                      AD
-                    </div>
-
-                    <div>
-                      <strong>
-                        Administrator
-                      </strong>
-
-                      <small>
-                        System Administrator
-                      </small>
-                    </div>
-
-                  </div>
-
 
                   <div className="dropdown-divider"></div>
 
@@ -1038,6 +943,7 @@ function AdministrationDashboard() {
 
         <main className="dashboard-content">
 
+
           {/* =================================================
               STATISTICS
           ================================================= */}
@@ -1082,7 +988,7 @@ function AdministrationDashboard() {
                     {stat.trend && (
                       <span className="trend-pill">
                         <i className="fas fa-arrow-trend-up"></i>
-                        12%
+                        Live
                       </span>
                     )}
 
@@ -1329,8 +1235,8 @@ function AdministrationDashboard() {
 
                 <span>
                   Showing{" "}
-                  <strong>4</strong> of{" "}
-                  <strong>121</strong> requests
+                  <strong>{requests.length}</strong> of{" "}
+                  <strong>{totals.total}</strong> requests
                 </span>
 
                 <button
@@ -1361,7 +1267,7 @@ function AdministrationDashboard() {
 
                   <div className="card-eyebrow">
                     <span></span>
-                    THIS MONTH
+                    SAVED REQUESTS
                   </div>
 
                   <h2>
@@ -1377,7 +1283,7 @@ function AdministrationDashboard() {
                 <button
                   type="button"
                   className="card-menu-btn"
-                  aria-label="Chart options"
+                  aria-label="Chart options" onClick={()=>goTo('/admin-reports')}
                   onClick={() =>
                     goTo("/admin-reports")
                   }
@@ -1400,7 +1306,7 @@ function AdministrationDashboard() {
 
                 <div className="summary-total">
                   <strong>
-                    121
+                    {totals.total}
                   </strong>
 
                   <span>
@@ -1411,10 +1317,10 @@ function AdministrationDashboard() {
                 <div className="summary-rate">
                   <i className="fas fa-arrow-trend-up"></i>
                   <strong>
-                    12%
+                    Live
                   </strong>
                   <span>
-                    vs. last month
+                    current workflow
                   </span>
                 </div>
 
@@ -1435,7 +1341,7 @@ function AdministrationDashboard() {
                   </div>
 
                   <strong>
-                    32
+                    {totals.pending}
                   </strong>
 
                 </div>
@@ -1453,7 +1359,7 @@ function AdministrationDashboard() {
                   </div>
 
                   <strong>
-                    54
+                    {totals.approved}
                   </strong>
 
                 </div>
@@ -1471,7 +1377,7 @@ function AdministrationDashboard() {
                   </div>
 
                   <strong>
-                    35
+                    {totals.released}
                   </strong>
 
                 </div>
@@ -1674,7 +1580,7 @@ function AdministrationDashboard() {
                   <div className="form-group">
 
                     <label htmlFor="credential-student-id">
-                      Student ID
+                      Student LRN
                       <span>*</span>
                     </label>
 
@@ -1790,7 +1696,7 @@ function AdministrationDashboard() {
 
                 </div>
 
-                {modalSuccess && (
+                {modalError && <p role="alert" style={{color:'#ad0014'}}>{modalError}</p>}{modalSuccess && (
                   <SuccessMessage>
                     Credential request added
                     successfully.
@@ -1986,7 +1892,7 @@ function AdministrationDashboard() {
 
                 </div>
 
-                {modalSuccess && (
+                {modalError && <p role="alert" style={{color:'#ad0014'}}>{modalError}</p>}{modalSuccess && (
                   <SuccessMessage>
                     Records uploaded
                     successfully.
@@ -2087,7 +1993,7 @@ function AdministrationDashboard() {
 
                   <div className="form-group">
 
-                    <label htmlFor="user-role">
+                    <label htmlFor="staff-username">Username</label><input id="staff-username" required autoComplete="off" value={userForm.username||''} onChange={e=>setUserForm({...userForm,username:e.target.value})}/><label htmlFor="user-role">
                       Role
                       <span>*</span>
                     </label>
@@ -2125,10 +2031,6 @@ function AdministrationDashboard() {
 
                         <option value="ICT Personnel">
                           ICT Personnel
-                        </option>
-
-                        <option value="Teacher">
-                          Teacher
                         </option>
 
                       </select>
@@ -2183,7 +2085,7 @@ function AdministrationDashboard() {
 
                 </div>
 
-                {modalSuccess && (
+                {modalError && <p role="alert" style={{color:'#ad0014'}}>{modalError}</p>}{modalSuccess && (
                   <SuccessMessage>
                     User account created
                     successfully.
@@ -2398,7 +2300,7 @@ function AdministrationDashboard() {
 
                 </div>
 
-                {modalSuccess && (
+                {modalError && <p role="alert" style={{color:'#ad0014'}}>{modalError}</p>}{modalSuccess && (
                   <SuccessMessage>
                     Report generated
                     successfully.

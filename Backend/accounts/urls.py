@@ -4,10 +4,16 @@ from .views import (
     login_view,
     logout_view,
     current_user,
+    csrf_view,
 )
 
 
 urlpatterns = [
+
+    # --------------------------------------------------------
+    # LOGIN
+    # POST /api/auth/login/
+    # --------------------------------------------------------
 
     path(
         "login/",
@@ -15,21 +21,37 @@ urlpatterns = [
         name="login"
     ),
 
+    # --------------------------------------------------------
+    # LOGOUT
+    # POST /api/auth/logout/
+    # --------------------------------------------------------
+
     path(
         "logout/",
         logout_view,
         name="logout"
     ),
 
+    # --------------------------------------------------------
+    # CURRENT SESSION
+    # GET /api/auth/session/
+    # --------------------------------------------------------
+
     path(
-        "me/",
+        "session/",
         current_user,
-        name="current-user"
+        name="session"
     ),
 
-] 
-path(
-    "csrf/",
-    csrf_view,
-    name="csrf"
-),
+    # --------------------------------------------------------
+    # CSRF
+    # GET /api/auth/csrf/
+    # --------------------------------------------------------
+
+    path(
+        "csrf/",
+        csrf_view,
+        name="csrf"
+    ),
+
+]
