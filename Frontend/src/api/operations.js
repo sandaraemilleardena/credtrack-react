@@ -1,15 +1,14 @@
-const API = "http://localhost:7788/api/operations/";
+import { API_BASE_URL } from './config.js';
+import { getCsrfToken, verifySession } from '../auth/session.js';
+const API = API_BASE_URL + '/api/operations/';
 export async function operation(path, body) {
   const headers = { Accept: "application/json" };
   if (body) {
-    const csrf = await fetch("http://localhost:7788/api/auth/csrf/", { credentials: "include" });
-    if (!csrf.ok) throw new Error("Please sign in again.");
-    const cookie = document.cookie.split(";").map(v => v.trim()).find(v => v.startsWith("csrftoken="));
-    if (!cookie) throw new Error("Security token is missing. Open the app using localhost.");
-    headers["X-CSRFToken"] = decodeURIComponent(cookie.slice(10));
+    headers["X-CSRFToken"] = await getCsrfToken();
     headers["Content-Type"] = "application/json";
   }
-  const response = await fetch(API + path, { method: body ? "POST" : "GET", credentials: "include", headers, ...(body ? { body: JSON.stringify(body) } : {}) });
+  const response = await fetch(API + path, { method: body ? "POST" : "GET", credentials: "include", cache: "no-store", headers, ...(body ? { body: JSON.stringify(body) } : {}) });
+  if ([401, 403].includes(response.status)) void verifySession();
   let data;
   try { data = await response.json(); } catch { throw new Error("The server could not complete the request."); }
   if (!response.ok) throw new Error(typeof data === "string" ? data : Array.isArray(data) ? data.join(" ") : Object.entries(data).map(([key,value]) => `${key === "detail" ? "" : key+": "}${Array.isArray(value) ? value.join(" ") : value}`).join(" "));

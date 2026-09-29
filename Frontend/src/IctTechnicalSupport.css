@@ -42,15 +42,15 @@
 
 .ict-support-page .ts-welcome h2 {
   margin: 6px 0;
-  font-size: clamp(18px, 1.7vw, 24px);
+  font-size: clamp(20px, 1.7vw, 24px);
   letter-spacing: -0.035em;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .ict-support-page .ts-welcome p {
   margin: 0;
-  color: #747d8d;
-  font-size: 12px;
+  color: #515d70;
+  font-size: 15px;
   line-height: 1.8;
 }
 
@@ -64,8 +64,8 @@
 }
 
 .ict-support-page .ts-workload small {
-  color: #858793;
-  font-size: 10px;
+  color: #515d70;
+  font-size: 13px;
 }
 
 /* =========================================================
@@ -113,8 +113,8 @@
   color: #8d0e12;
   background: #f8eded;
   border-radius: 6px;
-  font-size: 10px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 /* =========================================================
@@ -126,10 +126,10 @@
   padding: 8px 28px 8px 11px;
   border: 1px solid #e4e7ed;
   border-radius: 8px;
-  color: #626d80;
+  color: #515d70;
   background: #ffffff;
   font: inherit;
-  font-size: 11px;
+  font-size: 15px;
 }
 
 /* =========================================================
@@ -154,26 +154,26 @@
   padding: 12px 0;
   border: 0;
   border-bottom: 2px solid transparent;
-  color: #778092;
+  color: #515d70;
   background: transparent;
-  font-size: 11px;
+  font-size: 15px;
   cursor: pointer;
 }
 
 .ict-support-page .ts-status-tabs button > span {
   min-width: 21px;
   padding: 1px 5px;
-  color: #89909e;
+  color: #515d70;
   background: #f3f4f7;
   border-radius: 5px;
-  font-size: 9px;
+  font-size: 13px;
   text-align: center;
 }
 
 .ict-support-page .ts-status-tabs button[aria-pressed="true"] {
   color: #8d0e12;
   border-bottom-color: #8d0e12;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .ict-support-page .ts-status-tabs button[aria-pressed="true"] > span {
@@ -239,8 +239,8 @@
   background: transparent;
   color: #344054;
   text-align: left;
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 600;
   line-height: 1.75;
   overflow-wrap: anywhere;
   cursor: pointer;
@@ -262,12 +262,12 @@
   flex-basis: 29px;
   width: 29px;
   height: 29px;
-  font-size: 9px;
+  font-size: 13px;
 }
 
 .ict-support-page .ts-created {
-  color: #7e8796;
-  font-size: 10px;
+  color: #515d70;
+  font-size: 13px;
 }
 
 .ict-support-page .ts-view {
@@ -277,7 +277,7 @@
   height: 30px;
   border: 1px solid #e9ebf0;
   border-radius: 7px;
-  color: #858e9c;
+  color: #515d70;
   background: #ffffff;
   cursor: pointer;
 }
@@ -307,9 +307,9 @@
   height: 29px;
   border: 1px solid #e5e8ef;
   border-radius: 6px;
-  color: #5c687c;
+  color: #515d70;
   background: #ffffff;
-  font-size: 17px;
+  font-size: 19px;
   cursor: pointer;
 }
 
@@ -335,14 +335,14 @@
 
 .ict-support-page .ts-empty h3 {
   margin: 0 0 7px;
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .ict-support-page .ts-empty p {
   margin-bottom: 20px;
-  color: #7b8392;
-  font-size: 12px;
+  color: #515d70;
+  font-size: 15px;
 }
 
 /* =========================================================
@@ -389,15 +389,15 @@
 
 .ict-support-page .ts-notes-preview strong {
   color: #475165;
-  font-size: 11px;
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 600;
 }
 
 .ict-support-page .ts-notes-preview span > span {
   display: -webkit-box;
   margin-top: 5px;
-  color: #778092;
-  font-size: 11px;
+  color: #515d70;
+  font-size: 15px;
   line-height: 1.8;
   -webkit-box-orient: vertical;
   overflow: hidden;
@@ -405,14 +405,14 @@
 
 .ict-support-page .ts-notes-preview small {
   margin-top: 7px;
-  color: #9097a4;
-  font-size: 10px;
+  color: #515d70;
+  font-size: 13px;
 }
 
 .ict-support-page .ts-notes-preview svg {
   flex-shrink: 0;
   margin-top: 5px;
-  color: #9aa1ad;
+  color: #515d70;
 }
 
 .ict-support-page .ts-note-dot {
@@ -441,8 +441,8 @@
 
 .ict-support-page .ts-guide h2 {
   margin: 7px 0 18px;
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
   letter-spacing: -0.03em;
 }
 
@@ -471,21 +471,21 @@
   height: 24px;
   border: 1px solid #e5d7d7;
   border-radius: 50%;
-  color: #9a6568;
+  color: #515d70;
   content: counter(support-step);
-  font-size: 10px;
+  font-size: 13px;
 }
 
 .ict-support-page .ts-guide strong {
   color: #51596a;
-  font-size: 11px;
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 600;
 }
 
 .ict-support-page .ts-guide li > span {
   margin-top: 3px;
-  color: #858b98;
-  font-size: 10px;
+  color: #515d70;
+  font-size: 13px;
   line-height: 1.8;
 }
 
@@ -511,27 +511,27 @@
 
 .ict-support-page .ts-ticket-summary h3 {
   margin: 11px 0 8px;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
   line-height: 1.6;
 }
 
 .ict-support-page .ts-ticket-summary > div {
-  color: #647086;
-  font-size: 11px;
+  color: #515d70;
+  font-size: 15px;
 }
 
 .ict-support-page .ts-ticket-summary > small {
   display: block;
   margin-top: 5px;
-  color: #838c9b;
-  font-size: 10px;
+  color: #515d70;
+  font-size: 13px;
 }
 
 .ict-support-page .ts-ticket-summary p {
   margin-bottom: 0;
-  color: #616b7d;
-  font-size: 12px;
+  color: #515d70;
+  font-size: 15px;
   line-height: 1.9;
   white-space: pre-wrap;
 }
@@ -546,13 +546,13 @@
 
 .ict-support-page .ts-note-history h3 {
   margin: 0 0 12px;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
 }
 
 .ict-support-page .ts-note-history h3 span {
   margin-left: 5px;
-  color: #9a6470;
+  color: #515d70;
 }
 
 .ict-support-page .ts-note-history article {
@@ -571,20 +571,20 @@
 }
 
 .ict-support-page .ts-note-history strong {
-  color: #5d6575;
-  font-size: 10px;
-  font-weight: 500;
+  color: #515d70;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .ict-support-page .ts-note-history small {
-  color: #8b93a0;
-  font-size: 9px;
+  color: #515d70;
+  font-size: 13px;
 }
 
 .ict-support-page .ts-note-history p {
   margin: 6px 0 0;
-  color: #778092;
-  font-size: 11px;
+  color: #515d70;
+  font-size: 15px;
   line-height: 1.8;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -599,7 +599,7 @@
   border-radius: 8px;
   color: #a2343c;
   background: #fff0f1;
-  font-size: 12px;
+  font-size: 15px;
   line-height: 1.8;
 }
 
@@ -689,7 +689,7 @@
   .ict-support-page .ts-filters select {
     width: 100%;
     min-width: 0;
-    font-size: 10px;
+    font-size: 13px;
   }
 
   .ict-support-page .ts-queue > .ov-panel-heading {

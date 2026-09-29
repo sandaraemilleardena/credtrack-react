@@ -1,48 +1,30 @@
-import { Navigate } from "react-router-dom";
+import { createElement, Fragment, useEffect, useSyncExternalStore } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+import { subscribeSession, getSessionState, verifySession, logoutUser } from '../auth/session.js';
 
-
-function ProtectedRoute({
-    children,
-    allowedRoles
-}) {
-
-    const user =
-        JSON.parse(
-            sessionStorage.getItem("user")
-        );
-
-
-    if (!user) {
-
-        return (
-            <Navigate
-                to="/login"
-                replace
-            />
-        );
-
-    }
-
-
-    if (
-        allowedRoles &&
-        !allowedRoles.includes(user.role)
-    ) {
-
-        return (
-            <Navigate
-                to="/unauthorized"
-                replace
-            />
-
-        );
-
-    }
-
-
-    return children;
-
+export default function ProtectedRoute({ children, allowedRoles }) {
+  const location = useLocation();
+  const routeKey = location.key + location.pathname + location.search;
+  const session = useSyncExternalStore(subscribeSession, getSessionState);
+  useEffect(() => { verifySession(routeKey); }, [routeKey]);
+  const login = '/' + ({ ADMIN: 'admin', PRINCIPAL: 'principal', ICT: 'ict' }[allowedRoles?.[0]] || 'ict') + '-login';
+  const checking = session.routeKey !== routeKey || session.status === 'checking';
+  const roleAllowed = session.user && (!allowedRoles || allowedRoles.includes(session.user.role));
+  if (checking || (session.status === 'authenticated' && roleAllowed)) {
+    // Preserve in-progress forms during focus checks, but hide and disable the subtree.
+    const keepContent = roleAllowed && session.validatedRouteKey === routeKey;
+    return createElement(Fragment, null,
+      checking && createElement('div', { role: 'status', className: 'session-status' }, 'Checking your session…'),
+      createElement('div', { className: 'protected-portal', hidden: checking, inert: checking }, keepContent ? children : null));
+  }
+  if (session.status === 'error') {
+    return createElement('div', { role: 'alert', className: 'session-status' },
+      createElement('p', null, session.error),
+      createElement('button', { onClick: () => verifySession(routeKey) }, 'Retry session check'),
+      createElement('button', { onClick: () => { logoutUser().catch(() => {}); } }, 'Retry sign-out'));
+  }
+  if (session.status !== 'authenticated' || (allowedRoles && !allowedRoles.includes(session.user?.role))) {
+    return createElement(Navigate, { to: login, replace: true });
+  }
+  return createElement('div', { className: 'protected-portal' }, children);
 }
-
-
-export default ProtectedRoute;

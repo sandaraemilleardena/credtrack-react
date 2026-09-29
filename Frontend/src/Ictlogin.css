@@ -9,7 +9,7 @@
   --dark: #7d050b;
   --gold: #d99a1b;
   --ink: #303746;
-  --muted: #687080;
+  --muted: #515d70;
   --line: #dfe2e8;
   --danger: #b4232f;
 
@@ -116,7 +116,7 @@
 
   color: var(--maroon);
 
-  font-size: clamp(16px, 2vw, 20px);
+  font-size: clamp(18px, 2vw, 22px);
 
   font-weight: 700;
 
@@ -151,7 +151,7 @@
 }
 
 .ict-divider i {
-  font-size: 11px;
+  font-size: 15px;
 
   font-style: normal;
 }
@@ -165,7 +165,7 @@
 
   color: var(--maroon);
 
-  font-size: 20px;
+  font-size: 22px;
 
   font-weight: 700;
 }
@@ -175,7 +175,7 @@
 
   color: var(--muted);
 
-  font-size: 14px;
+  font-size: 16px;
 }
 
 /* =========================
@@ -247,7 +247,7 @@
 
   color: var(--maroon);
 
-  font-size: 20px;
+  font-size: 22px;
 
   transform: translateY(-50%);
 
@@ -266,9 +266,9 @@
 
   color: var(--ink);
 
-  font-size: 12px;
+  font-size: 15px;
 
-  font-weight: 600;
+  font-weight: 700;
 
   pointer-events: none;
 
@@ -295,7 +295,7 @@
 
   color: var(--ink);
 
-  font-size: 15px;
+  font-size: 18px;
 
   font-family: "Poppins", sans-serif;
 
@@ -307,7 +307,7 @@
 }
 
 .ict-field input::placeholder {
-  color: #9aa0aa;
+  color: #515d70;
 }
 
 .ict-field input:focus {
@@ -355,7 +355,7 @@
 
   color: inherit;
 
-  font-size: 16px;
+  font-size: 18px;
 
   transform: none;
 }
@@ -383,9 +383,9 @@
 
   font-family: "Poppins", sans-serif;
 
-  font-size: 13px;
+  font-size: 16px;
 
-  font-weight: 600;
+  font-weight: 700;
 
   cursor: pointer;
 }
@@ -409,9 +409,9 @@
 
   color: var(--danger);
 
-  font-size: 12px;
+  font-size: 15px;
 
-  font-weight: 500;
+  font-weight: 600;
 }
 
 /* =========================
@@ -444,7 +444,7 @@
 
   font-family: "Poppins", sans-serif;
 
-  font-weight: 600;
+  font-weight: 700;
 
   cursor: pointer;
 
@@ -494,9 +494,9 @@
 
   font-family: "Poppins", sans-serif;
 
-  font-size: 13px;
+  font-size: 16px;
 
-  font-weight: 600;
+  font-weight: 700;
 
   text-decoration: none;
 
@@ -528,13 +528,13 @@
 
   color: var(--muted);
 
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .ict-security i {
   color: var(--gold);
 
-  font-size: 20px;
+  font-size: 22px;
 }
 
 /* =========================
@@ -546,7 +546,7 @@
 
   color: var(--muted);
 
-  font-size: 12px;
+  font-size: 15px;
 }
 
 /* =========================
@@ -571,15 +571,15 @@
   }
 
   .ict-school-name {
-    font-size: 14px;
+    font-size: 16px;
   }
 
   .ict-subtitle {
-    font-size: 11px;
+    font-size: 15px;
   }
 
   .ict-role-banner h2 {
-    font-size: 18px;
+    font-size: 20px;
   }
 
   .ict-role-banner i {
@@ -589,11 +589,11 @@
   .ict-field input {
     height: 68px;
 
-    font-size: 14px;
+    font-size: 16px;
   }
 
   .ict-security {
-    font-size: 11px;
+    font-size: 15px;
   }
 }
 
@@ -619,3 +619,7 @@
   outline: 3px solid var(--gold);
   outline-offset: 4px;
 }
+
+.ict-login-page { font-size: 16px; font-weight: 500; line-height: 1.6; }
+.ict-login-page :is(input, button) { font-size: 16px; }
+.ict-login-page :is(label, button) { font-weight: 600; }

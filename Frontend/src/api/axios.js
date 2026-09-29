@@ -1,85 +1,13 @@
-import axios from "axios";
-
-
-const api = axios.create({
-
-    baseURL: "http://localhost:7788/api",
-
-    withCredentials: true,
-
-    headers: {
-
-        "Content-Type": "application/json",
-
-    },
-
+import axios from 'axios';
+import { API_BASE_URL } from './config.js';
+import { getCsrfToken, verifySession } from '../auth/session.js';
+const api = axios.create({ baseURL: API_BASE_URL + '/api', withCredentials: true, headers: { 'Content-Type': 'application/json' } });
+api.interceptors.request.use(async config => {
+  if (['post', 'put', 'patch', 'delete'].includes(config.method?.toLowerCase())) config.headers['X-CSRFToken'] = await getCsrfToken();
+  return config;
 });
-
-
-function getCookie(name) {
-
-    const cookies = document.cookie.split(";");
-
-    for (let cookie of cookies) {
-
-        cookie = cookie.trim();
-
-        if (
-            cookie.startsWith(name + "=")
-        ) {
-
-            return decodeURIComponent(
-                cookie.substring(name.length + 1)
-            );
-
-        }
-
-    }
-
-    return null;
-
-}
-
-
-api.interceptors.request.use(
-
-    (config) => {
-
-        const method =
-            config.method?.toLowerCase();
-
-
-        if (
-            ["post", "put", "patch", "delete"]
-                .includes(method)
-        ) {
-
-            const csrfToken =
-                getCookie("csrftoken");
-
-
-            if (csrfToken) {
-
-                config.headers[
-                    "X-CSRFToken"
-                ] = csrfToken;
-
-            }
-
-        }
-
-
-        return config;
-
-    },
-
-    (error) => {
-
-        return Promise.reject(error);
-
-    }
-
-);
-
-
-export default api; 
+api.interceptors.response.use(response => response, error => {
+  if ([401, 403].includes(error.response?.status)) void verifySession();
+  return Promise.reject(error);
+});
+export default api;

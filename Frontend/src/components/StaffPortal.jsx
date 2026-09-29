@@ -1,14 +1,18 @@
+import ProtectedRoute from './ProtectedRoute';
 import {ictSnapshot} from '../api/portalData';
 import {useNavigate} from 'react-router-dom';
 import useSystemData from '../hooks/useSystemData';
 import {PortalContext} from '../hooks/PortalContext';
 import {logoutUser} from '../auth/session';
 const routes={overview:'/ict-dashboard',dashboard:'/ict-dashboard',access:'/ict-user-access',support:'/ict-technical-support',maintenance:'/ict-system-maintenance',protection:'/ict-data-protection',settings:'/ict-settings',activity:'/ict-system-maintenance'};
-export default function StaffPortal({role,component:Page}){
+export default function StaffPortal(props) {
+ return <ProtectedRoute allowedRoles={[props.role]}><StaffPortalContent {...props} /></ProtectedRoute>;
+}
+function StaffPortalContent({role,component:Page}){
  const system=useSystemData(role),navigate=useNavigate();
  if(!system.data)return <div role="status" style={{padding:32}}>{system.error||'Loading your saved workspace…'} {system.error&&<><button onClick={system.refresh}>Retry</button> <button onClick={()=>navigate('/'+({ADMIN:'admin',PRINCIPAL:'principal',ICT:'ict'})[role]+'-login')}>Sign in</button></>}</div>;
  const d=system.data;
- const logout=async()=>{await logoutUser();navigate('/');};
+ const logout=async()=>{await logoutUser();navigate('/', {replace:true});};
  const onAction=async(type,values={})=>{
    if(type==='save-settings')return system.mutate('settings/',{settings:values.settings||values});
    if(type==='account'){navigate(routes.access);return;}

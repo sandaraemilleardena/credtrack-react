@@ -1,4 +1,5 @@
-const API = "http://localhost:7788";
+import { API_BASE_URL as API } from './config.js';
+import { getCsrfToken, verifySession } from '../auth/session.js';
 
 function errorText(data) {
   if (typeof data === "string") return data;
@@ -15,37 +16,18 @@ async function call(path, { method = "GET", body, publicRequest = false } = {}) 
   }
 
   if (method !== "GET" && !publicRequest) {
-    const csrfResponse = await fetch(`${API}/api/auth/csrf/`, {
-      credentials: "include",
-    });
-
-    if (!csrfResponse.ok) {
-      throw new Error("Unable to initialize security token. Please sign in again.");
-    }
-
-    const cookie = document.cookie
-      .split(";")
-      .map(x => x.trim())
-      .find(x => x.startsWith("csrftoken="));
-
-    if (!cookie) {
-      throw new Error(
-        "Security cookie is missing. Open CredTrack using localhost and sign in again."
-      );
-    }
-
-    headers["X-CSRFToken"] = decodeURIComponent(
-      cookie.slice("csrftoken=".length)
-    );
+    headers["X-CSRFToken"] = await getCsrfToken();
   }
 
   const response = await fetch(`${API}/api/credentials/${path}`, {
     method,
+    cache: "no-store",
     headers,
     credentials: publicRequest ? "omit" : "include",
     ...(body ? { body: JSON.stringify(body) } : {}),
   });
 
+  if (!publicRequest && [401, 403].includes(response.status)) void verifySession();
   let data;
 
   try {

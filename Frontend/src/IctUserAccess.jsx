@@ -346,9 +346,9 @@ function IctUserAccess() {
   const handleLogout = async () => {
     try {
       await logoutUser();
-    } finally {
-      sessionStorage.clear();
-      navigate("/");
+      navigate("/", { replace: true });
+    } catch {
+      // The shared session guard displays the retry screen on failure.
     }
   };
 
@@ -449,7 +449,7 @@ function IctUserAccess() {
   };
 
   return (
-    <div className="ict-shell ict-user-access-page">
+    <div className="ict-dashboard ict-access-page ict-user-access-page">
       {sidebarOpen && (
         <button
           type="button"
@@ -460,25 +460,27 @@ function IctUserAccess() {
       )}
 
       <aside
-        className={`ict-sidebar ${
-          sidebarOpen ? "ict-sidebar-open" : ""
+        id="ict-access-navigation"
+        aria-label="ICT navigation"
+        className={`principal-sidebar ${
+          sidebarOpen ? "show" : ""
         }`}
       >
-        <div className="ict-sidebar-brand">
+        <div className="principal-brand">
           <img
             src="/logo.png"
             alt="PMRMIS-SOUTH Logo"
-            className="ict-sidebar-logo"
+            className="principal-brand-logo"
           />
 
-          <div className="ict-sidebar-brand-text">
+          <div className="principal-brand-text">
             <strong>CredTrack</strong>
             <span>PMRMIS-SOUTH</span>
           </div>
 
           <button
             type="button"
-            className="ict-mobile-close"
+            className="principal-mobile-close"
             onClick={() => setSidebarOpen(false)}
             aria-label="Close menu"
           >
@@ -486,10 +488,10 @@ function IctUserAccess() {
           </button>
         </div>
 
-        <nav className="ict-sidebar-nav">
+        <nav className="principal-nav">
           <button
             type="button"
-            className="ict-nav-item"
+            className="principal-nav-item"
             onClick={() => jumpTo("dashboard")}
           >
             <i className="fa-solid fa-chart-line" />
@@ -498,7 +500,8 @@ function IctUserAccess() {
 
           <button
             type="button"
-            className="ict-nav-item active"
+            className="principal-nav-item active"
+            aria-current="page"
             onClick={() => jumpTo("access")}
           >
             <i className="fa-solid fa-user-shield" />
@@ -507,7 +510,7 @@ function IctUserAccess() {
 
           <button
             type="button"
-            className="ict-nav-item"
+            className="principal-nav-item"
             onClick={() => jumpTo("support")}
           >
             <i className="fa-solid fa-headset" />
@@ -516,7 +519,7 @@ function IctUserAccess() {
 
           <button
             type="button"
-            className="ict-nav-item"
+            className="principal-nav-item"
             onClick={() => jumpTo("maintenance")}
           >
             <i className="fa-solid fa-screwdriver-wrench" />
@@ -525,7 +528,7 @@ function IctUserAccess() {
 
           <button
             type="button"
-            className="ict-nav-item"
+            className="principal-nav-item"
             onClick={() => jumpTo("protection")}
           >
             <i className="fa-solid fa-shield-halved" />
@@ -534,7 +537,7 @@ function IctUserAccess() {
 
           <button
             type="button"
-            className="ict-nav-item"
+            className="principal-nav-item"
             onClick={() => jumpTo("settings")}
           >
             <i className="fa-solid fa-gear" />
@@ -542,7 +545,7 @@ function IctUserAccess() {
           </button>
         </nav>
 
-        <div className="ict-sidebar-footer">
+        <div className="principal-sidebar-footer">
           <div className="ict-sidebar-footer-icon">
             <i className="fa-solid fa-server" />
           </div>
@@ -554,29 +557,32 @@ function IctUserAccess() {
         </div>
       </aside>
 
-      <main className="ict-main">
-        <header className="ict-topbar">
-          <div className="ict-topbar-left">
+      <main className="principal-shell">
+        <header className="principal-topbar">
+          <div className="principal-top-left">
             <button
               type="button"
-              className="ict-menu-button"
+              className="principal-menu-button"
               onClick={() => setSidebarOpen(true)}
               aria-label="Open navigation"
+              aria-expanded={sidebarOpen}
+              aria-controls="ict-access-navigation"
             >
               <i className="fa-solid fa-bars" />
             </button>
 
-            <div>
-              <h1>User Access Management</h1>
-              <p>Manage system accounts and access permissions</p>
+            <img className="principal-school-seal" src="/logo.png" alt="" />
+            <div className="principal-school">
+              <strong>President Manuel Roxas Memorial Integrated School – South</strong>
+              <span>Digital Credentials Management System</span>
             </div>
           </div>
 
-          <div className="ict-topbar-right">
-            <div className="ict-notification-wrapper">
+          <div className="principal-top-right">
+            <div className="principal-notification-wrapper">
               <button
                 type="button"
-                className="ict-icon-button"
+                className="principal-bell"
                 onClick={() =>
                   setNotificationsOpen((current) => !current)
                 }
@@ -604,11 +610,11 @@ function IctUserAccess() {
                       <p>No new notifications.</p>
                     </div>
                   ) : (
-                    approvedRequests.slice(0, 5).map((request) => (
+                    approvedRequests.slice(0, 5).map((request, index) => (
                       <button
                         type="button"
                         className="ict-notification-item"
-                        key={request?.id || Math.random()}
+                        key={request?.id ?? request?.email ?? index}
                         onClick={() => {
                           setSelectedRequest(request);
                           setNotificationsOpen(false);
@@ -636,10 +642,10 @@ function IctUserAccess() {
               )}
             </div>
 
-            <div className="ict-profile-wrapper">
+            <div className="principal-profile-wrapper">
               <button
                 type="button"
-                className="ict-profile-button"
+                className="principal-profile"
                 onClick={() =>
                   setProfileOpen((current) => !current)
                 }
@@ -648,7 +654,7 @@ function IctUserAccess() {
                   <i className="fa-solid fa-user" />
                 </div>
 
-                <div className="ict-profile-text">
+                <div className="profile-info">
                   <strong>ICT Personnel</strong>
                   <span>Administrator</span>
                 </div>
@@ -688,7 +694,7 @@ function IctUserAccess() {
                 ICT Personnel / User Access
               </span>
 
-              <h2>Account Management</h2>
+              <h1>User Access Management</h1>
 
               <p>
                 Create, update, activate, and manage access

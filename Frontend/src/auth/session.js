@@ -1,321 +1,111 @@
-const API_BASE_URL = "http://localhost:7788";
+import { API_BASE_URL } from '../api/config.js';
 
-/*
-|--------------------------------------------------------------------------
-| CredTrack Django Session Utility
-|--------------------------------------------------------------------------
-| React communicates with Django.
-| Django creates and manages the authenticated session.
-|--------------------------------------------------------------------------
-*/
+const listeners = new Set();
+let state = { status: 'checking', user: null, routeKey: null, error: '' };
+let sequence = 0;
+let signingOut = false;
+let installed = false;
+const SESSION_EVENT = 'credtrack-auth-change';
 
-function getCookie(name) {
-  const cookies = document.cookie.split(";");
-
-  for (const cookie of cookies) {
-    const [key, ...valueParts] = cookie.trim().split("=");
-
-    if (key === name) {
-      return decodeURIComponent(valueParts.join("="));
-    }
-  }
-
-  return null;
+function publish(next) {
+  state = next;
+  // Hide synchronously, including the DOM snapshot saved in the back/forward cache.
+  document.documentElement.dataset.sessionLocked = next.status === 'authenticated' ? 'false' : 'true';
+  listeners.forEach(listener => listener());
 }
+export const subscribeSession = listener => { listeners.add(listener); return () => listeners.delete(listener); };
+export const getSessionState = () => state;
 
-/*
-|--------------------------------------------------------------------------
-| Get CSRF Token
-|--------------------------------------------------------------------------
-*/
-
-async function getCsrfToken() {
-  const response = await fetch(
-    `${API_BASE_URL}/api/auth/csrf/`,
-    {
-      method: "GET",
-      credentials: "include",
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error(
-      "Unable to initialize the security token."
-    );
-  }
-
-  const csrfToken = getCookie("csrftoken");
-
-  if (!csrfToken) {
-    throw new Error(
-      "CSRF token was not provided by Django."
-    );
-  }
-
-  return csrfToken;
+function lock() {
+  sequence++;
+  publish({ ...state, status: 'checking', error: '' });
 }
-
-/*
-|--------------------------------------------------------------------------
-| LOGIN
-|--------------------------------------------------------------------------
-*/
-
+function notifyOtherTabs() {
+  try { localStorage.setItem(SESSION_EVENT, String(Date.now()) + ':' + sequence); } catch { /* Focus rechecks still work if storage is disabled. */ }
+}
+function clearLegacySession() {
+  for (const storage of [localStorage, sessionStorage]) {
+    try { storage.removeItem('credtrackSession'); storage.removeItem('user'); } catch { /* Storage is not an authentication source. */ }
+  }
+}
+async function authRequest(path, options = {}) {
+  const response = await fetch(API_BASE_URL + '/api/auth/' + path, {
+    credentials: 'include', cache: 'no-store', signal: AbortSignal.timeout(15000), ...options,
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || data.detail || 'Unable to verify your session. Please retry.');
+  return data;
+}
+export async function getCsrfToken() {
+  const data = await authRequest('csrf/');
+  if (!data.csrfToken) throw new Error('The server did not provide a security token.');
+  return data.csrfToken;
+}
+export async function getCurrentSession() {
+  const data = await authRequest('session/');
+  return { authenticated: data.authenticated === true && Boolean(data.user?.role), user: data.user || null };
+}
+export async function verifySession(routeKey = state.routeKey) {
+  if (signingOut) return;
+  const current = ++sequence;
+  publish({ ...state, status: 'checking', routeKey, error: '' });
+  try {
+    const result = await getCurrentSession();
+    if (current !== sequence) return;
+    publish({ status: result.authenticated ? 'authenticated' : 'anonymous', user: result.user, routeKey, validatedRouteKey: routeKey, error: '' });
+  } catch (error) {
+    if (current === sequence) publish({ status: 'error', user: null, routeKey, error: error.message });
+  }
+}
+export function installSessionProtection() {
+  if (installed) return;
+  installed = true;
+  window.addEventListener('pagehide', lock);
+  window.addEventListener('pageshow', () => verifySession());
+  window.addEventListener('popstate', lock);
+  window.addEventListener('focus', () => verifySession());
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') lock();
+    else verifySession();
+  });
+  window.addEventListener('storage', event => {
+    if (event.key === SESSION_EVENT) verifySession();
+  });
+}
 export async function loginUser(username, password, role) {
   const csrfToken = await getCsrfToken();
-
-  const response = await fetch(
-    `${API_BASE_URL}/api/auth/login/`,
-    {
-      method: "POST",
-
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": csrfToken,
-      },
-
-      credentials: "include",
-
-      body: JSON.stringify({
-        username,
-        password,
-        role,
-      }),
-    }
-  );
-
-  let data = {};
-
-  try {
-    data = await response.json();
-  } catch {
-    data = {};
-  }
-
-  if (!response.ok) {
-    throw new Error(
-      data.error ||
-      data.detail ||
-      data.message ||
-      `Login failed (${response.status}).`
-    );
-  }
-
+  const data = await authRequest('login/', {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+    body: JSON.stringify({ username, password, role }),
+  });
+  clearLegacySession();
+  lock();
+  notifyOtherTabs();
   return data;
 }
-
-/*
-|--------------------------------------------------------------------------
-| CURRENT SESSION
-|--------------------------------------------------------------------------
-*/
-
-export async function getCurrentSession() {
-  const response = await fetch(
-    `${API_BASE_URL}/api/auth/session/`,
-    {
-      method: "GET",
-      credentials: "include",
-    }
-  );
-
-  let data = {};
-
-  try {
-    data = await response.json();
-  } catch {
-    data = {};
-  }
-
-  if (!response.ok) {
-    return {
-      authenticated: false,
-      user: null,
-    };
-  }
-
-  return data;
-}
-
-/*
-|--------------------------------------------------------------------------
-| CHECK AUTHENTICATION
-|--------------------------------------------------------------------------
-*/
-
-export async function isAuthenticated() {
-  try {
-    const session = await getCurrentSession();
-
-    return session.authenticated === true;
-  } catch (error) {
-    console.error(
-      "Session check failed:",
-      error
-    );
-
-    return false;
-  }
-}
-
-/*
-|--------------------------------------------------------------------------
-| GET CURRENT USER
-|--------------------------------------------------------------------------
-*/
-
-export async function getCurrentUser() {
-  try {
-    const session = await getCurrentSession();
-
-    if (!session.authenticated) {
-      return null;
-    }
-
-    return session.user || null;
-  } catch (error) {
-    console.error(
-      "Unable to get current user:",
-      error
-    );
-
-    return null;
-  }
-}
-
-/*
-|--------------------------------------------------------------------------
-| LOGOUT
-|--------------------------------------------------------------------------
-*/
-
 export async function logoutUser() {
+  signingOut = true;
+  lock();
+  publish({ ...state, user: null, validatedRouteKey: null });
   try {
     const csrfToken = await getCsrfToken();
-
-    const response = await fetch(
-      `${API_BASE_URL}/api/auth/logout/`,
-      {
-        method: "POST",
-
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": csrfToken,
-        },
-
-        credentials: "include",
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(
-        "Sign-out failed. Please try again."
-      );
-    }
+    await authRequest('logout/', { method: 'POST', headers: { 'X-CSRFToken': csrfToken } });
+    clearLegacySession();
+    publish({ status: 'anonymous', user: null, routeKey: state.routeKey, error: '' });
+    notifyOtherTabs();
   } catch (error) {
-    window.alert(
-      "Could not sign out securely. Check the server connection and retry."
-    );
-
+    publish({ status: 'error', user: null, routeKey: state.routeKey,
+      error: 'Sign-out was not confirmed. Check the connection and retry sign-out.' });
     throw error;
-  }
-
-  localStorage.removeItem("credtrackSession");
-  sessionStorage.removeItem("credtrackSession");
+  } finally { signingOut = false; }
 }
-
-/*
-|--------------------------------------------------------------------------
-| REQUIRE SESSION
-|--------------------------------------------------------------------------
-*/
-
-export async function requireSession(
-  requiredRole = null
-) {
+export async function isAuthenticated() { try { return (await getCurrentSession()).authenticated; } catch { return false; } }
+export async function getCurrentUser() { try { const s = await getCurrentSession(); return s.authenticated ? s.user : null; } catch { return null; } }
+export async function requireSession(requiredRole = null) {
   try {
     const session = await getCurrentSession();
-
-    if (!session.authenticated) {
-      return {
-        allowed: false,
-        reason: "NOT_AUTHENTICATED",
-        user: null,
-      };
-    }
-
-    if (
-      requiredRole &&
-      session.user?.role &&
-      session.user.role.toUpperCase() !==
-        requiredRole.toUpperCase()
-    ) {
-      return {
-        allowed: false,
-        reason: "WRONG_ROLE",
-        user: session.user,
-      };
-    }
-
-    return {
-      allowed: true,
-      reason: "AUTHORIZED",
-      user: session.user,
-    };
-
-  } catch (error) {
-    console.error(
-      "Session authorization failed:",
-      error
-    );
-
-    return {
-      allowed: false,
-      reason: "SESSION_ERROR",
-      user: null,
-    };
-  }
+    const allowed = session.authenticated && (!requiredRole || session.user?.role === requiredRole.toUpperCase());
+    return { allowed, user: session.user, reason: allowed ? 'AUTHORIZED' : session.authenticated ? 'WRONG_ROLE' : 'NOT_AUTHENTICATED' };
+  } catch { return { allowed: false, user: null, reason: 'SESSION_ERROR' }; }
 }
-
-/*
-|--------------------------------------------------------------------------
-| PAGE CACHE PROTECTION
-|--------------------------------------------------------------------------
-*/
-
-export function disablePageCache() {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.history.replaceState(
-    null,
-    "",
-    window.location.href
-  );
-
-  window.addEventListener(
-    "pageshow",
-    (event) => {
-      if (event.persisted) {
-        window.location.reload();
-      }
-    }
-  );
-}
-
-/*
-|--------------------------------------------------------------------------
-| DEFAULT EXPORT
-|--------------------------------------------------------------------------
-*/
-
-export default {
-  loginUser,
-  getCurrentSession,
-  isAuthenticated,
-  getCurrentUser,
-  logoutUser,
-  requireSession,
-  disablePageCache,
-};
+export const disablePageCache = installSessionProtection;

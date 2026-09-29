@@ -10,3 +10,7 @@ body,
 body {
   min-width: 320px;
 }
+/* Never display a protected history snapshot until Django revalidates it. */
+html[data-session-locked="true"] .protected-portal { visibility: hidden !important; }
+.session-status { padding: 32px; font: 500 16px/1.6 system-ui, sans-serif; color: #303746; }
+.session-status button { margin: 8px 12px 0 0; padding: 10px 16px; font: inherit; cursor: pointer; }
