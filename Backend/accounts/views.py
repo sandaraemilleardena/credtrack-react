@@ -1,3 +1,5 @@
+from django.views.decorators.csrf import csrf_protect
+from django.middleware.csrf import get_token
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 
@@ -11,6 +13,7 @@ from .models import UserProfile
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+@csrf_protect
 def login_view(request):
 
     username = request.data.get("username")
@@ -110,6 +113,8 @@ def login_view(request):
     })
 
 @api_view(["POST"])
+@permission_classes([AllowAny])
+@csrf_protect
 def logout_view(request):
 
     from operations.models import AuditEvent
@@ -133,9 +138,10 @@ def current_user(request):
     if not user.is_authenticated:
         return Response({"authenticated": False, "user": None})
 
-    profile = UserProfile.objects.get(
-        user=user
-    )
+    profile = UserProfile.objects.filter(user=user).first()
+    if profile is None:
+        logout(request)
+        return Response({"authenticated": False, "user": None})
 
     return Response({
 
@@ -165,5 +171,5 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 def csrf_view(request):
 
     return Response({
-        "message": "CSRF cookie set."
+        "csrfToken": get_token(request)
     })
