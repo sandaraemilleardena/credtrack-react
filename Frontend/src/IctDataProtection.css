@@ -1,4 +1,4 @@
-@import "./ictDashboard.css";
+@import "./IctDashboard.css";
 
 /* A backup vault: recovery summary, capacity ring, job history, policy, audit. */
 .ict-protection-page .dp-overview { display:grid; grid-template-columns:minmax(0,1.7fr) minmax(0,1fr); gap:20px; margin-bottom:19px; }

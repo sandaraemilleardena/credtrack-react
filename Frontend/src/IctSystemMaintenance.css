@@ -1,4 +1,4 @@
-@import "./ictDashboard.css";
+@import "./IctDashboard.css";
 
 /* A service operations desk: command panel, health strip, and date planner. */
 .ict-maintenance-page .mt-command { display:grid; grid-template-columns:1.5fr 1fr; overflow:hidden; border-radius:18px; background:#293343; color:#fff; margin-bottom:21px; }

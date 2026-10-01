@@ -1,4 +1,4 @@
-@import "./ictDashboard.css";
+@import "./IctDashboard.css";
 
 /* A preference editor: local section navigation and focused forms. */
 .ict-settings-page .st-page-status { display:flex; align-items:center; gap:8px; font-size:13px; color:#515d70; }
