@@ -31,8 +31,8 @@ SCHOOL_DEFAULTS = {
     "pickupInstructions": "Please bring a valid ID to the school records office.", "acceptRequests": True,
     "principalApproval": True, "documentVerification": True, "releaseAcknowledgment": True,
     "auditActions": True, "notifyRelease": True, "notifyNewRequest": True, "notifyApproval": True,
-    "notifySecurity": True, "notifyBackup": True, "referencePrefix": "UUID",
-    "passwordLength": "Django password validators", "mfa": False, "lockout": "Not configured",
+    "notifySecurity": True, "notifyBackup": True, "referencePrefix": "CT-[YEAR]-[5 DIGIT SEQUENCE]",
+    "passwordLength": "Django password validators", "mfa": False, "lockout": "3 failures: 1 minute; 3 more: ICT unlock required",
     "sessionTimeout": "Django session policy", "automaticBackups": False,
     "backupFrequency": "Not configured", "logRetention": "No automatic deletion",
 }
@@ -56,9 +56,11 @@ def work_json(item):
 
 
 def account_json(user):
-    return {"id": str(user.pk), "username": user.username, "name": user.get_full_name() or user.username,
-            "email": user.email, "role": ROLE_LABELS.get(user_role(user), "Unassigned"),
-            "status": "Active" if user.is_active else "Inactive",
+    profile = getattr(user, "userprofile", None)
+    lock_status = "Permanently Locked" if profile and profile.account_locked else "Temporarily Locked" if profile and profile.temporary_locked_until and profile.temporary_locked_until > timezone.now() else "Active"
+    return {"lock_status": lock_status, "id": str(user.pk), "username": user.username, "name": user.get_full_name() or user.username,
+            "email": user.email, "role": {**ROLE_LABELS, "STUDENTS": "Student", "ALUMNI": "Alumni"}.get(user_role(user), "Unassigned"),
+            "status": lock_status if user.is_active else "Inactive",
             "lastSignIn": user.last_login.isoformat() if user.last_login else "Not yet signed in",
             "createdAt": user.date_joined.isoformat()}
 
@@ -84,22 +86,25 @@ def snapshot(request):
     if role == "PRINCIPAL":
         events = events.filter(role="PRINCIPAL")
     elif role == "ICT":
-        events = events.filter(role="ICT")
+        from django.db.models import Q
+        events = events.filter(Q(role="ICT") | Q(module="Authentication") | Q(module="User Access"))
     logs = [{"id": f"AUD-{event.pk}", "actor": event.actor.username if event.actor else "System",
              "role": event.role, "module": event.module, "action": event.action, "detail": event.detail,
              "object_id": event.object_id, "created_at": event.created_at.isoformat()} for event in events[:1000]]
-    data = {"role": role, "user": account_json(request.user), "settings": {**SCHOOL_DEFAULTS, **school.data},
+    data = {"role": role, "user": account_json(request.user), "settings": {**SCHOOL_DEFAULTS, **school.data, "referencePrefix": SCHOOL_DEFAULTS["referencePrefix"], "lockout": SCHOOL_DEFAULTS["lockout"]},
             "settings_version": school.version, "audit": logs, "updatedAt": timezone.now().isoformat(),
             "sms_enabled": bool(settings.SMS_ENABLED and settings.SEMAPHORE_API_KEY)}
     if role in {"ADMIN", "PRINCIPAL"}:
         items = CredentialRequest.objects.select_related("prepared_by", "approved_by", "sms").prefetch_related("events__actor")
+        if role == "PRINCIPAL":
+            items = items.filter(status__in=["PRINCIPAL_REVIEW", "PRINCIPAL_APPROVED", "RETURNED", "READY", "COLLECTED", "REJECTED"])
         data["requests"] = RequestSerializer(items, many=True).data
         if role == "ADMIN":
-            data["students"] = [{**record.data, "id": record.pk, "lrn": record.lrn, "version": record.version} for record in StudentRecord.objects.order_by("lrn")]
+            data["students"] = [{**record.data, "id": record.pk, "lrn": record.lrn, "version": record.version, "credentialFiles": [{"id": file.pk, "title": file.title, "isSample": file.is_sample} for file in record.credential_files.all()]} for record in StudentRecord.objects.prefetch_related("credential_files").order_by("lrn")]
     if role in {"ADMIN", "ICT"}:
         data["tickets"] = [work_json(item) for item in WorkItem.objects.filter(kind="ticket").order_by("-created_at")]
     if role == "ICT":
-        data["accounts"] = [account_json(user) for user in User.objects.filter(userprofile__role__in=ROLE_LABELS).select_related("userprofile")]
+        data["accounts"] = [account_json(user) for user in User.objects.filter(userprofile__isnull=False).select_related("userprofile")]
         data["tasks"] = [work_json(item) for item in WorkItem.objects.filter(kind="maintenance").order_by("-created_at")]
         data["backupJobs"] = []
         data["services"] = diagnostics()
@@ -139,6 +144,8 @@ def student_action(request):
     rows = values.get("rows") if action == "import" else [values.get("student", {})]
     if not isinstance(rows, list) or not 1 <= len(rows) <= 500:
         raise ValidationError("Provide 1 to 500 student records.")
+    if action == "import" and any(isinstance(row, dict) and row.get("id") for row in rows):
+        raise ValidationError("Imports only create new records; use Edit for existing students.")
     fields = {"firstName", "middleName", "lastName", "sex", "birthday", "grade", "section", "status", "schoolYear", "guardian", "contact", "address"}
     for row in rows:
         if not isinstance(row, dict): raise ValidationError("Invalid student row.")
@@ -290,6 +297,18 @@ def account_action(request):
     action, values = request.data.get("action"), request.data.get("values", {})
     if not isinstance(values, dict): raise ValidationError("Invalid account details.")
     role = {value: key for key, value in ROLE_LABELS.items()}.get(values.get("role"), values.get("role"))
+    if action == "unlock":
+        staff(request, {"ICT"})
+        if not str(values.get("id", "")).isdigit(): raise ValidationError("Invalid account identifier.")
+        profile = get_object_or_404(UserProfile.objects.select_for_update(), user_id=values["id"])
+        profile.failed_login_attempts = 0
+        profile.temporary_locked_until = None
+        profile.account_locked = False
+        profile.locked_at = None
+        profile.unlocked_at, profile.unlocked_by = timezone.now(), request.user
+        profile.save()
+        audit(request, "User Access", "ICT account unlock", profile.user_id, "Account lock and failed attempt counter reset.")
+        return Response({"message": "Account unlocked.", "account": account_json(profile.user)})
     if action == "create":
         username = text(values, "username", True, 150)
         if not re.fullmatch(r"[\w.@+-]+", username): raise ValidationError("Invalid username.")
@@ -334,3 +353,61 @@ def account_action(request):
         raise ValidationError("Choose create, edit, activate, deactivate or reset. Invitations are not configured.")
     audit(request, "User Access", f"Account {action}", user.pk, "Staff access updated; existing transaction history preserved.")
     return Response({"message": "Staff account saved.", "account": account_json(user)})
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def student_import_preview(request):
+    staff(request, {"ADMIN"})
+    from .student_import import parse_students
+    rows = parse_students(request.FILES.get("file"))
+    existing = list(StudentRecord.objects.filter(lrn__in=[row["lrn"] for row in rows]).values_list("lrn", flat=True))
+    if existing: raise ValidationError("These LRNs already exist; edit their records instead: " + ", ".join(existing[:10]))
+    return Response({"rows": rows, "count": len(rows), "message": "Preview only. Confirm import to save these students."})
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def student_credential_preview(request, student_id, credential_id):
+    staff(request, {"ADMIN"})
+    from .models import StudentCredential
+    from django.http import FileResponse, Http404
+    from io import BytesIO
+    from PIL import Image, ImageOps
+    import warnings
+    file = get_object_or_404(StudentCredential, pk=credential_id, student_id=student_id)
+    try:
+        with file.document.open("rb") as source:
+            if source.read(5) == b"%PDF-":
+                source.seek(0)
+                from pypdf import PdfReader
+                reader = PdfReader(source)
+                if reader.is_encrypted: raise ValueError()
+                source.seek(0)
+                content, mime = BytesIO(source.read()), "application/pdf"
+            else:
+                source.seek(0)
+                with warnings.catch_warnings():
+                    warnings.simplefilter("error", Image.DecompressionBombWarning)
+                    image = ImageOps.exif_transpose(Image.open(source))
+                    image.thumbnail((2400, 3200))
+                    content = BytesIO()
+                    image.convert("RGB").save(content, format="PNG")
+                    content.seek(0)
+                    mime = "image/png"
+    except FileNotFoundError: raise Http404()
+    except Exception:
+        from mimetypes import guess_type
+        content = file.document.open("rb")
+        mime = guess_type(file.document.name)[0] or "application/octet-stream"
+        if mime in {"text/html", "application/xhtml+xml", "image/svg+xml"}:
+            mime = "text/plain"
+    audit(request, "Student Records", "Viewed student credential", file.pk)
+    response = FileResponse(content, content_type=mime)
+    response["Content-Disposition"] = "inline"
+    from pathlib import Path
+    response["X-Document-Filename"] = f"credential-{file.pk}{Path(file.document.name).suffix}"
+    response["Cache-Control"] = "private, no-store"
+    response["X-Content-Type-Options"] = "nosniff"
+    response["Content-Security-Policy"] = "default-src 'none'; sandbox"
+    return response

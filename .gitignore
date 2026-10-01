@@ -28,3 +28,20 @@ dist/
 .env
 .vscode/ 
 
+
+Backend/private_documents/
+.env
+.env.*
+!.env.example
+
+# Runtime artifacts and private local data
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+work/
+.vite-tests/
+*.sqlite3
+*.dump
+*.backup
+staticfiles/

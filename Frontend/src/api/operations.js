@@ -5,9 +5,9 @@ export async function operation(path, body) {
   const headers = { Accept: "application/json" };
   if (body) {
     headers["X-CSRFToken"] = await getCsrfToken();
-    headers["Content-Type"] = "application/json";
+    if (!(body instanceof FormData)) headers["Content-Type"] = "application/json";
   }
-  const response = await fetch(API + path, { method: body ? "POST" : "GET", credentials: "include", cache: "no-store", headers, ...(body ? { body: JSON.stringify(body) } : {}) });
+  const response = await fetch(API + path, { method: body ? "POST" : "GET", credentials: "include", cache: "no-store", headers, ...(body ? { body: body instanceof FormData ? body : JSON.stringify(body) } : {}) });
   if ([401, 403].includes(response.status)) void verifySession();
   let data;
   try { data = await response.json(); } catch { throw new Error("The server could not complete the request."); }

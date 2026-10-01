@@ -4,8 +4,10 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   root: "Frontend",
   plugins: [react()],
+  preview: { headers: { "Cache-Control": "no-store" } },
   server: {
-    port: 5173,
+    headers: { "Cache-Control": "no-store" },
+    port: 7787,
     strictPort: true,
   },
 });

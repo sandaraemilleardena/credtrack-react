@@ -2,23 +2,39 @@ import uuid
 
 from django.conf import settings
 from django.db import models
+from .documents import private_storage, document_path
 
 
 class CredentialRequest(models.Model):
     class Status(models.TextChoices):
-        SUBMITTED = "SUBMITTED", "Submitted"
+        SUBMITTED = "SUBMITTED", "Pending Administration Verification"
         PREPARING = "PREPARING", "Preparing"
         UNAVAILABLE = "UNAVAILABLE", "Unavailable / needs information"
         PRINCIPAL_REVIEW = "PRINCIPAL_REVIEW", "Awaiting principal approval"
         RETURNED = "RETURNED", "Returned for correction"
-        PRINCIPAL_APPROVED = "PRINCIPAL_APPROVED", "Principal approved"
+        PRINCIPAL_APPROVED = "PRINCIPAL_APPROVED", "Student Information Approved"
         READY = "READY", "Ready for release"
-        COLLECTED = "COLLECTED", "Collected"
+        COLLECTED = "COLLECTED", "Released"
+        REJECTED = "REJECTED", "Rejected"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     submission_key = models.UUIDField(unique=True)
     requester_type = models.CharField(max_length=10, choices=[("Student", "Student"), ("Alumni", "Alumni")])
-    full_name = models.CharField(max_length=160)
+    reference = models.CharField(max_length=20, unique=True, null=True, editable=False)
+    first_name = models.CharField(max_length=80, blank=True)
+    middle_name = models.CharField(max_length=80, blank=True)
+    last_name = models.CharField(max_length=80, blank=True)
+    full_name = models.CharField(max_length=242)
+    other_purpose = models.CharField(max_length=2000, blank=True)
+    delivery_method = models.CharField(max_length=20, choices=[("ON_SITE", "Claimed On Site"), ("SCHOOL_TO_SCHOOL", "School-to-School")], default="ON_SITE")
+    receiving_school = models.CharField(max_length=200, blank=True)
+    verification_document = models.FileField(storage=private_storage, upload_to=document_path, blank=True)
+    verification_sha256 = models.CharField(max_length=64, blank=True, editable=False)
+    psa_document = models.FileField(storage=private_storage, upload_to=document_path, blank=True)
+    psa_sha256 = models.CharField(max_length=64, blank=True, editable=False)
+    id_document = models.FileField(storage=private_storage, upload_to=document_path, blank=True)
+    id_sha256 = models.CharField(max_length=64, blank=True, editable=False)
+    confirmed_at = models.DateTimeField(null=True, blank=True)
     lrn = models.CharField(max_length=12)
     grade_level = models.CharField(max_length=40, blank=True)
     section = models.CharField(max_length=80, blank=True)
@@ -68,3 +84,8 @@ class SmsNotification(models.Model):
     attempts = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+class ReferenceSequence(models.Model):
+    year = models.PositiveIntegerField(unique=True)
+    value = models.PositiveIntegerField(default=0)

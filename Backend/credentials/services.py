@@ -8,8 +8,9 @@ S = CredentialRequest.Status
 TRANSITIONS = {
     "prepare": ("ADMIN", {S.SUBMITTED, S.UNAVAILABLE, S.RETURNED}, S.PREPARING),
     "unavailable": ("ADMIN", {S.SUBMITTED, S.PREPARING, S.RETURNED}, S.UNAVAILABLE),
-    "submit_review": ("ADMIN", {S.PREPARING}, S.PRINCIPAL_REVIEW),
+    "submit_review": ("ADMIN", {S.SUBMITTED, S.PREPARING, S.RETURNED}, S.PRINCIPAL_REVIEW),
     "approve": ("PRINCIPAL", {S.PRINCIPAL_REVIEW}, S.PRINCIPAL_APPROVED),
+    "reject": ("PRINCIPAL", {S.PRINCIPAL_REVIEW}, S.REJECTED),
     "return": ("PRINCIPAL", {S.PRINCIPAL_REVIEW}, S.RETURNED),
     "ready": ("ADMIN", {S.PRINCIPAL_APPROVED}, S.READY),
     "collect": ("ADMIN", {S.READY}, S.COLLECTED),
@@ -38,13 +39,18 @@ def transition(request_id, actor, action, version, note=""):
         raise Conflict()
     if item.status not in allowed:
         raise Conflict("This action is not allowed at the current stage.")
-    if action in {"unavailable", "return", "submit_review", "collect"} and not note.strip():
-        raise ValidationError({"note": "Add the verification, correction, unavailability, or collection details."})
     previous = item.status
     if action == "submit_review":
+        if not (item.verification_document or item.psa_document or item.id_document):
+            raise ValidationError({"verification_document": "A PSA or valid ID is required before confirmation."})
         item.prepared_by = actor
+        item.confirmed_at = timezone.now()
     elif action == "approve":
+        if not item.confirmed_at or not (item.verification_document or item.psa_document or item.id_document):
+            raise Conflict("Administration identity verification is required before approval.")
         item.approved_by, item.approved_at = actor, timezone.now()
+    elif action == "return":
+        item.confirmed_at = None
     elif action == "ready":
         if not item.approved_at:
             raise Conflict("Principal approval is required before release.")
@@ -62,9 +68,10 @@ def transition(request_id, actor, action, version, note=""):
         from operations.models import Preference
         school = Preference.objects.filter(key="school").first()
         instructions = school.data.get("pickupInstructions", "Please bring a valid ID.") if school else "Please bring a valid ID."
+        delivery = f"is approved for forwarding to {item.receiving_school}. Please contact the records office for forwarding details." if item.delivery_method == "SCHOOL_TO_SCHOOL" else f"is ready for collection at the school records office. {instructions}"
         notification, _ = SmsNotification.objects.get_or_create(
             request=item,
-            defaults={"phone": item.phone, "message": f"CredTrack: Request {item.id} is ready for collection at the school records office. {instructions}"},
+            defaults={"phone": item.phone, "message": f"CredTrack: Request {item.reference} {delivery}"[:480]},
         )
         from .sms import send_notification
         transaction.on_commit(lambda: send_notification(notification.pk), robust=True)

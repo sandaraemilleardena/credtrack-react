@@ -1,4 +1,3 @@
-import React from 'react';
 import {renderToString} from 'react-dom/server';
 import {MemoryRouter} from 'react-router-dom';
 import {PortalContext} from '../src/hooks/PortalContext';
@@ -21,7 +20,7 @@ import IctSettings from '../src/IctSettings';
 export function smoke(){
  const now=new Date().toISOString();
  const base={user:{name:'Test staff',email:'staff@example.test'},requests:[],students:[],audit:[],tickets:[],tasks:[],accounts:[],services:[],settings:{schoolName:'Test school'},preferences:{},sessions:[],settings_version:0,updatedAt:now};
- const request={id:'11111111-1111-4111-8111-111111111111',full_name:'Render Test',lrn:'123456789012',credential:'SF10',grade_level:'Grade 10',section:'Test',status:'PRINCIPAL_REVIEW',status_label:'Awaiting Principal',created_at:now,events:[{action:'submit_review',actor:'Test admin',created_at:now,note:'Verified',to_status:'PRINCIPAL_REVIEW'}],version:2};
+ const request={reference:'CT-TEST-00001',id:'11111111-1111-4111-8111-111111111111',full_name:'Render Test',lrn:'123456789012',credential:'SF10',grade_level:'Grade 10',section:'Test',status:'PRINCIPAL_REVIEW',status_label:'Awaiting Principal',created_at:now,events:[{action:'submit_review',actor:'Test admin',created_at:now,note:'Verified',to_status:'PRINCIPAL_REVIEW'}],version:2};
  const pages={AdministrationDashboard,AdministrationStudRecord,AdministrationReports,AdministrationActLogs,AdministrationSettings,PrincipalDashboard,PrincipalReports,PrincipalActivity,IctDashboard,IctUserAccess,IctTechnicalSupport,IctSystemMaintenance,IctDataProtection,IctSettings};
  const results=[];
  for(const populated of [false,true])for(const [name,Page] of Object.entries(pages)){

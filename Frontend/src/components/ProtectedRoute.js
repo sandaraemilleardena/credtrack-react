@@ -1,6 +1,6 @@
 import { createElement, Fragment, useEffect, useSyncExternalStore } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
-import { subscribeSession, getSessionState, verifySession, logoutUser } from '../auth/session.js';
+import { Link, Navigate, useLocation } from 'react-router-dom';
+import { subscribeSession, getSessionState, verifySession, logoutUser, hasFreshStaffLogin } from '../auth/session.js';
 
 export default function ProtectedRoute({ children, allowedRoles }) {
   const location = useLocation();
@@ -8,6 +8,7 @@ export default function ProtectedRoute({ children, allowedRoles }) {
   const session = useSyncExternalStore(subscribeSession, getSessionState);
   useEffect(() => { verifySession(routeKey); }, [routeKey]);
   const login = '/' + ({ ADMIN: 'admin', PRINCIPAL: 'principal', ICT: 'ict' }[allowedRoles?.[0]] || 'ict') + '-login';
+  if (!hasFreshStaffLogin(allowedRoles?.[0])) return createElement(Navigate, { to: login, replace: true });
   const checking = session.routeKey !== routeKey || session.status === 'checking';
   const roleAllowed = session.user && (!allowedRoles || allowedRoles.includes(session.user.role));
   if (checking || (session.status === 'authenticated' && roleAllowed)) {
@@ -21,6 +22,7 @@ export default function ProtectedRoute({ children, allowedRoles }) {
     return createElement('div', { role: 'alert', className: 'session-status' },
       createElement('p', null, session.error),
       createElement('button', { onClick: () => verifySession(routeKey) }, 'Retry session check'),
+      createElement(Link, { to: login, replace: true }, 'Sign in'),
       createElement('button', { onClick: () => { logoutUser().catch(() => {}); } }, 'Retry sign-out'));
   }
   if (session.status !== 'authenticated' || (allowedRoles && !allowedRoles.includes(session.user?.role))) {

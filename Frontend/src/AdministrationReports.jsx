@@ -61,7 +61,7 @@ function AdministrationReports() {
   const totals=metrics(items), monthly=monthlyCounts(items);
   const popular=Object.entries(items.reduce((all,r)=>({...all,[r.credential]:(all[r.credential]||0)+1}),{})).sort((a,b)=>b[1]-a[1])[0]||['None yet',0];
   const [reportPage,setReportPage]=useState(1),pages=Math.max(1,Math.ceil(items.length/10)),currentPage=Math.min(reportPage,pages);
-  const rows=items.map(r=>[r.id,r.full_name,r.credential,new Date(r.created_at).toLocaleDateString(),elapsed(r)===null?'In progress':elapsed(r).toFixed(1)+' days',statusName(r)]);
+  const rows=items.map(r=>[r.reference,r.full_name,r.credential,new Date(r.created_at).toLocaleDateString(),elapsed(r)===null?'In progress':elapsed(r).toFixed(1)+' days',statusName(r)]);
   const [selectedTemplate, setSelectedTemplate] = useState(
     "Credential Requests Summary"
   );

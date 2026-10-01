@@ -37,7 +37,10 @@ def login_view(request):
 
 
     if user is None:
-
+        failure = getattr(request, "login_failure", None)
+        if failure:
+            return Response(failure, status=423 if failure.get("account_locked") else 429,
+                            headers={"Retry-After": str(failure["retry_after"])} if failure.get("retry_after") else {})
         return Response(
             {
                 "error": "Invalid username or password."
@@ -79,6 +82,8 @@ def login_view(request):
         )
 
 
+    if role not in {"ADMIN", "PRINCIPAL", "ICT", "STUDENTS", "ALUMNI"}:
+        return Response({"error": "User role is not configured."}, status=403)
     requested_role = request.data.get("role")
     if requested_role is not None and requested_role != role:
         return Response(

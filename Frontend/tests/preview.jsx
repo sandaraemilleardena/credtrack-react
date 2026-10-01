@@ -1,5 +1,4 @@
 // Development-only visual fixture. Not an application entry or authentication bypass.
-import React from 'react';
 import {createRoot} from 'react-dom/client';
 import {BrowserRouter} from 'react-router-dom';
 import {PortalContext} from '../src/hooks/PortalContext';

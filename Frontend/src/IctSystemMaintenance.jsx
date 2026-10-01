@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./ictSystemMaintenance.css";
+import "./IctSystemMaintenance.css";
 
 const paths = {
   users:
@@ -324,6 +324,8 @@ export default function IctSystemMaintenance({
   const [action, setAction] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [currentTime, setCurrentTime] = useState(() => Date.now());
+  useEffect(() => { const timer = setInterval(() => setCurrentTime(Date.now()), 1000); return () => clearInterval(timer); }, []);
 
   const dialogRef = useRef(null);
   const triggerRef = useRef(null);
@@ -635,7 +637,7 @@ export default function IctSystemMaintenance({
 
     if (
       !Number.isFinite(start) ||
-      start <= Date.now()
+      start <= currentTime
     ) {
       setError(
         "Choose a start time in the future."
@@ -2161,9 +2163,7 @@ export default function IctSystemMaintenance({
                           name="startsAt"
                           type="datetime-local"
                           required
-                          min={localInputTime(
-                            Date.now()
-                          )}
+                          min={localInputTime(currentTime)}
                         />
                       </label>
 

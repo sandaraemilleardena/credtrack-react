@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { submitCredential } from "./api/credentials";
+import { submitCredential, fetchRequestOptions } from "./api/credentials";
 import { useNavigate } from "react-router-dom";
 import "./login.css";
 
+
+
 const initialForm = {
-  fullName: "",
+  firstName: "", middleName: "", lastName: "", otherPurpose: "", deliveryMethod: "", receivingSchool: "", psaDocument: null, idDocument: null,
   lrn: "",
   gradeLevel: "",
   section: "",
@@ -16,7 +18,7 @@ const initialForm = {
   additionalDetails: "",
 };
 
-function Login() {
+function Login({ audience = "public" }) {
   const navigate = useNavigate();
   const submissionKey = useRef(null);
   const submitLock = useRef(false);
@@ -32,6 +34,8 @@ function Login() {
   const [smsEnabled, setSmsEnabled] = useState(false);
 
   const [errors, setErrors] = useState({});
+  const [options, setOptions] = useState({grade_sections: {}, purposes: []});
+  useEffect(() => { fetchRequestOptions().then(setOptions).catch(() => setErrors({submit: "Request options could not be loaded. Please refresh and try again."})); }, []);
 
   /* =========================================================
      PREVENT BACKGROUND SCROLL
@@ -125,7 +129,10 @@ function Login() {
 
     setFormData((previous) => ({
       ...previous,
-      [name]: value,
+      [name]: name === "lrn" ? value.replace(/[^0-9]/g, "").slice(0, 12) : name === "phone" ? value.replace(/[^0-9]/g, "").slice(0, 10) : value,
+      ...(name === "gradeLevel" ? {section: ""} : {}),
+      ...(name === "purpose" && value !== "Other Documents" ? {otherPurpose: ""} : {}),
+      ...(name === "deliveryMethod" && value !== "SCHOOL_TO_SCHOOL" ? {receivingSchool: ""} : {}),
     }));
 
     if (errors[name]) {
@@ -141,53 +148,22 @@ function Login() {
      ========================================================= */
 
   const validateForm = () => {
-    const newErrors = {};
-
-    if (!formData.fullName.trim()) {
-      newErrors.fullName =
-        "Please enter your full name.";
+    const next = {};
+    const required = ["firstName", "middleName", "lastName", "lrn", "credential", "purpose", "phone", "deliveryMethod", ...(requesterType === "Student" ? ["gradeLevel", "section"] : ["graduationYear"])];
+    required.forEach(key => { if (!formData[key]?.trim()) next[key] = "This is a required question"; });
+    if (formData.lrn && !/^[0-9]{12}$/.test(formData.lrn)) next.lrn = "Enter exactly 12 digits.";
+    if (formData.phone && !/^9[0-9]{9}$/.test(formData.phone)) next.phone = "Enter 10 digits starting with 9 after +63.";
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) next.email = "Enter a valid email address.";
+    if (requesterType === "Alumni" && formData.graduationYear && !/^[0-9]{4}$/.test(formData.graduationYear)) next.graduationYear = "Enter a four-digit year.";
+    if (formData.purpose === "Other Documents" && !formData.otherPurpose.trim()) next.otherPurpose = "This is a required question";
+    if (formData.deliveryMethod === "SCHOOL_TO_SCHOOL" && !formData.receivingSchool.trim()) next.receivingSchool = "This is a required question";
+    if (!formData.psaDocument && !formData.idDocument) next.psaDocument = "Upload at least one PSA document or valid ID.";
+    for (const key of ['psaDocument', 'idDocument']) {
+      const file = formData[key];
+      if (!file) continue;
+      if (file.size === 0 || file.size > 20 * 1024 * 1024) next[key] = "Choose a non-empty file no larger than 20 MB.";
     }
-
-    if (!formData.lrn.trim()) {
-      newErrors.lrn =
-        "Please enter your LRN.";
-    }
-
-    if (requesterType === "Student") {
-      if (!formData.gradeLevel) {
-        newErrors.gradeLevel =
-          "Please select your grade level.";
-      }
-
-      if (!formData.section.trim()) {
-        newErrors.section =
-          "Please enter your section.";
-      }
-    }
-
-    if (requesterType === "Alumni") {
-      if (!formData.graduationYear.trim()) {
-        newErrors.graduationYear =
-          "Please enter your year graduated.";
-      }
-    }
-
-    if (!formData.credential) {
-      newErrors.credential =
-        "Please select the credential you are requesting.";
-    }
-
-    if (!formData.purpose.trim()) {
-      newErrors.purpose =
-        "Please enter the purpose of your request.";
-    }
-
-    if (!formData.phone.trim()) {
-      newErrors.phone =
-        "Please enter your active mobile number.";
-    }
-
-    return newErrors;
+    return next;
   };
 
   /* =========================================================
@@ -195,12 +171,17 @@ function Login() {
      ========================================================= */
 
 
+  useEffect(() => {
+    if (errors.submit) document.querySelector('.form-submit-error')?.scrollIntoView({block: 'nearest', behavior: 'smooth'});
+  }, [errors]);
+
   const handleSubmitRequest = async (event) => {
     event.preventDefault();
     if (submitLock.current) return;
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length) {
-      setErrors(validationErrors);
+      setErrors({...validationErrors, submit: "Please complete the highlighted questions below."});
+      document.getElementById(Object.keys(validationErrors)[0])?.focus();
       return;
     }
     submitLock.current = true;
@@ -210,23 +191,27 @@ function Login() {
       const result = await submitCredential({
         submission_key: submissionKey.current,
         requester_type: requesterType,
-        full_name: formData.fullName.trim(),
+        first_name: formData.firstName.trim(), middle_name: formData.middleName.trim(), last_name: formData.lastName.trim(),
+        other_purpose: formData.otherPurpose.trim(), delivery_method: formData.deliveryMethod, receiving_school: formData.receivingSchool.trim(), psa_document: formData.psaDocument, id_document: formData.idDocument,
         lrn: formData.lrn.trim(),
         grade_level: requesterType === "Student" ? formData.gradeLevel : "",
         section: requesterType === "Student" ? formData.section.trim() : "",
         graduation_year: requesterType === "Alumni" ? formData.graduationYear.trim() : "",
         credential: formData.credential,
         purpose: formData.purpose.trim(),
-        phone: formData.phone.trim(),
+        phone: "+63" + formData.phone.trim(),
         email: formData.email.trim(),
         additional_details: formData.additionalDetails.trim(),
       });
-      setRequestId(result.id);
+      setRequestId(result.reference);
       setSmsEnabled(result.sms_enabled === true);
       setSubmitted(true);
       setErrors({});
     } catch (error) {
-      setErrors({ submit: error.message || "The request could not be submitted. Please try again." });
+      const names = {first_name: "firstName", last_name: "lastName", middle_name: "middleName", grade_level: "gradeLevel", graduation_year: "graduationYear", other_purpose: "otherPurpose", delivery_method: "deliveryMethod", receiving_school: "receivingSchool", psa_document: "psaDocument", id_document: "idDocument"};
+      const fields = Object.fromEntries(Object.entries(error.fields || {}).filter(([key]) => key in initialForm || names[key]).map(([key, value]) => [names[key] || key, Array.isArray(value) ? value.join(" ") : String(value)]));
+      setErrors({...fields, submit: error.message || "Please check the highlighted questions."});
+      document.querySelector(".request-modal-body")?.scrollTo({top: 0, behavior: "smooth"});
     } finally {
       submitLock.current = false;
       setSubmitting(false);
@@ -234,7 +219,7 @@ function Login() {
   };
 
   return (
-    <div className="landing-page">
+    <div className="landing-page role-selection-page">
 
       {/* ===================================================
           BACKGROUND
@@ -312,13 +297,10 @@ function Login() {
             ROLE MENU
             ================================================= */}
 
-        <section className="role-menu">
-
-          {/* =================================================
-              PRINCIPAL
-              ================================================= */}
-
-          <button
+        <button className="role-selection-back" type="button" onClick={() => navigate("/")}>← Back to role selection</button>
+        <p className="role-selection-caption">{audience === "school" ? "Choose your staff role" : "Select Student or Alumni to request a credential"}</p>
+        <section className="role-menu" aria-label={audience === "school" ? "School staff roles" : "Credential requester type"}>
+          {audience === "school" ? <><button
             type="button"
             className="role-button"
             onClick={() =>
@@ -347,12 +329,7 @@ function Login() {
             </span>
 
           </button>
-
-          {/* =================================================
-              ADMINISTRATION
-              ================================================= */}
-
-          <button
+<button
             type="button"
             className="role-button"
             onClick={() =>
@@ -381,12 +358,7 @@ function Login() {
             </span>
 
           </button>
-
-          {/* =================================================
-              ICT
-              ================================================= */}
-
-          <button
+<button
             type="button"
             className="role-button"
             onClick={() =>
@@ -414,14 +386,7 @@ function Login() {
               ›
             </span>
 
-          </button>
-
-          {/* =================================================
-              STUDENT
-              DIRECT MODAL — NO NAVIGATION
-              ================================================= */}
-
-          <button
+          </button></> : <><button
             type="button"
             className="role-button"
             onClick={(event) => {
@@ -453,13 +418,7 @@ function Login() {
             </span>
 
           </button>
-
-          {/* =================================================
-              ALUMNI
-              DIRECT MODAL — NO NAVIGATION
-              ================================================= */}
-
-          <button
+<button
             type="button"
             className="role-button"
             onClick={(event) => {
@@ -490,8 +449,7 @@ function Login() {
               ›
             </span>
 
-          </button>
-
+          </button></>}
         </section>
 
         {/* =================================================
@@ -667,7 +625,13 @@ function Login() {
                  ================================================= */
 
               <form
-                className="request-form"
+                className="request-form" noValidate
+                onBlur={event => {
+                  const key = event.target.name;
+                  if (!key) return;
+                  const issue = validateForm()[key];
+                  setErrors(previous => ({...previous, [key]: issue || ''}));
+                }}
                 onSubmit={handleSubmitRequest}
               >
 
@@ -710,37 +674,11 @@ function Login() {
 
                 <div className="form-grid">
 
-                  {/* FULL NAME */}
-
-                  <div className="form-field full-width">
-
-                    <label htmlFor="fullName">
-                      Full Name
-                      <span>*</span>
-                    </label>
-
-                    <div className="input-wrapper">
-
-                      <i className="fas fa-user"></i>
-
-                      <input
-                        id="fullName"
-                        name="fullName"
-                        type="text"
-                        value={formData.fullName}
-                        onChange={handleInputChange}
-                        placeholder="Enter your complete name"
-                      />
-
-                    </div>
-
-                    {errors.fullName && (
-                      <small className="field-error">
-                        {errors.fullName}
-                      </small>
-                    )}
-
-                  </div>
+                  {[['firstName', 'First Name'], ['middleName', 'Middle Name'], ['lastName', 'Last Name']].map(([name, label]) => <div className="form-field" key={name}>
+                    <label htmlFor={name}>{label}<span>*</span></label>
+                    <div className="input-wrapper"><input id={name} name={name} maxLength={80} value={formData[name]} onChange={handleInputChange} onBlur={event => { if (!event.target.value.trim()) setErrors(previous => ({...previous, [name]: "This is a required question"})); }} aria-invalid={Boolean(errors[name])} /></div>
+                    {errors[name] && <small className="field-error" role="alert">{errors[name]}</small>}
+                  </div>)}
 
                   {/* LRN */}
 
@@ -757,11 +695,11 @@ function Login() {
 
                       <input
                         id="lrn"
-                        name="lrn"
+                        name="lrn" aria-invalid={Boolean(errors.lrn)}
                         type="text"
                         value={formData.lrn}
                         onChange={handleInputChange}
-                        placeholder="Enter your LRN"
+                        placeholder="12-digit LRN" maxLength={12} inputMode="numeric"
                       />
 
                     </div>
@@ -792,7 +730,7 @@ function Login() {
 
                         <select
                           id="gradeLevel"
-                          name="gradeLevel"
+                          name="gradeLevel" aria-invalid={Boolean(errors.gradeLevel)}
                           value={formData.gradeLevel}
                           onChange={handleInputChange}
                         >
@@ -801,29 +739,7 @@ function Login() {
                             Select grade level
                           </option>
 
-                          <option value="Grade 7">
-                            Grade 7
-                          </option>
-
-                          <option value="Grade 8">
-                            Grade 8
-                          </option>
-
-                          <option value="Grade 9">
-                            Grade 9
-                          </option>
-
-                          <option value="Grade 10">
-                            Grade 10
-                          </option>
-
-                          <option value="Grade 11">
-                            Grade 11
-                          </option>
-
-                          <option value="Grade 12">
-                            Grade 12
-                          </option>
+                          {Array.from({length: 10}, (_, i) => `Grade ${i + 1}`).map(grade => <option key={grade}>{grade}</option>)}
 
                         </select>
 
@@ -854,14 +770,11 @@ function Login() {
 
                         <i className="fas fa-users"></i>
 
-                        <input
-                          id="section"
-                          name="section"
-                          type="text"
-                          value={formData.section}
-                          onChange={handleInputChange}
-                          placeholder="Example: Rizal"
-                        />
+                        <select id="section" name="section" value={formData.section} onChange={handleInputChange} disabled={!formData.gradeLevel} aria-invalid={Boolean(errors.section)}>
+                          <option value="">Select section</option>
+                          {(options.grade_sections[formData.gradeLevel] || []).map(section => <option key={section}>{section}</option>)}
+                        </select>
+                        {formData.gradeLevel && !options.grade_sections[formData.gradeLevel]?.length && <small>No sections configured for this grade. Please contact the school.</small>}
 
                       </div>
 
@@ -892,7 +805,7 @@ function Login() {
 
                         <input
                           id="graduationYear"
-                          name="graduationYear"
+                          name="graduationYear" aria-invalid={Boolean(errors.graduationYear)}
                           type="text"
                           value={formData.graduationYear}
                           onChange={handleInputChange}
@@ -915,7 +828,7 @@ function Login() {
                   <div className="form-field">
 
                     <label htmlFor="phone">
-                      Mobile Number
+                      Mobile Number (+63)
                       <span>*</span>
                     </label>
 
@@ -925,11 +838,11 @@ function Login() {
 
                       <input
                         id="phone"
-                        name="phone"
+                        name="phone" aria-invalid={Boolean(errors.phone)}
                         type="tel"
                         value={formData.phone}
                         onChange={handleInputChange}
-                        placeholder="09XXXXXXXXX"
+                        placeholder="9XXXXXXXXX" maxLength={10} inputMode="numeric"
                       />
 
                     </div>
@@ -950,6 +863,7 @@ function Login() {
 
                   <div className="form-field">
 
+                    {errors.email && <small className="field-error">{errors.email}</small>}
                     <label htmlFor="email">
                       Email Address
                       <span className="optional">
@@ -963,7 +877,7 @@ function Login() {
 
                       <input
                         id="email"
-                        name="email"
+                        name="email" aria-invalid={Boolean(errors.email)}
                         type="email"
                         value={formData.email}
                         onChange={handleInputChange}
@@ -1017,7 +931,7 @@ function Login() {
 
                       <select
                         id="credential"
-                        name="credential"
+                        name="credential" aria-invalid={Boolean(errors.credential)}
                         value={formData.credential}
                         onChange={handleInputChange}
                       >
@@ -1083,14 +997,9 @@ function Login() {
 
                       <i className="fas fa-clipboard-list"></i>
 
-                      <textarea
-                        id="purpose"
-                        name="purpose"
-                        value={formData.purpose}
-                        onChange={handleInputChange}
-                        placeholder="Example: Employment, college admission, scholarship, transfer, personal record..."
-                        rows="3"
-                      />
+                      <select id="purpose" name="purpose" value={formData.purpose} onChange={handleInputChange} aria-invalid={Boolean(errors.purpose)}>
+                        <option value="">Select purpose</option>{options.purposes.map(purpose => <option key={purpose}>{purpose}</option>)}
+                      </select>
 
                     </div>
 
@@ -1102,6 +1011,37 @@ function Login() {
 
                   </div>
 
+                  <div className="form-field full-width">
+                    <label htmlFor="otherPurpose">Other Reason/Purpose</label>
+                    <div className="input-wrapper"><input id="otherPurpose" name="otherPurpose" disabled={formData.purpose !== "Other Documents"} maxLength={2000} value={formData.otherPurpose} onChange={handleInputChange} aria-invalid={Boolean(errors.otherPurpose)} /></div>
+                    {errors.otherPurpose && <small className="field-error">{errors.otherPurpose}</small>}
+                  </div>
+                  <div className="form-field full-width">
+                    <label>Identity verification <span>*</span></label>
+                    <p>Upload your PSA document or valid ID. At least one is required; you may attach both. Only authorized school staff can review these files.</p>
+                    <div className="identity-upload-grid">
+                      {[['psaDocument', 'PSA birth certificate', 'fa-file-lines'], ['idDocument', 'Valid ID', 'fa-id-card']].map(([key, title, icon]) => <div className="identity-upload-card" key={key}>
+                        <i className={`fas ${icon}`} aria-hidden="true" />
+                        <h4>{title}</h4>
+                        <p>All file types accepted · Maximum 20 MB per file</p>
+                        <label className="identity-file-button" htmlFor={key}>Choose {key === 'psaDocument' ? 'PSA file' : 'ID file'}<input id={key} type="file"  aria-invalid={Boolean(errors[key])} onChange={event => { setFormData(previous => ({...previous, [key]: event.target.files[0] || null})); setErrors(previous => ({...previous, [key]: ''})); }} /></label>
+                        <div className="identity-file-summary" aria-live="polite">{formData[key] ? `${formData[key].name} (${(formData[key].size / 1024 / 1024).toFixed(2)} MB)` : 'No file selected'}</div>
+                        {formData[key] && <button type="button" className="identity-file-remove" onClick={() => { setFormData(previous => ({...previous, [key]: null})); document.getElementById(key).value = ''; }}>Remove file</button>}
+                        {errors[key] && <small className="field-error" role="alert">{errors[key]}</small>}
+                      </div>)}
+                    </div>
+                  </div>
+                  <div className="form-field full-width">
+                    <label htmlFor="deliveryMethod">Delivery/Claim Method <span>*</span></label>
+                    <div className="input-wrapper"><select id="deliveryMethod" name="deliveryMethod" value={formData.deliveryMethod} onChange={handleInputChange} aria-invalid={Boolean(errors.deliveryMethod)}>
+                      <option value="">Select method</option><option value="ON_SITE">Claimed On Site</option><option value="SCHOOL_TO_SCHOOL">School-to-School</option>
+                    </select></div>
+                    {errors.deliveryMethod && <small className="field-error">{errors.deliveryMethod}</small>}
+                    {formData.deliveryMethod === 'ON_SITE' && <p>You will personally claim the physical credential at the school. Please bring your valid ID and PSA for verification.</p>}
+                    {formData.deliveryMethod === 'SCHOOL_TO_SCHOOL' && <><p>The school will directly send/forward the requested credential to the school you intend to enroll in, subject to the school's verification and release procedures.</p>
+                      <label htmlFor="receivingSchool">Receiving School Name <span>*</span></label><div className="input-wrapper"><input id="receivingSchool" name="receivingSchool" maxLength={200} value={formData.receivingSchool} onChange={handleInputChange} aria-invalid={Boolean(errors.receivingSchool)} /></div>
+                      {errors.receivingSchool && <small className="field-error">{errors.receivingSchool}</small>}</>}
+                  </div>
                   {/* ADDITIONAL DETAILS */}
 
                   <div className="form-field full-width">

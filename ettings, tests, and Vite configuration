@@ -1,0 +1,226 @@
+[1mdiff --git a/Backend/accounts/tests.py b/Backend/accounts/tests.py[m
+[1mnew file mode 100644[m
+[1mindex 0000000..30d28fd[m
+[1m--- /dev/null[m
+[1m+++ b/Backend/accounts/tests.py[m
+[36m@@ -0,0 +1,113 @@[m
+[32m+[m[32mfrom datetime import timedelta[m
+[32m+[m[32mfrom django.contrib.auth.models import User[m
+[32m+[m[32mfrom django.contrib.sessions.models import Session[m
+[32m+[m[32mfrom django.test import TestCase, override_settings[m
+[32m+[m[32mfrom django.utils import timezone[m
+[32m+[m[32mfrom rest_framework.test import APIClient[m
+[32m+[m[32mfrom .models import UserProfile[m
+[32m+[m
+[32m+[m
+[32m+[m[32mclass SessionSecurityTests(TestCase):[m
+[32m+[m[32m    def setUp(self):[m
+[32m+[m[32m        self.client = APIClient(enforce_csrf_checks=True)[m
+[32m+[m[32m        self.user = User.objects.create_user('security-test', password='Test-only-password-384!')[m
+[32m+[m[32m        UserProfile.objects.create(user=self.user, role='ICT')[m
+[32m+[m[32m        self.payload = {'username': self.user.username, 'password': 'Test-only-password-384!', 'role': 'ICT'}[m
+[32m+[m
+[32m+[m[32m    def token(self, client=None):[m
+[32m+[m[32m        response = (client or self.client).get('/api/auth/csrf/')[m
+[32m+[m[32m        self.assertEqual(response.status_code, 200)[m
+[32m+[m[32m        self.assertIn('no-store', response['Cache-Control'])[m
+[32m+[m[32m        return response.json()['csrfToken'][m
+[32m+[m
+[32m+[m[32m    def sign_in(self):[m
+[32m+[m[32m        response = self.client.post('/api/auth/login/', self.payload, format='json',[m
+[32m+[m[32m                                    HTTP_X_CSRFTOKEN=self.token(), HTTP_ORIGIN='http://localhost:7787')[m
+[32m+[m[32m        self.assertEqual(response.status_code, 200, response.content)[m
+[32m+[m[32m        return response[m
+[32m+[m
+[32m+[m[32m    def test_login_rejects_missing_invalid_and_untrusted_csrf(self):[m
+[32m+[m[32m        self.assertEqual(self.client.post('/api/auth/login/', self.payload, format='json').status_code, 403)[m
+[32m+[m[32m        token = self.token()[m
+[32m+[m[32m        self.assertEqual(self.client.post('/api/auth/login/', self.payload, format='json', HTTP_X_CSRFTOKEN='x'*64).status_code, 403)[m
+[32m+[m[32m        response = self.client.post('/api/auth/login/', self.payload, format='json', HTTP_X_CSRFTOKEN=token,[m
+[32m+[m[32m                                    HTTP_ORIGIN='https://untrusted.example')[m
+[32m+[m[32m        self.assertEqual(response.status_code, 403)[m
+[32m+[m[32m        self.assertIn('no-store', response['Cache-Control'])[m
+[32m+[m[32m        self.assertFalse(self.client.get('/api/auth/session/').json()['authenticated'])[m
+[32m+[m
+[32m+[m[32m    def test_session_survives_refresh_and_rotates_csrf(self):[m
+[32m+[m[32m        self.token()[m
+[32m+[m[32m        old_csrf = self.client.cookies['csrftoken'].value[m
+[32m+[m[32m        response = self.sign_in()[m
+[32m+[m[32m        self.assertTrue(response.cookies['sessionid']['httponly'])[m
+[32m+[m[32m        self.assertEqual(response.cookies['sessionid']['samesite'], 'Lax')[m
+[32m+[m[32m        self.assertNotEqual(old_csrf, self.client.cookies['csrftoken'].value)[m
+[32m+[m[32m        refreshed = APIClient(enforce_csrf_checks=True)[m
+[32m+[m[32m        refreshed.cookies = self.client.cookies.copy()[m
+[32m+[m[32m        for _ in range(2):[m
+[32m+[m[32m            response = refreshed.get('/api/auth/session/')[m
+[32m+[m[32m            self.assertTrue(response.json()['authenticated'])[m
+[32m+[m[32m            self.assertEqual(response.json()['user']['role'], 'ICT')[m
+[32m+[m[32m            self.assertIn('no-store', response['Cache-Control'])[m
+[32m+[m[32m        self.assertEqual(refreshed.get('/api/operations/snapshot/').status_code, 200)[m
+[32m+[m
+[32m+[m[32m    def test_logout_destroys_server_session_and_replay_fails(self):[m
+[32m+[m[32m        self.sign_in()[m
+[32m+[m[32m        old_cookie = self.client.cookies['sessionid'].value[m
+[32m+[m[32m        self.assertEqual(self.client.post('/api/auth/logout/').status_code, 403)[m
+[32m+[m[32m        self.assertTrue(Session.objects.filter(session_key=old_cookie).exists())[m
+[32m+[m[32m        response = self.client.post('/api/auth/logout/', HTTP_X_CSRFTOKEN=self.token())[m
+[32m+[m[32m        self.assertEqual(response.status_code, 200)[m
+[32m+[m[32m        self.assertFalse(Session.objects.filter(session_key=old_cookie).exists())[m
+[32m+[m[32m        self.assertFalse(self.client.get('/api/auth/session/').json()['authenticated'])[m
+[32m+[m[32m        replay = APIClient(enforce_csrf_checks=True)[m
+[32m+[m[32m        replay.cookies['sessionid'] = old_cookie[m
+[32m+[m[32m        self.assertFalse(replay.get('/api/auth/session/').json()['authenticated'])[m
+[32m+[m[32m        self.assertEqual(replay.get('/api/operations/snapshot/').status_code, 403)[m
+[32m+[m[32m        # Retrying a completed logout is safe, but still requires CSRF.[m
+[32m+[m[32m        self.assertEqual(self.client.post('/api/auth/logout/', HTTP_X_CSRFTOKEN=self.token()).status_code, 200)[m
+[32m+[m
+[32m+[m[32m    def test_anonymous_and_expired_sessions_cannot_read_protected_data(self):[m
+[32m+[m[32m        response = self.client.get('/api/operations/snapshot/')[m
+[32m+[m[32m        self.assertEqual(response.status_code, 403)[m
+[32m+[m[32m        self.assertIn('no-store', response['Cache-Control'])[m
+[32m+[m[32m        self.sign_in()[m
+[32m+[m[32m        Session.objects.filter(session_key=self.client.cookies['sessionid'].value).update(expire_date=timezone.now()-timedelta(seconds=1))[m
+[32m+[m[32m        self.assertFalse(self.client.get('/api/auth/session/').json()['authenticated'])[m
+[32m+[m[32m        self.assertEqual(self.client.get('/api/operations/snapshot/').status_code, 403)[m
+[32m+[m
+[32m+[m[32m    def test_wrong_login_role_and_missing_profile_fail_closed(self):[m
+[32m+[m[32m        payload = {**self.payload, 'role': 'ADMIN'}[m
+[32m+[m[32m        self.assertEqual(self.client.post('/api/auth/login/', payload, format='json', HTTP_X_CSRFTOKEN=self.token()).status_code, 403)[m
+[32m+[m[32m        self.assertFalse(self.client.get('/api/auth/session/').json()['authenticated'])[m
+[32m+[m[32m        self.sign_in()[m
+[32m+[m[32m        UserProfile.objects.filter(user=self.user).delete()[m
+[32m+[m[32m        self.assertFalse(self.client.get('/api/auth/session/').json()['authenticated'])[m
+[32m+[m
+[32m+[m[32m    def test_disabled_account_session_is_rejected(self):[m
+[32m+[m[32m        self.sign_in()[m
+[32m+[m[32m        self.user.is_active = False[m
+[32m+[m[32m        self.user.save()[m
+[32m+[m[32m        self.assertFalse(self.client.get('/api/auth/session/').json()['authenticated'])[m
+[32m+[m
+[32m+[m[32m    def test_mutations_require_csrf_and_server_role(self):[m
+[32m+[m[32m        self.sign_in()[m
+[32m+[m[32m        self.assertEqual(self.client.post('/api/operations/settings/', {}, format='json').status_code, 403)[m
+[32m+[m[32m        response = self.client.post('/api/operations/students/', {'action':'save'}, format='json', HTTP_X_CSRFTOKEN=self.token())[m
+[32m+[m[32m        self.assertEqual(response.status_code, 403)[m
+[32m+[m
+[32m+[m[32m    def test_cors_allowlist_and_preflight(self):[m
+[32m+[m[32m        for origin in ['http://localhost:7787', 'http://127.0.0.1:7787']:[m
+[32m+[m[32m            response = self.client.options('/api/auth/login/', HTTP_ORIGIN=origin,[m
+[32m+[m[32m                HTTP_ACCESS_CONTROL_REQUEST_METHOD='POST', HTTP_ACCESS_CONTROL_REQUEST_HEADERS='content-type,x-csrftoken')[m
+[32m+[m[32m            self.assertEqual(response['Access-Control-Allow-Origin'], origin)[m
+[32m+[m[32m            self.assertEqual(response['Access-Control-Allow-Credentials'], 'true')[m
+[32m+[m[32m            self.assertIn('x-csrftoken', response['Access-Control-Allow-Headers'])[m
+[32m+[m[32m        response = self.client.get('/api/auth/session/', HTTP_ORIGIN='https://untrusted.example')[m
+[32m+[m[32m        self.assertNotIn('Access-Control-Allow-Origin', response)[m
+[32m+[m
+[32m+[m[32m    @override_settings(SESSION_COOKIE_SECURE=True, CSRF_COOKIE_SECURE=True)[m
+[32m+[m[32m    def test_https_cookie_flags(self):[m
+[32m+[m[32m        self.assertTrue(self.client.get('/api/auth/csrf/').cookies['csrftoken']['secure'])[m
+[32m+[m[32m        self.assertTrue(self.sign_in().cookies['sessionid']['secure'])[m
+[1mdiff --git a/Backend/config/settings.py b/Backend/config/settings.py[m
+[1mindex 2ceac83..abd18e8 100644[m
+[1m--- a/Backend/config/settings.py[m
+[1m+++ b/Backend/config/settings.py[m
+[36m@@ -1,3 +1,4 @@[m
+[32m+[m[32mfrom django.core.exceptions import ImproperlyConfigured[m
+ from pathlib import Path[m
+ import os[m
+ [m
+[36m@@ -15,10 +16,10 @@[m [mSECRET_KEY = os.environ.get([m
+ [m
+ DEBUG = os.environ.get("DJANGO_DEBUG", "True") == "True"[m
+ [m
+[31m-ALLOWED_HOSTS = [[m
+[31m-    "localhost",[m
+[31m-    "127.0.0.1",[m
+[31m-][m
+[32m+[m[32mif not DEBUG and SECRET_KEY == "CHANGE-THIS-IN-PRODUCTION":[m
+[32m+[m[32m    raise ImproperlyConfigured("Set DJANGO_SECRET_KEY before disabling DEBUG.")[m
+[32m+[m
+[32m+[m[32mALLOWED_HOSTS = [host.strip() for host in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if host.strip()][m
+ [m
+ [m
+ # ============================================================[m
+[36m@@ -49,6 +50,7 @@[m [mMIDDLEWARE = [[m
+     "django.middleware.security.SecurityMiddleware",[m
+ [m
+     "corsheaders.middleware.CorsMiddleware",[m
+[32m+[m[32m    "accounts.middleware.PrivateResponseMiddleware",[m
+ [m
+     "django.contrib.sessions.middleware.SessionMiddleware",[m
+ [m
+[36m@@ -186,10 +188,10 @@[m [mSTATIC_URL = "static/"[m
+ # CORS[m
+ # ============================================================[m
+ [m
+[31m-CORS_ALLOWED_ORIGINS = [[m
+[31m-    "http://localhost:7787",[m
+[31m-    "http://127.0.0.1:7787",[m
+[31m-][m
+[32m+[m[32mCORS_ALLOWED_ORIGINS = [origin.strip() for origin in os.environ.get([m
+[32m+[m[32m    "DJANGO_FRONTEND_ORIGINS", "http://localhost:7787,http://127.0.0.1:7787" if DEBUG else ""[m
+[32m+[m[32m).split(",") if origin.strip()][m
+[32m+[m[32mCORS_URLS_REGEX = r"^/api/.*$"[m
+ [m
+ CORS_ALLOW_CREDENTIALS = True[m
+ [m
+[36m@@ -198,10 +200,7 @@[m [mCORS_ALLOW_CREDENTIALS = True[m
+ # CSRF[m
+ # ============================================================[m
+ [m
+[31m-CSRF_TRUSTED_ORIGINS = [[m
+[31m-    "http://localhost:7787",[m
+[31m-    "http://127.0.0.1:7787",[m
+[31m-][m
+[32m+[m[32mCSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS.copy()[m
+ [m
+ [m
+ # ============================================================[m
+[36m@@ -215,9 +214,8 @@[m [mSESSION_COOKIE_HTTPONLY = True[m
+ # during local development.[m
+ SESSION_COOKIE_SAMESITE = "Lax"[m
+ [m
+[31m-# False for localhost development.[m
+[31m-# Change to True when the production site uses HTTPS.[m
+[31m-SESSION_COOKIE_SECURE = False[m
+[32m+[m[32m# Use HTTPS-only cookies outside local development.[m
+[32m+[m[32mSESSION_COOKIE_SECURE = not DEBUG[m
+ [m
+ # Session lasts for 1 hour.[m
+ SESSION_COOKIE_AGE = 60 * 60[m
+[36m@@ -236,15 +234,15 @@[m [mCSRF_COOKIE_HTTPONLY = False[m
+ [m
+ CSRF_COOKIE_SAMESITE = "Lax"[m
+ [m
+[31m-# False for localhost development.[m
+[31m-CSRF_COOKIE_SECURE = False[m
+[32m+[m[32m# Use HTTPS-only cookies outside local development.[m
+[32m+[m[32mCSRF_COOKIE_SECURE = not DEBUG[m
+ [m
+ [m
+ # ============================================================[m
+ # SECURITY HEADERS[m
+ # ============================================================[m
+ [m
+[31m-SECURE_BROWSER_XSS_FILTER = True[m
+[32m+[m[32mSECURE_SSL_REDIRECT = not DEBUG[m
+ [m
+ SECURE_CONTENT_TYPE_NOSNIFF = True[m
+ [m
+[1mdiff --git a/vite.config.js b/vite.config.js[m
+[1mindex 79c5ee8..98cda90 100644[m
+[1m--- a/vite.config.js[m
+[1m+++ b/vite.config.js[m
+[36m@@ -4,8 +4,10 @@[m [mimport react from "@vitejs/plugin-react";[m
+ export default defineConfig({[m
+   root: "Frontend",[m
+   plugins: [react()],[m
+[32m+[m[32m  preview: { headers: { "Cache-Control": "no-store" } },[m
+   server: {[m
+[31m-    port: 5173,[m
+[32m+[m[32m    headers: { "Cache-Control": "no-store" },[m
+[32m+[m[32m    port: 7787,[m
+     strictPort: true,[m
+   },[m
+ });[m
+\ No newline at end of file[m

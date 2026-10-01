@@ -1,3 +1,4 @@
+import RequestReviewModal from './components/RequestReviewModal';
 import { logoutUser } from './auth/session';
 import {usePortal} from './hooks/PortalContext';
 import {metrics,auditRows} from './api/portalData';
@@ -15,8 +16,10 @@ function PrincipalDashboard() {
   const navigate = useNavigate();
 
   const system=usePortal();
+  const [reviewId,setReviewId]=useState(null);
+  const reviewRequest=system.data.requests.find(r=>r.id===reviewId);
   const totals=metrics(system.data.requests);
-  const requests=system.data.requests.filter(r=>['PRINCIPAL_REVIEW','PRINCIPAL_APPROVED','READY','COLLECTED','RETURNED'].includes(r.status)).map(r=>({...r,name:r.full_name,grade:r.grade_level,date:new Date(r.created_at).toLocaleDateString(),status:r.status==='PRINCIPAL_REVIEW'?'Pending':r.status==='RETURNED'?'Returned':'Approved',priority:'Normal'}));
+  const requests=system.data.requests.filter(r=>['PRINCIPAL_REVIEW','PRINCIPAL_APPROVED','READY','COLLECTED','RETURNED','REJECTED'].includes(r.status)).map(r=>({...r,name:r.full_name,grade:r.grade_level,date:new Date(r.created_at).toLocaleDateString(),status:r.status==='PRINCIPAL_REVIEW'?'Pending':r.status==='RETURNED'?'Returned':r.status==='REJECTED'?'Rejected':r.status==='COLLECTED'?'Released':r.status==='READY'?'Ready for Release':'Approved',priority:'Normal'}));
   const recentActivities=auditRows(system.data).filter(e=>e.role==='Principal').slice(0,5).map(e=>({...e,title:e.action,time:new Date(e.created_at).toLocaleString()}));
   const authorizedCredentials=[...new Set(system.data.requests.filter(r=>r.approved_at).map(r=>r.credential))];
   const completionData=[{label:'Approved',value:totals.approved},{label:'Pending',value:requests.filter(r=>r.status==='Pending').length},{label:'Released',value:totals.released}];
@@ -76,11 +79,7 @@ function PrincipalDashboard() {
      REQUEST HANDLERS
      ========================================================= */
 
-  const openRequest = (request) => {
-    setCurrentRequest(request);
-    setDecisionNote("");
-    setDrawerOpen(true);
-  };
+  const openRequest = request => { setReviewId(request.id); };
 
   const closeDrawer = () => {
     setDrawerOpen(false);
@@ -96,7 +95,7 @@ function PrincipalDashboard() {
     finishRequest(
       currentRequest.id,
       "Approved",
-      `${currentRequest.id} has been approved successfully.`
+      `STUDENT INFORMATION APPROVED · ${currentRequest.reference}`
     );
   };
 
@@ -114,7 +113,7 @@ function PrincipalDashboard() {
     finishRequest(
       currentRequest.id,
       "Returned",
-      `${currentRequest.id} has been returned for correction.`
+      `${currentRequest.reference} has been returned for correction.`
     );
   };
 
@@ -212,6 +211,7 @@ function PrincipalDashboard() {
 
   return (
     <div className="principal-dashboard">
+      {reviewRequest && <RequestReviewModal key={reviewRequest.id} request={reviewRequest} role="PRINCIPAL" onClose={()=>setReviewId(null)} onUpdated={system.refresh}/>}
 
       {/* =====================================================
           MOBILE SIDEBAR OVERLAY
@@ -549,7 +549,7 @@ function PrincipalDashboard() {
               </span>
 
               <h3>
-                4 credential requests are awaiting approval
+                {requests.filter(r=>r.status==='Pending').length} credential requests are awaiting approval
               </h3>
 
               <p>
@@ -561,9 +561,7 @@ function PrincipalDashboard() {
             <button
               type="button"
               className="priority-button"
-              onClick={() =>
-                goTo("/principal-approvals")
-              }
+              onClick={() => {const next=requests.find(r=>r.status==='Pending');if(next)openRequest(next);else showToast('No requests are awaiting approval.');}}
             >
               Review Requests
               <i className="fas fa-arrow-right"></i>
@@ -715,7 +713,7 @@ function PrincipalDashboard() {
 
                         <td>
                           <div className="request-id">
-                            {request.id}
+                            {request.reference || request.id}
                           </div>
 
                           <span className="request-date">
@@ -768,7 +766,7 @@ function PrincipalDashboard() {
                             onClick={() =>
                               openRequest(request)
                             }
-                            aria-label={`View ${request.id}`}
+                            aria-label={`View ${request.reference}`}
                           >
                             <i className="fas fa-chevron-right"></i>
                           </button>
@@ -987,7 +985,7 @@ function PrincipalDashboard() {
                   CREDENTIAL REQUEST
                 </span>
 
-                <h2>{currentRequest.id}</h2>
+                <h2>{currentRequest.reference || currentRequest.id}</h2>
               </div>
 
               <button

@@ -938,7 +938,7 @@
 
 .administration-dashboard .date-filed { color: var(--ink-500); }
 
-.administration-dashboard .view-btn { width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 9px; color: var(--blue); background: #fff; cursor: pointer; transition: all var(--ease); }
+.administration-dashboard .view-btn { display: inline-flex; align-items: center; justify-content: center; width: auto; min-width: 68px; min-height: 36px; height: auto; padding: 8px 14px; line-height: 1.2; white-space: nowrap; flex-shrink: 0; border: 1px solid var(--line); border-radius: 9px; color: var(--blue); background: #fff; cursor: pointer; transition: all var(--ease); }
 
 .administration-dashboard .view-btn:hover { border-color: #c1d4fb; background: var(--surface-blue); transform: translateX(1px); }
 
@@ -1662,7 +1662,7 @@ to { opacity: 1; transform: none; }
 
 @media (max-width: 560px) {
 
-.administration-dashboard .table-wrapper tbody tr { padding-right: 64px; }
+.administration-dashboard .table-wrapper tbody tr { padding-right: 100px; }
 
 .administration-dashboard .table-wrapper td:last-child {
     position: absolute;
@@ -2120,3 +2120,4 @@ body:has(.administration-dashboard .sidebar.open) { overflow: hidden; }
 .administration-dashboard .school-seal::after {
   content: none;
 }
+

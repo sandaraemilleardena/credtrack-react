@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./ictDashboard.css";
+import "./IctDashboard.css";
 
 const DEMO = {
   updatedAt: null,

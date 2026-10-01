@@ -1,3 +1,4 @@
+import VerificationUpload from './components/VerificationUpload';
 import WorkflowSupport from './components/WorkflowSupport';
 import useCredentialQueue from "./hooks/useCredentialQueue";
 import RequestWorkflowDetails, { QueueNotice } from "./components/RequestWorkflowDetails";
@@ -7,8 +8,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import "./AdministrationCredManagement.css";
 
 const ADMIN_ACTIONS = {
-  SUBMITTED: [["prepare", "Start preparation"], ["unavailable", "Unavailable / needs information"]],
-  PREPARING: [["submit_review", "Prepared — send to Principal"], ["unavailable", "Unavailable / needs information"]],
+  SUBMITTED: [["submit_review", "Confirm Student Information"], ["prepare", "Start preparation"], ["unavailable", "Unavailable / needs information"]],
+  PREPARING: [["submit_review", "Confirm Student Information"], ["unavailable", "Unavailable / needs information"]],
   UNAVAILABLE: [["prepare", "Resume preparation"]],
   RETURNED: [["prepare", "Correct and prepare again"], ["unavailable", "Unavailable / needs information"]],
   PRINCIPAL_APPROVED: [["ready", "Confirm ready for release & queue SMS"]],
@@ -69,7 +70,6 @@ function AdministrationCredManagement() {
 
   const queue = useCredentialQueue("ADMIN");
   const requests = useMemo(() => queue.items.map(convertRequest), [queue.items]);
-  const [decisionNote, setDecisionNote] = useState("");
   const [pendingAction, setPendingAction] = useState(null);
   const [actionError, setActionError] = useState("");
   const [page, setPage] = useState(1);
@@ -92,7 +92,7 @@ function AdministrationCredManagement() {
 
       const matchesSearch =
         !q ||
-        `${request.id} ${request.name} ${request.lrn}`
+        `${request.reference} ${request.name} ${request.lrn}`
           .toLowerCase()
           .includes(q);
 
@@ -137,11 +137,19 @@ function AdministrationCredManagement() {
     if (!request) return;
 
     setCurrentRequest(request);
-    setDecisionNote("");
     setPendingAction(null);
     setActionError("");
     setDrawerOpen(true);
   };
+
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const previous = document.body.style.overflow;
+    const focused = document.activeElement;
+    document.body.style.overflow = 'hidden';
+    document.querySelector('.credential-management-page .drawer .close')?.focus();
+    return () => { document.body.style.overflow = previous; focused?.focus?.(); };
+  }, [drawerOpen]);
 
   const closeDrawer = () => {
     setDrawerOpen(false);
@@ -160,11 +168,10 @@ function AdministrationCredManagement() {
     if (!currentRequest || !pendingAction || queue.busy) return;
     setActionError("");
     try {
-      const updated = await queue.perform(currentRequest, pendingAction[0], decisionNote);
+      const updated = await queue.perform(currentRequest, pendingAction[0], "");
       if (!updated) return;
       setCurrentRequest(convertRequest(updated));
       setPendingAction(null);
-      setDecisionNote("");
       notify(updated.status_label);
     } catch (error) {
       setActionError(error.message);
@@ -186,7 +193,7 @@ function AdministrationCredManagement() {
 
   const handleExport = () => {
     const cell = value => '"' + String(value ?? "").replace(/^[=+@-]/, "'" + String(value ?? "")[0]).replaceAll('"', '""') + '"';
-    const rows = [["Request ID", "Requester", "LRN", "Credential", "Status"], ...filteredRequests.map(item => [item.id, item.name, item.lrn, item.type, item.status])];
+    const rows = [["Request ID", "Requester", "LRN", "Credential", "Status"], ...filteredRequests.map(item => [item.reference, item.name, item.lrn, item.type, item.status])];
     const url = URL.createObjectURL(new Blob([rows.map(row => row.map(cell).join(",")).join("\r\n")], { type: "text/csv;charset=utf-8" }));
     const link = document.createElement("a"); link.href = url; link.download = "credential-requests.csv"; link.click(); URL.revokeObjectURL(url);
     notify("Credential request list exported");
@@ -489,7 +496,7 @@ function AdministrationCredManagement() {
                     {filteredRequests.slice((Math.min(page, Math.max(1, Math.ceil(filteredRequests.length / 10))) - 1) * 10, Math.min(page, Math.max(1, Math.ceil(filteredRequests.length / 10))) * 10).map((request) => (
                       <tr key={request.id}>
                         <td>
-                          <strong className="workflow-reference" title={request.id}>{request.id}</strong>
+                          <strong className="workflow-reference" title={request.reference}>{request.reference || request.id}</strong>
                         </td>
 
                         <td>
@@ -529,17 +536,17 @@ function AdministrationCredManagement() {
                           <div className="actions">
                             <button
                               className="view"
-                              aria-label={`View ${request.id}`}
+                              aria-label={`View ${request.reference}`}
                               onClick={() =>
                                 openRequest(request.id)
                               }
                             >
-                              <i className="fas fa-eye"></i>
+                              View
                             </button>
 
                             <button
                               className="print"
-                              aria-label={`Print ${request.id}`}
+                              aria-label={`Print ${request.reference}`}
                               onClick={() =>
                                 handlePrint(request.id)
                               }
@@ -637,16 +644,16 @@ function AdministrationCredManagement() {
       <aside
         className={`drawer ${drawerOpen ? "show" : ""}`}
         aria-hidden={!drawerOpen}
+        role="dialog"
+        aria-modal={drawerOpen || undefined}
+        aria-labelledby="credential-details-title"
+        inert={!drawerOpen}
       >
         <div className="drawer-head">
           <div>
-            <small style={{ color: "#8b8f99" }}>
-              REQUEST DETAILS
-            </small>
-
-            <h2 className="workflow-drawer-reference">
-              {currentRequest?.id || "Request details"}
-            </h2>
+            <small className="details-eyebrow">CREDENTIAL REQUEST</small>
+            <h2 id="credential-details-title">Request Details</h2>
+            <p className="workflow-drawer-reference">{currentRequest?.reference || 'Review request information'}</p>
           </div>
 
           <button
@@ -659,7 +666,7 @@ function AdministrationCredManagement() {
         </div>
 
         {currentRequest && (
-          <>
+          <div className="request-details-body">
             <div className="request-profile">
               <div className="avatar">
                 {getInitials(currentRequest.name)}
@@ -671,42 +678,15 @@ function AdministrationCredManagement() {
               </div>
             </div>
 
-            <div className="detail-grid">
-              <div className="detail">
-                <span>Credential</span>
-                <strong>{currentRequest.type}</strong>
-              </div>
-
-              <div className="detail">
-                <span>Status</span>
-                <strong>{currentRequest.status}</strong>
-              </div>
-
-              <div className="detail">
-                <span>Date filed</span>
-                <strong>{currentRequest.date}</strong>
-              </div>
-
-              <div className="detail">
-                <span>Grade & Section</span>
-                <strong>{currentRequest.grade}</strong>
-              </div>
-            </div>
-
-            <div className="documents">
-              <h3>Request information</h3>
-              <div className="file"><i className="fas fa-file-lines"></i><div><strong>Purpose</strong><small>{currentRequest.purpose}</small></div></div>
-              <p className="request-workflow-notice">Verify the school records and prepare the credential before submitting it for Principal approval. No supporting files have been uploaded through this form.</p>
-            </div>
-            <RequestWorkflowDetails request={currentRequest} />
+            <RequestWorkflowDetails request={{...currentRequest,status:currentRequest.stage}} />
+            <VerificationUpload request={{...currentRequest,status:currentRequest.stage}} onUpdated={async updated=>{setCurrentRequest(convertRequest(updated));await queue.refresh();}}/>
             {actionError && <p className="request-workflow-notice request-workflow-error" role="alert">{actionError} Close and reopen this request if it has changed.</p>}
-            {ADMIN_ACTIONS[currentRequest.stage]?.length > 0 && <label className="workflow-note">Verification / decision notes<textarea maxLength={2000} value={decisionNote} disabled={queue.busy} onChange={event => setDecisionNote(event.target.value)} placeholder="Record availability, preparation, corrections or collection details." /></label>}
             {currentRequest.stage === "PRINCIPAL_APPROVED" && !queue.smsEnabled && <p className="request-workflow-notice">Semaphore is not activated yet. Final release confirmation will queue an SMS without sending it.</p>}
             <div className="decision workflow-actions">
-              {(ADMIN_ACTIONS[currentRequest.stage] || []).map((action, index) => <button key={action[0]} className={index ? "workflow-secondary" : "approve"} disabled={queue.busy} onClick={() => { setPendingAction(action); setActionError(""); }}><i className="fas fa-check"></i>{action[1]}</button>)}
+              {(ADMIN_ACTIONS[currentRequest.stage] || []).map((action, index) => <button key={action[0]} className={action[0] === "submit_review" ? "verification-pending" : index ? "workflow-secondary" : "approve"} disabled={queue.busy} onClick={() => { setPendingAction(action); setActionError(""); }}><i className="fas fa-check"></i>{action[1]}</button>)}
             </div>
-            {pendingAction && <div className="workflow-confirm"><strong>{pendingAction[1]}?</strong><p>{pendingAction[0] === "ready" ? "Confirm that the Principal-approved credentials are ready for collection. One SMS will be queued for the requester." : "This action and your notes will be recorded in the request history."}</p><button disabled={queue.busy} onClick={handleApprove}>{queue.busy ? "Saving…" : "Confirm"}</button><button disabled={queue.busy} onClick={() => setPendingAction(null)}>Cancel</button></div>}
-          </>
+            {pendingAction && <div className="workflow-confirm"><strong>{pendingAction[1]}?</strong><p>{pendingAction[0] === "ready" ? "Confirm that the Principal-approved credentials are ready for collection. One SMS will be queued for the requester." : "This action will be recorded in the request history."}</p><button disabled={queue.busy} onClick={handleApprove}>{queue.busy ? "Saving…" : "Confirm"}</button><button disabled={queue.busy} onClick={() => setPendingAction(null)}>Cancel</button></div>}
+          </div>
         )}
       </aside>
 

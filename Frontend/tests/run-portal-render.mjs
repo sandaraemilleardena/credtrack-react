@@ -1,3 +1,3 @@
 import {createServer} from '../../node_modules/vite/dist/node/index.js';
 const server=await createServer({configFile:false,root:new URL('..',import.meta.url).pathname.replace(/^\/([A-Za-z]:)/,'$1'),cacheDir:'.vite-tests',optimizeDeps:{noDiscovery:true,include:[]},server:{middlewareMode:true,hmr:false},appType:'custom',esbuild:{jsx:'automatic'}});
-try{const suite=await server.ssrLoadModule('/tests/portal-render.jsx');for(const result of suite.smoke())console.log(result);}finally{await server.close();}
+try{const suite=await server.ssrLoadModule('/tests/portal-render.jsx');for(const result of suite.smoke())console.log(result);const workflow=await server.ssrLoadModule('/tests/workflow-render.jsx');for(const result of workflow.smoke())console.log(result);}finally{await server.close();}

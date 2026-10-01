@@ -1,3 +1,4 @@
+import RequestReviewModal from './components/RequestReviewModal';
 import { logoutUser } from './auth/session';
 import {usePortal} from './hooks/PortalContext';
 import {metrics,auditRows,statusName} from './api/portalData';
@@ -10,6 +11,8 @@ import "./AdministrationDashboard.css";
 
 function AdministrationDashboard() {
   const system=usePortal();
+  const [reviewId,setReviewId]=useState(null);
+  const reviewRequest=system.data.requests.find(r=>r.id===reviewId);
   const totals=metrics(system.data.requests);
   const [modalError,setModalError]=useState('');
   const modalBusy=useRef(false);
@@ -34,7 +37,7 @@ function AdministrationDashboard() {
     student: "",
     studentId: "",
     type: "",
-    purpose: "",
+    purpose: "", otherPurpose: "", verificationDocument: null, deliveryMethod: "ON_SITE", receivingSchool: "",
   });
 
   const [recordForm, setRecordForm] = useState({
@@ -182,19 +185,7 @@ function AdministrationDashboard() {
     [navigate, closeMenus]
   );
 
-  const handleViewRequest = useCallback(
-    (requestId) => {
-      navigate(
-        `/admin-credential-management?request=${encodeURIComponent(
-          requestId
-        )}`
-      );
-
-      setSidebarOpen(false);
-      closeMenus();
-    },
-    [navigate, closeMenus]
-  );
+  const handleViewRequest = (requestId) => {setReviewId(requestId); closeMenus();};
 
   const handleLogout = useCallback(async () => {
     await logoutUser();
@@ -220,7 +211,7 @@ function AdministrationDashboard() {
    if(activeModal==='credential'){
     const student=system.data.students.find(r=>r.lrn===credentialForm.studentId.trim());
     if(!student)throw Error('Save this student in Student Records first, then enter their 12-digit LRN here.');
-    await submitCredential({submission_key:submissionKey.current,requester_type:student.status==='Graduated'?'Alumni':'Student',full_name:[student.firstName,student.middleName,student.lastName].filter(Boolean).join(' '),lrn:student.lrn,grade_level:student.grade,section:student.section,graduation_year:student.status==='Graduated'?(student.schoolYear||'').slice(-4):'',credential:credentialForm.type,purpose:credentialForm.purpose,phone:student.contact,email:'',additional_details:'Submitted by the records office.'});
+    await submitCredential({submission_key:submissionKey.current,requester_type:student.status==='Graduated'?'Alumni':'Student',first_name:student.firstName,middle_name:student.middleName||'',last_name:student.lastName,verification_document:credentialForm.verificationDocument,delivery_method:credentialForm.deliveryMethod,receiving_school:credentialForm.receivingSchool,other_purpose:credentialForm.otherPurpose,lrn:student.lrn,grade_level:student.grade,section:student.section,graduation_year:student.status==='Graduated'?(student.schoolYear||'').slice(-4):'',credential:credentialForm.type,purpose:credentialForm.purpose,phone:student.contact,email:'',additional_details:'Submitted by the records office.'});
     await system.refresh();
    }else if(activeModal==='user'){
     await system.mutate('accounts/',{action:'create',values:{username:userForm.username,name:userForm.fullName,email:userForm.email,role:userForm.role,password:userForm.password}});
@@ -499,6 +490,7 @@ function AdministrationDashboard() {
 
   return (
     <div className="administration-dashboard">
+      {reviewRequest && <RequestReviewModal key={reviewRequest.id} request={reviewRequest} role="ADMIN" onClose={()=>setReviewId(null)} onUpdated={system.refresh}/>}
 
       {/* =====================================================
           SIDEBAR OVERLAY
@@ -1145,7 +1137,7 @@ function AdministrationDashboard() {
 
                           <td className="request-id">
                             <span>
-                              {request.id}
+                              {request.reference || request.id}
                             </span>
                           </td>
 
@@ -1211,7 +1203,7 @@ function AdministrationDashboard() {
                                   request.id
                                 )
                               }
-                              aria-label={`View ${request.id}`}
+                              aria-label={`View ${request.reference}`}
                             >
                               View
                             </button>
@@ -1412,7 +1404,7 @@ function AdministrationDashboard() {
             </span>
 
             <span>
-              © 2026 CredTrack
+              © 2026 CredTrack · ARDEÑA S.E
             </span>
 
             <span className="footer-separator">
@@ -1675,21 +1667,14 @@ function AdministrationDashboard() {
                     Purpose
                   </label>
 
-                  <textarea
-                    id="credential-purpose"
-                    rows="4"
-                    placeholder="Briefly state the purpose of the request"
-                    value={
-                      credentialForm.purpose
-                    }
-                    onChange={(event) =>
-                      handleModalInput(
-                        setCredentialForm,
-                        "purpose",
-                        event.target.value
-                      )
-                    }
-                  />
+                  <select id="credential-purpose" required value={credentialForm.purpose} onChange={event=>setCredentialForm({...credentialForm,purpose:event.target.value,otherPurpose:''})}>
+                    <option value="">Select purpose</option>{['Employment','College admission','Scholarship','Transfer','Personal record','Other Documents'].map(value=><option key={value}>{value}</option>)}
+                  </select>
+                  <label htmlFor="staff-other-purpose">Other Reason/Purpose</label><input id="staff-other-purpose" disabled={credentialForm.purpose!=='Other Documents'} required={credentialForm.purpose==='Other Documents'} value={credentialForm.otherPurpose} onChange={event=>setCredentialForm({...credentialForm,otherPurpose:event.target.value})}/>
+                  <label htmlFor="staff-verification">Upload PSA or Valid ID (All file types; up to 20 MB)</label><input id="staff-verification" type="file" required  onChange={event=>setCredentialForm({...credentialForm,verificationDocument:event.target.files[0]||null})}/>
+                  <label htmlFor="staff-delivery">Delivery/Claim Method</label><select id="staff-delivery" value={credentialForm.deliveryMethod} onChange={event=>setCredentialForm({...credentialForm,deliveryMethod:event.target.value,receivingSchool:''})}><option value="ON_SITE">Claimed On Site</option><option value="SCHOOL_TO_SCHOOL">School-to-School</option></select>
+                  {credentialForm.deliveryMethod==='SCHOOL_TO_SCHOOL' && <><label htmlFor="staff-school">Receiving School Name</label><input id="staff-school" required maxLength={200} value={credentialForm.receivingSchool} onChange={event=>setCredentialForm({...credentialForm,receivingSchool:event.target.value})}/></>}
+
 
                 </div>
 
@@ -2057,10 +2042,10 @@ function AdministrationDashboard() {
                     <input
                       id="user-password"
                       type="password"
-                      minLength="8"
+                      minLength="10"
                       required
                       autoComplete="new-password"
-                      placeholder="At least 8 characters"
+                      placeholder="At least 10 characters"
                       value={
                         userForm.password
                       }

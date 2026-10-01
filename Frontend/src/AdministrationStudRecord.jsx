@@ -1,6 +1,11 @@
+import DocumentPreview from './components/DocumentPreview';
+import Sf10Preview from './components/Sf10Preview';
+import {API_BASE_URL} from './api/config';
+import './components/RequestWorkflowDetails.css';
+import {fetchRequestOptions} from './api/credentials';
 import { logoutUser } from './auth/session';
 import {usePortal} from './hooks/PortalContext';
-import {downloadCSV} from './api/operations';
+import {downloadCSV, operation} from './api/operations';
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./AdministrationStudRecord.css";
@@ -243,6 +248,7 @@ function AdministrationStudRecord() {
     setStudentForm((previous) => ({
       ...previous,
       [name]: value,
+      ...(name === 'grade' ? {section:''} : {}),
     }));
   };
 
@@ -278,7 +284,7 @@ function AdministrationStudRecord() {
     window.print();
   };
 
-  const handleExcelFile=async(file)=>{if(!file)return; if(!file.name.toLowerCase().endsWith('.csv')){showToast('Save your spreadsheet as CSV, then upload the CSV file.');return;} if(file.size>2*1024*1024){showToast('File limit is 2 MB.');return;}try{const {parseStudentCSV}=await import('./api/studentCSV');const rows=parseStudentCSV(await file.text());setExcelFile(file);setExcelRows(rows);setExcelStep(2);}catch(e){showToast(e.message);}};
+  const handleExcelFile=async(file)=>{if(!file)return;setExcelFile(null);setExcelRows([]);if(!/\.(xlsx|xls|csv)$/i.test(file.name)){showToast('Choose an Excel (.xlsx, .xls) or CSV file.');return;}if(file.size>10*1024*1024){showToast('File limit is 10 MB.');return;}try{const body=new FormData();body.append('file',file);showToast('Reading and checking spreadsheet…');const result=await operation('students/preview/',body);setExcelFile(file);setExcelRows(result.rows);setExcelStep(2);}catch(e){showToast(e.message);}};
 
   const handleFileInput = (event) => {
     const file = event.target.files?.[0];
@@ -587,10 +593,7 @@ function AdministrationStudRecord() {
               onChange={handleFilter(setGradeFilter)}
             >
               <option value="">All Grades</option>
-              <option value="Grade 7">Grade 7</option>
-              <option value="Grade 8">Grade 8</option>
-              <option value="Grade 9">Grade 9</option>
-              <option value="Grade 10">Grade 10</option>
+              {Array.from({length:10},(_,i)=>`Grade ${i+1}`).map(grade=><option key={grade}>{grade}</option>)}
             </select>
 
             <select
@@ -598,10 +601,7 @@ function AdministrationStudRecord() {
               onChange={handleFilter(setSectionFilter)}
             >
               <option value="">All Sections</option>
-              <option value="Rizal">Rizal</option>
-              <option value="Mabini">Mabini</option>
-              <option value="Bonifacio">Bonifacio</option>
-              <option value="Luna">Luna</option>
+              {[...new Set(['FAITH','HUMILITY','LOVE','KINDESS','HOPE',...students.map(student=>student.section).filter(Boolean)])].map(section=><option key={section}>{section}</option>)}
             </select>
 
             <select
@@ -784,7 +784,7 @@ function AdministrationStudRecord() {
                                 openViewStudent(student)
                               }
                             >
-                              <i className="fas fa-eye" />
+                              <i className="fas fa-eye" /> View
                             </button>
 
                             <button
@@ -908,7 +908,7 @@ function AdministrationStudRecord() {
         <footer className="footer">
 
           <div>
-            © 2026 CredTrack | President Manuel
+            © 2026 CredTrack · ARDEÑA S.E | President Manuel
             Roxas Memorial Integrated School - South
           </div>
 
@@ -1051,7 +1051,16 @@ function AdministrationStudRecord() {
 
             </div>
 
-            <p><strong>Available credentials:</strong> {(currentStudent.availableCredentials||[]).join(", ")||"Not recorded"}</p><p><strong>Principal authorizations:</strong> {system.data.requests.filter(r=>r.lrn===currentStudent.lrn&&r.approved_at).map(r=>r.credential+" — "+r.status_label).join("; ")||"None yet"}</p><div className="profile-grid">
+            <section className="student-credential-list">
+              <h3>Available credentials</h3>
+              <Sf10Preview student={currentStudent} school={system.data.settings}/>
+              {(currentStudent.credentialFiles || []).filter(file => !/sf\s*10/i.test(file.title)).map(file => <div key={file.id}>
+                <DocumentPreview label={file.title} previewUrl={`${API_BASE_URL}/api/operations/students/${currentStudent.id}/credentials/${file.id}/preview/`}/>
+              </div>)}
+              {(currentStudent.availableCredentials || []).filter(title => !(currentStudent.credentialFiles || []).some(file => file.title === title)).map(title => <p key={title}><strong>{title}</strong> — Recorded as available; no digital file attached yet.</p>)}
+              {!(currentStudent.availableCredentials || []).length && !(currentStudent.credentialFiles || []).length && <p>No available credentials recorded.</p>}
+            </section>
+            <p><strong>Principal authorizations:</strong> {system.data.requests.filter(r=>r.lrn===currentStudent.lrn&&r.approved_at).map(r=>r.credential+" — "+r.status_label).join("; ")||"None yet"}</p><div className="profile-grid">
 
               <div>
                 <label>Grade</label>
@@ -1366,7 +1375,7 @@ function AdministrationStudRecord() {
                     </h3>
 
                     <p>
-                      Supports .xlsx, .xls, and .csv
+                      Supports .xlsx, .xls, and .csv · Up to 10 MB / 500 students. Use the first worksheet with headings in row 1.
                       files up to 10 MB
                     </p>
 
@@ -1392,8 +1401,7 @@ function AdministrationStudRecord() {
                       </strong>{" "}
                       LRN, First Name, Middle Name,
                       Last Name, Grade, Section, Sex,
-                      Status, Credential Type,
-                      Credential Status, and Date Issued.
+                      Status, School Year, Contact, and Available Credentials.
                     </div>
 
                   </div>
@@ -1423,67 +1431,7 @@ function AdministrationStudRecord() {
 
                   </div>
 
-                  <div className="mapping show">
-
-                    {[
-                      "LRN",
-                      "First Name",
-                      "Last Name",
-                      "Grade",
-                      "Section",
-                      "Sex",
-                      "Credential Type",
-                      "Credential Status",
-                      "Date Issued",
-                    ].map((field, index) => (
-
-                      <div
-                        className="map-field"
-                        key={field}
-                      >
-
-                        <label>
-                          {field}
-                          {[
-                            "LRN",
-                            "First Name",
-                            "Last Name",
-                            "Credential Type",
-                          ].includes(field)
-                            ? " *"
-                            : ""}
-                        </label>
-
-                        <select
-                          defaultValue={
-                            index === 0
-                              ? "LRN"
-                              : ""
-                          }
-                        >
-                          <option value="">
-                            Select column
-                          </option>
-
-                          <option value={field}>
-                            {field}
-                          </option>
-
-                          <option value="Column A">
-                            Column A
-                          </option>
-
-                          <option value="Column B">
-                            Column B
-                          </option>
-
-                        </select>
-
-                      </div>
-
-                    ))}
-
-                  </div>
+                  <p className="required-columns">Columns are matched automatically using the template headings. Review the students below before importing. Existing records will not be overwritten.</p>
 
                   <div className="preview-wrap show">
 
@@ -1624,6 +1572,8 @@ function StudentForm({
   onChange,
   prefix,
 }) {
+  const [mapping,setMapping]=useState({});
+  useEffect(()=>{fetchRequestOptions().then(data=>setMapping(data.grade_sections)).catch(()=>setMapping({}));},[]);
   return (
     <div className="form-grid"><div className="form-group"><label htmlFor={prefix+'Available'}>Available credentials (verified by records staff)</label><input id={prefix+'Available'} value={(form.availableCredentials||[]).join(';')} onChange={e=>onChange({target:{name:'availableCredentials',value:e.target.value.split(';')}})} placeholder="SF10; SF9; Good Moral Certificate" /></div>
 
@@ -1738,10 +1688,7 @@ function StudentForm({
           required
         >
           <option value="">Select grade</option>
-          <option value="Grade 7">Grade 7</option>
-          <option value="Grade 8">Grade 8</option>
-          <option value="Grade 9">Grade 9</option>
-          <option value="Grade 10">Grade 10</option>
+          {Array.from({length:10},(_,i)=>`Grade ${i+1}`).map(grade=><option key={grade}>{grade}</option>)}
         </select>
       </div>
 
@@ -1758,12 +1705,8 @@ function StudentForm({
           required
         >
           <option value="">Select section</option>
-          <option value="Rizal">Rizal</option>
-          <option value="Mabini">Mabini</option>
-          <option value="Bonifacio">
-            Bonifacio
-          </option>
-          <option value="Luna">Luna</option>
+          {(mapping[form.grade] || []).map(section=><option key={section}>{section}</option>)}
+          {form.section && !mapping[form.grade]?.includes(form.section) && <option value={form.section}>{form.section} (saved record)</option>}
         </select>
       </div>
 

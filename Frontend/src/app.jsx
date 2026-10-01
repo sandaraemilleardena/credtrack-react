@@ -1,11 +1,17 @@
+import ProtectedRoute from './components/ProtectedRoute';
+import LoginEntry from './components/LoginEntry';
+import DeveloperCredit from './components/DeveloperCredit';
+import PasswordReset from './PasswordReset';
 import StaffPortal from './components/StaffPortal';
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
 // LOGIN
 import Login from "./login";
+import FirstPage from "./First Page";
+import { hasSchoolEntry } from "./auth/schoolEntry";
 import AdministrationLogin from "./AdministrationLogin";
 import PrincipalLogin from "./PrincipalLogin";
-import IctLogin from "./ictlogin";
+import IctLogin from "./Ictlogin";
 
 // ADMINISTRATION
 import AdministrationDashboard from "./AdministrationDashboard";
@@ -30,15 +36,34 @@ import IctSystemMaintenance from "./IctSystemMaintenance";
 import IctDataProtection from "./IctDataProtection";
 import IctSettings from "./IctSettings";
 
+function SchoolEntry({ children }) {
+  return hasSchoolEntry() ? children : <Navigate to="/" replace />;
+}
+
+function UnknownRoute() {
+  const {pathname} = useLocation();
+  const path = pathname.toLowerCase();
+  const login = /^\/(admin|administration)(?:[-/]|$)/.test(path) ? '/admin-login'
+    : /^\/principal(?:[-/]|$)/.test(path) ? '/principal-login'
+    : /^\/ict(?:[-/]|$)/.test(path) ? '/ict-login' : '/';
+  return <Navigate to={login} replace />;
+}
+
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/principal-students" element={<ProtectedRoute allowedRoles={["PRINCIPAL"]}><Navigate to="/principal-approvals" replace /></ProtectedRoute>} />
+        <Route path="/principal-profile" element={<ProtectedRoute allowedRoles={["PRINCIPAL"]}><Navigate to="/principal-dashboard" replace /></ProtectedRoute>} />
+        <Route path="/forgot-password" element={<PasswordReset />} />
+        <Route path="/reset-password/:uid/:token" element={<PasswordReset />} />
         {/* LOGIN */}
-        <Route path="/" element={<Login />} />
-        <Route path="/admin-login" element={<AdministrationLogin />} />
-        <Route path="/principal-login" element={<PrincipalLogin />} />
-        <Route path="/ict-login" element={<IctLogin />} />
+        <Route path="/" element={<LoginEntry><FirstPage /></LoginEntry>} />
+        <Route path="/login/public" element={<LoginEntry><Login audience="public" /></LoginEntry>} />
+        <Route path="/login/school" element={<SchoolEntry><LoginEntry><Login audience="school" /></LoginEntry></SchoolEntry>} />
+        <Route path="/admin-login" element={<SchoolEntry><LoginEntry><AdministrationLogin /></LoginEntry></SchoolEntry>} />
+        <Route path="/principal-login" element={<SchoolEntry><LoginEntry><PrincipalLogin /></LoginEntry></SchoolEntry>} />
+        <Route path="/ict-login" element={<SchoolEntry><LoginEntry><IctLogin /></LoginEntry></SchoolEntry>} />
 
         {/* ADMINISTRATION */}
         <Route
@@ -109,7 +134,9 @@ function App() {
           path="/ict-settings"
           element={<StaffPortal role="ICT" component={IctSettings} />}
         />
+      <Route path="*" element={<UnknownRoute />} />
       </Routes>
+      <DeveloperCredit />
     </BrowserRouter>
   );
 }

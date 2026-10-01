@@ -2168,3 +2168,72 @@ body {
       translateY(0);
   }
 }
+.request-form [aria-invalid="true"] { border: 2px solid #b42318; outline-color: #b42318; }
+.request-form .input-wrapper:has([aria-invalid="true"]) { border-color: #b42318; }
+.request-form input:disabled { background: #f1f3f5; cursor: not-allowed; }
+.request-form .form-field > p { font-size: 13px; line-height: 1.6; color: #525966; }
+.identity-upload-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; margin:18px 0 8px; }
+.identity-upload-card { padding:24px; border:1px dashed #d7b8bf; border-radius:16px; background:#fffafb; text-align:center; min-width:0; }
+.identity-upload-card > i { display:inline-grid; place-items:center; width:46px; height:46px; border-radius:12px; color:#a80720; background:#f8e6ea; font-size:22px; }
+.identity-upload-card h4 { margin:12px 0 8px; color:#541722; font-size:16px; font-weight:750; }
+.identity-upload-card p { font-size:12px; color:#76656b; margin:0 0 18px; line-height:1.6; }
+.identity-upload-card .identity-file-button { position:relative; display:inline-flex; align-items:center; justify-content:center; padding:12px 22px; border-radius:10px; background:#a80720; color:white; cursor:pointer; font-size:14px; font-weight:700; overflow:hidden; }
+.identity-file-button:hover { background:#85071a; }
+.identity-file-button:focus-within { outline:3px solid #d79caa; outline-offset:3px; }
+.identity-file-button input { position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer; }
+.identity-file-summary { margin-top:14px; color:#66545c; font-size:12px; overflow-wrap:anywhere; line-height:1.6; }
+.identity-upload-card .identity-file-remove { border:0; background:transparent; color:#a80720; text-decoration:underline; padding:8px; cursor:pointer; font-size:12px; }
+.identity-upload-card .field-error { display:block; margin-top:8px; }
+@media(max-width:600px) { .identity-upload-grid { grid-template-columns:1fr; } }
+
+/* Clear keyboard and typing focus for request questions. */
+.form-field :is(input, select, textarea):focus { outline: 2px solid #2563eb; outline-offset: 2px; border-color: #2563eb; box-shadow: 0 0 0 3px #2563eb1a; }
+.form-field .input-wrapper:focus-within { border-color: #2563eb; }
+.form-field .field-error { color: #c1122b; font-size: 12px; display: block; margin-top: 7px; }
+.identity-file-button:focus-within { outline: 3px solid #2563eb; }
+
+
+/* Compact, isolated entry panel: reset inherited full-page dimensions. */
+.landing-page:has(.login-split){min-height:100vh;min-height:100dvh;height:auto;display:grid;place-items:center;padding:28px 20px;isolation:isolate;background:#eee5e5}
+.login-split.landing-content{width:min(780px,100%);min-height:0;height:auto;display:grid;grid-template-columns:.85fr 1.15fr;align-items:stretch;gap:0;padding:0;margin:0;border:1px solid #dfcace;border-radius:22px;overflow:hidden;background:#f9f0ee;box-shadow:0 22px 65px #420c2430;position:relative;z-index:5}
+.login-split .login-intro{min-width:0;background:linear-gradient(145deg,#a8071a,#650b1b);color:#fff6ef;padding:34px 28px;display:flex;flex-direction:column;align-items:flex-start;text-align:left}
+.login-split .login-intro .school-logo{width:66px;height:66px;object-fit:contain;margin:0 0 23px;filter:none}
+.login-split .login-intro h1{font-size:34px;line-height:1.25;margin:0;color:#fff6ef;letter-spacing:-.8px}
+.login-split .login-intro p{font-size:13px;line-height:1.7;color:#f6dce0;margin:12px 0}
+.login-split .login-eyebrow{font-size:10px;font-weight:700;letter-spacing:1.8px}
+.login-split .login-intro-note{margin-top:auto;padding-top:44px;font-size:11px;letter-spacing:1.4px;color:#f0c6ce}
+.login-split .login-options{min-width:0;padding:30px;background:linear-gradient(145deg,#faf1ed,#f2e2e4);text-align:left}
+.login-split .login-back{display:inline-flex;border:1px solid #ddc4ca;background:#eedee2;padding:8px 12px;border-radius:8px;margin:0 0 22px;font:inherit;font-size:11px;font-weight:600;color:#6e2436;cursor:pointer;transition:background .18s,color .18s}
+.login-split .login-back:hover{background:#dfc3ca;color:#4f1221}
+.login-split .login-options .login-eyebrow{display:inline-block;color:#8b172c;background:#ead1d6;padding:6px 10px;border-radius:6px;margin:0 0 12px}
+.login-split .login-options h2{font-size:24px;line-height:1.3;margin:0;color:#4e1423;letter-spacing:-.5px}
+.login-split .login-description{font-size:12px;color:#73515b;line-height:1.7;margin:12px 0 22px}
+.login-split .role-menu{display:flex;flex-direction:column;gap:12px;width:100%;margin:0;padding:0}
+.login-split .role-button{width:100%;height:auto;min-height:62px;border:1px solid #d7b2bd;background:linear-gradient(110deg,#e9cfd6,#f2e0e2);border-radius:12px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;color:#68172c;box-shadow:0 3px 8px #70152a08;cursor:pointer;transform:none;transition:background .18s,border-color .18s,box-shadow .18s,transform .18s}
+.login-split .role-button::before,.login-split .role-button::after{display:none}
+.login-split .role-button .role-name{color:#68172c;font-size:14px;font-weight:700;text-align:left;letter-spacing:.1px}
+.login-split .role-button .role-arrow{color:#8c2941;font-size:24px;line-height:1;margin-left:auto;flex-shrink:0}
+.login-split .role-button:hover{background:linear-gradient(110deg,#95172f,#760f26);border-color:#760f26;box-shadow:0 7px 16px #76102b25;transform:translateY(-2px)}
+.login-split .role-button:hover .role-name,.login-split .role-button:hover .role-arrow{color:#fff4ef}
+.login-split .role-button:active{transform:translateY(0)}
+.login-split button:focus-visible{outline:3px solid #a8071a;outline-offset:3px}
+@media(max-width:600px){.landing-page:has(.login-split){padding:20px 14px}.login-split.landing-content{width:min(420px,100%);grid-template-columns:1fr}.login-split .login-intro{padding:22px 24px;display:grid;grid-template-columns:52px 1fr;column-gap:14px;align-items:center}.login-split .login-intro .school-logo{grid-row:1/4;width:52px;height:52px;margin:0}.login-split .login-intro .login-eyebrow{margin:0;font-size:9px}.login-split .login-intro h1{font-size:27px}.login-split .login-intro p{margin:3px 0;font-size:11px}.login-split .login-intro-note{display:none}.login-split .login-options{padding:24px}.login-split .login-options h2{font-size:22px}}
+.login-split .login-back{display:flex;width:fit-content}
+
+/* Original full-page role-selection design, shared by both audiences. */
+.role-selection-page{min-height:100dvh;background:#fff}
+.role-selection-page .school-background{background-image:linear-gradient(rgba(255,255,255,.65),rgba(255,255,255,.65)),url('/BGG.png');background-position:center;background-size:cover}
+.role-selection-page .landing-content{min-height:100dvh;padding:26px 20px 72px;justify-content:center;gap:0}
+.role-selection-page .system-header{width:min(650px,90vw)}
+.role-selection-page .school-logo{width:130px;height:130px;object-fit:contain;margin-bottom:10px}
+.role-selection-page .system-header h1{font-size:clamp(30px,4vw,44px);margin:0 0 8px;color:#960718}
+.role-selection-page .system-header h2{font-size:clamp(11px,1.5vw,17px);letter-spacing:3px;color:#960718}
+.role-selection-page .role-menu{width:min(500px,90vw);margin-top:18px;gap:12px}
+.role-selection-page .role-button{min-height:64px;border-radius:40px;background:linear-gradient(105deg,#960718,#ad091d);color:white}
+.role-selection-page .role-name{color:#fff;font-size:17px}.role-selection-page .role-arrow{color:#fff;font-size:28px}
+.role-selection-page .role-button:hover{background:linear-gradient(105deg,#a51b37,#7b1228);transform:translateY(-2px)}
+.role-selection-back{font:inherit;font-size:11px;font-weight:600;border:1px solid #96071850;background:#ffffffc9;color:#850c20;border-radius:20px;padding:7px 14px;margin-top:16px;cursor:pointer}
+.role-selection-back:hover{background:#890c22;color:white}.role-selection-back:focus-visible{outline:3px solid #890c22;outline-offset:3px}
+.role-selection-caption{font-size:12px;color:#6e1426;margin:10px 0 0;text-align:center}
+.role-selection-page .bottom-message{position:absolute;right:5%;bottom:18px;z-index:6;pointer-events:none;margin:0;width:auto;color:#fff}
+@media(max-width:600px){.role-selection-page .school-logo{width:95px;height:95px}.role-selection-page .landing-content{padding:24px 18px 65px}.role-selection-page .role-name{font-size:15px}.role-selection-page .system-header h2{letter-spacing:1.5px}.role-selection-page .bottom-message{display:none}.role-selection-page .role-menu{width:min(440px,100%)}}

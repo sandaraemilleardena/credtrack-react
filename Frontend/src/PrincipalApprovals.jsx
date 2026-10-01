@@ -131,7 +131,7 @@ function PrincipalApprovals() {
 
     return requests.filter((request) => {
       const searchableText = `
-        ${request.id || ""}
+        ${request.reference || ""}
         ${request.name || ""}
         ${request.lrn || ""}
         ${request.credential || ""}
@@ -1064,8 +1064,8 @@ function PrincipalApprovals() {
                           {/* REQUEST ID */}
                           <td>
 
-                            <span className="request-id workflow-reference" title={request.id}>
-                              {request.id}
+                            <span className="request-id workflow-reference" title={request.reference}>
+                              {request.reference || request.id}
                             </span>
 
                           </td>

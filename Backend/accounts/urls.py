@@ -8,7 +8,11 @@ from .views import (
 )
 
 
+from .password_reset import request_reset, complete_reset
+
 urlpatterns = [
+    path("forgot-password/", request_reset),
+    path("reset-password/", complete_reset),
 
     # --------------------------------------------------------
     # LOGIN

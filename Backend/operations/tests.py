@@ -115,3 +115,64 @@ class OperationsTests(TestCase):
         self.assertEqual(self.post('work', {'action': 'update-ticket', 'values': {'id': 'bad'}}).status_code, 400)
         self.assertEqual(self.post('work', {'action': 'create-ticket', 'values': {'subject': 'Test', 'description': 'Test', 'requestId': 'bad'}}).status_code, 400)
         self.assertEqual(self.post('accounts', {'action': 'deactivate', 'values': {'id': 'bad'}}).status_code, 400)
+
+    def test_excel_preview_then_save_and_duplicate_rejection(self):
+        from openpyxl import Workbook
+        from io import BytesIO
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        book = Workbook()
+        book.active.append(["LRN", "First Name", "Last Name", "Grade", "Section"])
+        book.active.append(["012345678901", "Transfer", "Student", "Grade 1", "LOVE"])
+        content = BytesIO(); book.save(content)
+        def preview():
+            return self.client.post('/api/operations/students/preview/', {'file': SimpleUploadedFile('students.xlsx', content.getvalue())}, format='multipart')
+        self.assertEqual(preview().status_code, 403)
+        self.as_role('PRINCIPAL'); self.assertEqual(preview().status_code, 403)
+        self.as_role('ICT'); self.assertEqual(preview().status_code, 403)
+        self.as_role('ADMIN')
+        response = preview()
+        self.assertEqual(response.status_code, 200, response.data)
+        self.assertEqual(StudentRecord.objects.count(), 0)
+        self.assertEqual(response.data['rows'][0]['lrn'], '012345678901')
+        saved = self.post('students', {'action':'import', 'rows':response.data['rows']})
+        self.assertEqual(saved.status_code, 200, saved.data)
+        self.assertEqual(StudentRecord.objects.get().data['firstName'], 'Transfer')
+        self.assertEqual(preview().status_code, 400)
+        self.assertEqual(StudentRecord.objects.count(), 1)
+
+    def test_import_parser_rejects_duplicate_and_invalid_rows(self):
+        from .student_import import parse_students
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from rest_framework.exceptions import ValidationError
+        for body in [b'LRN,First Name,Last Name\n123,A,B', b'LRN,First Name,Last Name\n123456789012,A,B\n123456789012,C,D']:
+            with self.assertRaises(ValidationError):
+                parse_students(SimpleUploadedFile('students.csv',body))
+
+    def test_student_credential_preview_is_private_and_bound_to_student(self):
+        import tempfile
+        from unittest.mock import patch
+        from io import BytesIO
+        from PIL import Image
+        from django.core.files.base import ContentFile
+        from credentials.documents import private_storage
+        from .models import StudentCredential
+        with tempfile.TemporaryDirectory() as directory, patch.object(private_storage, "_location", directory):
+            private_storage.__dict__.pop("location", None)
+            try:
+                student = StudentRecord.objects.create(lrn="000000000001", data={"firstName":"Demo"})
+                file = StudentCredential(student=student, title="SF10 Permanent Record", is_sample=True)
+                data = BytesIO(); Image.new("RGB", (20,20), "white").save(data, format="PNG")
+                file.document.save("sample.png", ContentFile(data.getvalue()))
+                url = f"/api/operations/students/{student.pk}/credentials/{file.pk}/preview/"
+                self.assertEqual(self.client.get(url).status_code, 403)
+                self.as_role("PRINCIPAL"); self.assertEqual(self.client.get(url).status_code,403)
+                self.as_role("ADMIN")
+                response = self.client.get(url)
+                self.assertEqual(response.status_code,200)
+                self.assertEqual(response["Content-Type"],"image/png")
+                response.close()
+                self.assertEqual(self.client.get(f"/api/operations/students/{student.pk+1}/credentials/{file.pk}/preview/").status_code,404)
+                snapshot = self.client.get('/api/operations/snapshot/').data
+                self.assertEqual(snapshot['students'][0]['credentialFiles'][0]['title'], 'SF10 Permanent Record')
+                self.assertNotIn('document',snapshot['students'][0]['credentialFiles'][0])
+            finally: private_storage.__dict__.pop("location", None)

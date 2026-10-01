@@ -1,7 +1,23 @@
+from django.core.exceptions import ImproperlyConfigured
 from pathlib import Path
 import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Local KEY=value settings. Deployment environment variables take precedence.
+# No shell expansion or execution; keep Backend/.env outside version control.
+_env_file = BASE_DIR / ".env"
+if _env_file.is_file():
+    for _line in _env_file.read_text(encoding="utf-8-sig").splitlines():
+        _line = _line.strip()
+        if not _line or _line.startswith("#") or "=" not in _line:
+            continue
+        _key, _value = _line.split("=", 1)
+        _value = _value.strip()
+        if len(_value) >= 2 and _value[0] == _value[-1] and _value[0] in {"'", '"'}:
+            _value = _value[1:-1]
+        os.environ.setdefault(_key.strip(), _value)
+
 
 
 # ============================================================
@@ -15,10 +31,10 @@ SECRET_KEY = os.environ.get(
 
 DEBUG = os.environ.get("DJANGO_DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-]
+if not DEBUG and SECRET_KEY == "CHANGE-THIS-IN-PRODUCTION":
+    raise ImproperlyConfigured("Set DJANGO_SECRET_KEY before disabling DEBUG.")
+
+ALLOWED_HOSTS = [host.strip() for host in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if host.strip()]
 
 
 # ============================================================
@@ -47,8 +63,10 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
 
     "corsheaders.middleware.CorsMiddleware",
+    "accounts.middleware.PrivateResponseMiddleware",
 
     "django.contrib.sessions.middleware.SessionMiddleware",
 
@@ -115,7 +133,7 @@ DATABASES = {
 
         "PASSWORD": os.environ.get(
             "DB_PASSWORD",
-            "CredTrack2026"
+            ""
         ),
 
         "HOST": os.environ.get(
@@ -179,29 +197,30 @@ USE_TZ = True
 # STATIC FILES
 # ============================================================
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+WHITENOISE_ROOT = BASE_DIR.parent / "Frontend" / "dist"
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 
 # ============================================================
 # CORS
 # ============================================================
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:7787",
-    "http://127.0.0.1:7787",
-]
+CORS_ALLOWED_ORIGINS = [origin.strip() for origin in os.environ.get(
+    "DJANGO_FRONTEND_ORIGINS", "http://localhost:7787,http://127.0.0.1:7787" if DEBUG else ""
+).split(",") if origin.strip()]
+CORS_URLS_REGEX = r"^/api/.*$"
 
 CORS_ALLOW_CREDENTIALS = True
+CORS_EXPOSE_HEADERS = ["X-Document-Filename"]
 
 
 # ============================================================
 # CSRF
 # ============================================================
 
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:7787",
-    "http://127.0.0.1:7787",
-]
+CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS.copy()
 
 
 # ============================================================
@@ -215,9 +234,8 @@ SESSION_COOKIE_HTTPONLY = True
 # during local development.
 SESSION_COOKIE_SAMESITE = "Lax"
 
-# False for localhost development.
-# Change to True when the production site uses HTTPS.
-SESSION_COOKIE_SECURE = False
+# Use HTTPS-only cookies outside local development.
+SESSION_COOKIE_SECURE = not DEBUG
 
 # Session lasts for 1 hour.
 SESSION_COOKIE_AGE = 60 * 60
@@ -236,15 +254,15 @@ CSRF_COOKIE_HTTPONLY = False
 
 CSRF_COOKIE_SAMESITE = "Lax"
 
-# False for localhost development.
-CSRF_COOKIE_SECURE = False
+# Use HTTPS-only cookies outside local development.
+CSRF_COOKIE_SECURE = not DEBUG
 
 
 # ============================================================
 # SECURITY HEADERS
 # ============================================================
 
-SECURE_BROWSER_XSS_FILTER = True
+SECURE_SSL_REDIRECT = not DEBUG
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
@@ -266,5 +284,21 @@ REST_FRAMEWORK = {
 }
 
 # SMS / Semaphore
-SMS_ENABLED = False
-SEMAPHORE_API_KEY = "" 
+SMS_ENABLED = os.environ.get("SMS_ENABLED", "False").lower() == "true"
+SEMAPHORE_API_KEY = os.environ.get("SEMAPHORE_API_KEY", "")
+SEMAPHORE_SENDER_NAME = os.environ.get("SEMAPHORE_SENDER_NAME", "")
+
+AUTHENTICATION_BACKENDS = ["accounts.security.CredTrackBackend"]
+PASSWORD_RESET_TIMEOUT = 3600
+CREDTRACK_FRONTEND_URL = os.environ.get("FRONTEND_URL", os.environ.get("CREDTRACK_FRONTEND_URL", "http://localhost:7787"))
+EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "localhost")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True").lower() == "true"
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "noreply@localhost")
+EMAIL_TIMEOUT = 10
+PRIVATE_DOCUMENT_ROOT = Path(os.environ.get("PRIVATE_DOCUMENT_ROOT", str(BASE_DIR / "private_documents")))
+DATA_UPLOAD_MAX_MEMORY_SIZE = 6 * 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024

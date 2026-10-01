@@ -1,3 +1,19 @@
+  function addAudit(
+    previous,
+    title,
+    detail
+  ) {
+    return [
+      {
+        id: `au-${Date.now()}`,
+        title,
+        detail,
+        createdAt: new Date().toISOString(),
+      },
+      ...(previous.audit ?? []),
+    ];
+  }
+
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./IctDataProtection.css";
@@ -538,21 +554,6 @@ export default function IctDataProtection({
   // =========================================================
   // AUDIT
   // =========================================================
-  function addAudit(
-    previous,
-    title,
-    detail
-  ) {
-    return [
-      {
-        id: `au-${Date.now()}`,
-        title,
-        detail,
-        createdAt: new Date().toISOString(),
-      },
-      ...(previous.audit ?? []),
-    ];
-  }
 
   // =========================================================
   // REQUEST BACKUP

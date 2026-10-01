@@ -1,3 +1,4 @@
+import useLoginLockout from "./auth/useLoginLockout";
 import { useState } from "react";
 import { loginUser } from "./auth/session.js";
 import { useNavigate } from "react-router-dom";
@@ -7,21 +8,26 @@ function PrincipalLogin() {
   const navigate = useNavigate();
 
   const [username, setUsername] = useState("");
+  const lockout = useLoginLockout(username);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (loading || lockout.blocked) return;
     if (loading) return;
     setError("");
 
     if (!username.trim() || !password) {
-      setError("Please enter your username and password.");
+      setFieldErrors({ username: !username.trim(), password: !password });
+      document.getElementById(!username.trim() ? 'principal-username' : 'principal-password')?.focus();
       return;
     }
 
+    setFieldErrors({});
     setLoading(true);
     try {
       const data = await loginUser(username.trim(), password, "PRINCIPAL");
@@ -38,6 +44,7 @@ function PrincipalLogin() {
 
       navigate("/principal-dashboard", { replace: true });
     } catch (error) {
+      lockout.recordFailure(error);
       setError(error.message || "Unable to connect to the login server.");
     } finally {
       setLoading(false);
@@ -116,6 +123,8 @@ function PrincipalLogin() {
 
               <input
                 id="principal-username"
+                aria-invalid={Boolean(fieldErrors.username)}
+                aria-describedby={fieldErrors.username ? 'principal-username-error' : undefined}
                 name="username"
                 type="text"
                 autoComplete="username"
@@ -123,11 +132,13 @@ function PrincipalLogin() {
                 value={username}
                 onChange={(e) => {
                   setUsername(e.target.value);
+                  setFieldErrors(previous => ({ ...previous, username: false }));
                   setError("");
                 }}
                 required
               />
             </div>
+            {fieldErrors.username && <small className="login-field-warning" id="principal-username-error" role="alert">This field is required.</small>}
 
             {/* PASSWORD */}
             <div className="principal-field">
@@ -142,6 +153,8 @@ function PrincipalLogin() {
 
               <input
                 id="principal-password"
+                aria-invalid={Boolean(fieldErrors.password)}
+                aria-describedby={fieldErrors.password ? 'principal-password-error' : undefined}
                 name="password"
                 type={showPassword ? "text" : "password"}
                 autoComplete="current-password"
@@ -149,6 +162,7 @@ function PrincipalLogin() {
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
+                  setFieldErrors(previous => ({ ...previous, password: false }));
                   setError("");
                 }}
                 required
@@ -176,6 +190,7 @@ function PrincipalLogin() {
                 ></i>
               </button>
             </div>
+            {fieldErrors.password && <small className="login-field-warning" id="principal-password-error" role="alert">This field is required.</small>}
 
             {/* FORGOT PASSWORD */}
             <div className="principal-forgot-row">
@@ -191,7 +206,7 @@ function PrincipalLogin() {
             </div>
 
             {/* ERROR */}
-            {error && (
+            {error && !lockout.message && (
               <div
                 className="principal-error"
                 role="alert"
@@ -201,10 +216,12 @@ function PrincipalLogin() {
             )}
 
             {/* LOGIN BUTTON */}
+            {lockout.message && <p className="login-lockout-notice" role="status" aria-live="polite">{lockout.message}</p>}
+
             <button
               className="principal-login-button"
               type="submit"
-              disabled={loading}
+              disabled={loading || lockout.blocked}
             >
               <i
                 className={
@@ -216,7 +233,7 @@ function PrincipalLogin() {
               ></i>
 
               <span>
-                {loading ? "Signing in..." : "Login"}
+                {loading ? "Signing in..." : lockout.buttonText}
               </span>
             </button>
 
@@ -248,10 +265,6 @@ function PrincipalLogin() {
             </span>
           </div>
 
-          {/* FOOTER */}
-          <footer className="principal-footer">
-            © 2026 PMRMIS–South
-          </footer>
 
         </section>
       </main>

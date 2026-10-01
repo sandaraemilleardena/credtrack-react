@@ -38,3 +38,12 @@ class AuditEvent(models.Model):
 
     class Meta:
         ordering = ["-created_at", "-id"]
+
+
+class StudentCredential(models.Model):
+    from credentials.documents import private_storage, document_path
+    student = models.ForeignKey(StudentRecord, on_delete=models.CASCADE, related_name="credential_files")
+    title = models.CharField(max_length=160)
+    document = models.FileField(storage=private_storage, upload_to=document_path)
+    is_sample = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)

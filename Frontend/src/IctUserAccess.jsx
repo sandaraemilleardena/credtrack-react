@@ -399,6 +399,7 @@ function IctUserAccess() {
 
   const getActionTitle = () => {
     switch (action) {
+      case "unlock": return "Unlock Account";
       case "delete":
         return "Deactivate Account";
       case "reset":
@@ -416,6 +417,7 @@ function IctUserAccess() {
 
   const getActionDescription = () => {
     switch (action) {
+      case "unlock": return "Reset the failed login counter and lock state. This action will be recorded in the audit log.";
       case "delete":
         return "This will deactivate the account and remove its active access.";
       case "reset":
@@ -433,6 +435,7 @@ function IctUserAccess() {
 
   const getActionButtonText = () => {
     switch (action) {
+      case "unlock": return "Unlock Account";
       case "delete":
         return "Deactivate Account";
       case "reset":
@@ -811,7 +814,7 @@ function IctUserAccess() {
                 <option value="All">All Statuses</option>
                 <option value="Active">Active</option>
                 <option value="Invited">Invited</option>
-                <option value="Inactive">Inactive</option>
+                <option value="Inactive">Inactive</option><option value="Temporarily Locked">Temporarily Locked</option><option value="Permanently Locked">Permanently Locked</option>
               </select>
             </div>
 
@@ -923,6 +926,7 @@ function IctUserAccess() {
                               </button>
                             )}
 
+                            {["Temporarily Locked","Permanently Locked"].includes(account.lock_status) && <button type="button" onClick={()=>openAccessAction(account,"unlock")}>Unlock Account</button>}
                             {account?.status === "Active" && (
                               <button
                                 type="button"
@@ -1330,6 +1334,7 @@ function IctUserAccess() {
         )}
 
         {[
+          "unlock",
           "invite",
           "activate",
           "deactivate",
@@ -1434,7 +1439,7 @@ function IctUserAccess() {
                 ) : (
                   <p className="ict-confirm-text">
                     Are you sure you want to{" "}
-                    {action === "reset"
+                    {action === "unlock" ? "unlock" : action === "reset"
                       ? "reset access for"
                       : action === "activate"
                         ? "activate"

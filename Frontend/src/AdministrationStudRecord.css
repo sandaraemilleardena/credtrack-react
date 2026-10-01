@@ -2752,3 +2752,9 @@ body:has(.student-records-page .sidebar.open) { overflow: hidden; }
   .student-records-page .dashboard-content { padding: 0 16px 12px; }
   .student-records-page .page-actions { flex-wrap: wrap; }
 }
+
+.student-credential-list { margin:20px 24px; padding:20px; border:1px solid #e8dce1; border-radius:14px; background:#fffafa; }
+.student-credential-list h3 { font-weight:800; color:#79152a; margin-bottom:14px; }
+.sample-student-notice { padding:10px; background:#fff0ce; color:#794b00; font-weight:700; }
+.student-credential-list small { display:block; color:#9d2139; margin:6px 0 18px; }
+.student-records-page .action-view { width:auto; min-width:70px; gap:6px; padding:8px 12px; }

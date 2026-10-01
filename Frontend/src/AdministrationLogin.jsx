@@ -1,3 +1,4 @@
+import useLoginLockout from "./auth/useLoginLockout";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./AdministrationLogin.css";
@@ -9,13 +10,16 @@ function AdministrationLogin() {
   const navigate = useNavigate();
 
   const [username, setUsername] = useState("");
+  const lockout = useLoginLockout(username);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (loading || lockout.blocked) return;
 
     setError("");
 
@@ -24,10 +28,12 @@ function AdministrationLogin() {
     // --------------------------------------------------------
 
     if (!username.trim() || !password) {
-      setError("Please enter your username and password.");
+      setFieldErrors({ username: !username.trim(), password: !password });
+      document.getElementById(!username.trim() ? 'admin-username' : 'admin-password')?.focus();
       return;
     }
 
+    setFieldErrors({});
     setLoading(true);
 
     try {
@@ -88,6 +94,7 @@ function AdministrationLogin() {
       });
 
     } catch (error) {
+      lockout.recordFailure(error);
       console.error(
         "Administration login error:",
         error
@@ -170,6 +177,8 @@ function AdministrationLogin() {
 
               <input
                 id="admin-username"
+                aria-invalid={Boolean(fieldErrors.username)}
+                aria-describedby={fieldErrors.username ? 'admin-username-error' : undefined}
                 name="username"
                 type="text"
                 autoComplete="username"
@@ -177,11 +186,13 @@ function AdministrationLogin() {
                 value={username}
                 onChange={(e) => {
                   setUsername(e.target.value);
+                  setFieldErrors(previous => ({ ...previous, username: false }));
                   setError("");
                 }}
                 required
               />
             </div>
+            {fieldErrors.username && <small className="login-field-warning" id="admin-username-error" role="alert">This field is required.</small>}
 
             {/* PASSWORD */}
             <div className="admin-field">
@@ -196,6 +207,8 @@ function AdministrationLogin() {
 
               <input
                 id="admin-password"
+                aria-invalid={Boolean(fieldErrors.password)}
+                aria-describedby={fieldErrors.password ? 'admin-password-error' : undefined}
                 name="password"
                 type={
                   showPassword
@@ -207,6 +220,7 @@ function AdministrationLogin() {
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
+                  setFieldErrors(previous => ({ ...previous, password: false }));
                   setError("");
                 }}
                 required
@@ -234,6 +248,7 @@ function AdministrationLogin() {
                 ></i>
               </button>
             </div>
+            {fieldErrors.password && <small className="login-field-warning" id="admin-password-error" role="alert">This field is required.</small>}
 
             {/* FORGOT PASSWORD */}
             <div className="admin-forgot-row">
@@ -249,7 +264,7 @@ function AdministrationLogin() {
             </div>
 
             {/* ERROR */}
-            {error && (
+            {error && !lockout.message && (
               <div
                 className="admin-error show"
                 role="alert"
@@ -259,10 +274,12 @@ function AdministrationLogin() {
             )}
 
             {/* LOGIN BUTTON */}
+            {lockout.message && <p className="login-lockout-notice" role="status" aria-live="polite">{lockout.message}</p>}
+
             <button
               className="admin-login-button"
               type="submit"
-              disabled={loading}
+              disabled={loading || lockout.blocked}
             >
               <i
                 className={
@@ -276,7 +293,7 @@ function AdministrationLogin() {
               <span>
                 {loading
                   ? "Signing in..."
-                  : "Login"}
+                  : lockout.buttonText}
               </span>
             </button>
           </form>
@@ -309,7 +326,7 @@ function AdministrationLogin() {
 
           {/* FOOTER */}
           <footer className="admin-footer">
-            © 2026 PMRMIS–South
+            © 2026 CredTrack · ARDEÑA S.E · PMRMIS–South
           </footer>
         </section>
       </main>

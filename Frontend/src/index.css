@@ -10,6 +10,9 @@ body,
 body {
   min-width: 320px;
 }
+.credtrack-developer-credit { box-sizing:border-box; width:100%; display:flex; justify-content:center; flex-wrap:wrap; gap:8px 18px; padding:16px 24px; border-top:1px solid #dce4ed; background:#f7f9fc; color:#475569; font:400 13px/1.6 system-ui,sans-serif; text-align:center; }
+.credtrack-developer-credit strong { color:#174574; font-weight:600; }
+@media print { .credtrack-developer-credit { display:none; } }
 /* Never display a protected history snapshot until Django revalidates it. */
 html[data-session-locked="true"] .protected-portal { visibility: hidden !important; }
 .session-status { padding: 32px; font: 500 16px/1.6 system-ui, sans-serif; color: #303746; }

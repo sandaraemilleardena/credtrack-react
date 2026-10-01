@@ -4,6 +4,10 @@ const listeners = new Set();
 let state = { status: 'checking', user: null, routeKey: null, error: '' };
 let sequence = 0;
 let signingOut = false;
+// UI entry policy only: Django remains the authority for every protected API.
+// A fresh document (typed URL, reload, or new tab) must pass the login form.
+let staffEntryRole = null;
+export const hasFreshStaffLogin = role => staffEntryRole === role;
 let installed = false;
 const SESSION_EVENT = 'credtrack-auth-change';
 
@@ -15,6 +19,15 @@ function publish(next) {
 }
 export const subscribeSession = listener => { listeners.add(listener); return () => listeners.delete(listener); };
 export const getSessionState = () => state;
+
+export function enterLoginScreen() {
+  // Visiting a login page ends this document's staff entry permission.
+  // Invalidate pending checks so history navigation cannot restore that permission.
+  staffEntryRole = null;
+  sequence++;
+  clearLegacySession();
+  publish({status:'anonymous', user:null, routeKey:null, validatedRouteKey:null, error:''});
+}
 
 function lock() {
   sequence++;
@@ -33,7 +46,12 @@ async function authRequest(path, options = {}) {
     credentials: 'include', cache: 'no-store', signal: AbortSignal.timeout(15000), ...options,
   });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error || data.detail || 'Unable to verify your session. Please retry.');
+  if (!response.ok) {
+    const error = new Error(data.error || data.detail || 'Unable to verify your session. Please retry.');
+    error.retryAfter = Number(data.retry_after || response.headers.get('Retry-After')) || 0;
+    error.accountLocked = data.account_locked === true;
+    throw error;
+  }
   return data;
 }
 export async function getCsrfToken() {
@@ -52,6 +70,7 @@ export async function verifySession(routeKey = state.routeKey) {
   try {
     const result = await getCurrentSession();
     if (current !== sequence) return;
+    if (!result.authenticated) staffEntryRole = null;
     publish({ status: result.authenticated ? 'authenticated' : 'anonymous', user: result.user, routeKey, validatedRouteKey: routeKey, error: '' });
   } catch (error) {
     if (current === sequence) publish({ status: 'error', user: null, routeKey, error: error.message });
@@ -61,7 +80,10 @@ export function installSessionProtection() {
   if (installed) return;
   installed = true;
   window.addEventListener('pagehide', lock);
-  window.addEventListener('pageshow', () => verifySession());
+  window.addEventListener('pageshow', event => {
+    if (event.persisted) enterLoginScreen();
+    verifySession();
+  });
   window.addEventListener('popstate', lock);
   window.addEventListener('focus', () => verifySession());
   document.addEventListener('visibilitychange', () => {
@@ -69,7 +91,7 @@ export function installSessionProtection() {
     else verifySession();
   });
   window.addEventListener('storage', event => {
-    if (event.key === SESSION_EVENT) verifySession();
+    if (event.key === SESSION_EVENT) { enterLoginScreen(); verifySession(); }
   });
 }
 export async function loginUser(username, password, role) {
@@ -78,12 +100,18 @@ export async function loginUser(username, password, role) {
     method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
     body: JSON.stringify({ username, password, role }),
   });
+  if (data.authenticated !== true || data.user?.role !== role) {
+    enterLoginScreen();
+    throw new Error('This account is not authorized for the selected role.');
+  }
+  staffEntryRole = role;
   clearLegacySession();
   lock();
   notifyOtherTabs();
   return data;
 }
 export async function logoutUser() {
+  staffEntryRole = null;
   signingOut = true;
   lock();
   publish({ ...state, user: null, validatedRouteKey: null });

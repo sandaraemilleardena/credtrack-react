@@ -11,7 +11,7 @@ function errorText(data) {
 async function call(path, { method = "GET", body, publicRequest = false } = {}) {
   const headers = { Accept: "application/json" };
 
-  if (body) {
+  if (body && !(body instanceof FormData)) {
     headers["Content-Type"] = "application/json";
   }
 
@@ -24,7 +24,7 @@ async function call(path, { method = "GET", body, publicRequest = false } = {}) 
     cache: "no-store",
     headers,
     credentials: publicRequest ? "omit" : "include",
-    ...(body ? { body: JSON.stringify(body) } : {}),
+    ...(body ? { body: body instanceof FormData ? body : JSON.stringify(body) } : {}),
   });
 
   if (!publicRequest && [401, 403].includes(response.status)) void verifySession();
@@ -39,20 +39,21 @@ async function call(path, { method = "GET", body, publicRequest = false } = {}) 
   }
 
   if (!response.ok) {
-    throw new Error(
-      errorText(data) || `Request failed (${response.status}).`
-    );
+    const error = new Error(errorText(data) || `Request failed (${response.status}).`);
+    error.fields = data;
+    throw error;
   }
 
   return data;
 }
 
-export const submitCredential = body =>
-  call("submit/", {
-    method: "POST",
-    body,
-    publicRequest: true,
-  });
+export const submitCredential = values => {
+  const body = new FormData();
+  Object.entries(values).forEach(([key, value]) => { if (value !== null && value !== undefined) body.append(key, value); });
+  return call("submit/", { method: "POST", body, publicRequest: true });
+};
+export const fetchRequestOptions = () => call("options/", { publicRequest: true });
+export const verificationUrl = (id, kind = "verification") => `${API}/api/credentials/${id}/verification/?kind=${kind}`;
 
 export const fetchCredentialQueue = () => call("");
 
@@ -65,3 +66,7 @@ export const actOnCredential = (item, action, note) =>
       note,
     },
   });
+export const attachVerification = (item, file) => {
+ const body = new FormData(); body.append('verification_document',file); body.append('version',item.version);
+ return call(`${item.id}/verification/upload/`,{method:'POST',body});
+};

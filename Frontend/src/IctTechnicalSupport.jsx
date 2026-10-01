@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import "./ictTechnicalSupport.css";
+import "./IctTechnicalSupport.css";
 
 const paths = {
   users:
