@@ -30,7 +30,7 @@ def user_role(user):
 
 
 @transaction.atomic
-def transition(request_id, actor, action, version, note=""):
+def transition(request_id, actor, action, version, note="", release_date=None, release_time=None):
     role, allowed, destination = TRANSITIONS[action]
     if user_role(actor) != role:
         raise PermissionDenied("Your role cannot perform this action.")
@@ -39,6 +39,11 @@ def transition(request_id, actor, action, version, note=""):
         raise Conflict()
     if item.status not in allowed:
         raise Conflict("This action is not allowed at the current stage.")
+    if action == "ready" and bool(release_date) != bool(release_time):
+        raise ValidationError("Enter both release date and time.")
+    if action == "ready" and release_date and release_time:
+        schedule = f"{release_date.isoformat()} at {release_time.strftime('%H:%M')} (Philippine time)"
+        note = f"{note}\nRelease schedule: {schedule}".strip()
     previous = item.status
     if action == "submit_review":
         if not (item.verification_document or item.psa_document or item.id_document):
@@ -71,7 +76,7 @@ def transition(request_id, actor, action, version, note=""):
         delivery = f"is approved for forwarding to {item.receiving_school}. Please contact the records office for forwarding details." if item.delivery_method == "SCHOOL_TO_SCHOOL" else f"is ready for collection at the school records office. {instructions}"
         notification, _ = SmsNotification.objects.get_or_create(
             request=item,
-            defaults={"phone": item.phone, "message": f"CredTrack: Request {item.reference} {delivery}"[:480]},
+            defaults={"phone": item.phone, "message": (f"CredTrack PMRMIS-South: Request {item.reference} {delivery}" if not release_date else (f"CredTrack PMRMIS-South: Request {item.reference} is ready for release on {schedule}. " + (f"Please contact the school records office for forwarding to {item.receiving_school}." if item.delivery_method == "SCHOOL_TO_SCHOOL" else "Please collect your credential at the school records office. Bring a valid ID.")))},
         )
         from .sms import send_notification
         transaction.on_commit(lambda: send_notification(notification.pk), robust=True)

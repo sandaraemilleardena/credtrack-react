@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { actOnCredential, fetchCredentialQueue } from "../api/credentials";
+import ReleaseSmsForm from './ReleaseSmsForm';
 import { logoutUser } from "../auth/session";
 import "./CredentialWorkflow.css";
 
@@ -61,6 +62,7 @@ export default function CredentialWorkflow({ role }) {
   const [selectedId, setSelectedId] = useState(new URLSearchParams(location.search).get("request"));
   const [note, setNote] = useState("");
   const [pending, setPending] = useState(null);
+  const [schedule,setSchedule]=useState({release_date:'',release_time:''});
   const [busy, setBusy] = useState(false);
   const lock = useRef(false);
   const generation = useRef(0);
@@ -86,12 +88,13 @@ export default function CredentialWorkflow({ role }) {
     (filter === "ALL" || (filter === "ACTION" ? available(item).length > 0 : item.status === filter)) &&
     `${item.id} ${item.full_name} ${item.lrn} ${item.credential}`.toLowerCase().includes(search.toLowerCase())
   );
-  const open = item => { setSelectedId(item.id); setNote(""); setPending(null); setSuccess(""); };
+  const open = item => { setSelectedId(item.id); setSchedule({release_date:'',release_time:''}); setNote(""); setPending(null); setSuccess(""); };
   const confirm = async () => {
     if (!selected || !pending || lock.current) return;
+    if(pending[0]==='ready' && (!schedule.release_date || !schedule.release_time)){setError('Enter the release date and time before confirming.');return;}
     lock.current = true; setBusy(true); setError(""); setSuccess(""); generation.current++;
     try {
-      const updated = await actOnCredential(selected, pending[0], note);
+      const updated = await actOnCredential(selected, pending[0], note, pending[0] === "ready" ? schedule : {});
       setData(previous => ({ ...previous, requests: previous.requests.map(item => item.id === updated.id ? updated : item) }));
       setSuccess(`Request updated: ${updated.status_label}.`);
       setPending(null); setNote("");
@@ -131,6 +134,7 @@ export default function CredentialWorkflow({ role }) {
         {selected.sms && <div className="cw-notice"><strong>SMS: {SMS_LABELS[selected.sms.status] || selected.sms.status}</strong><p>{selected.sms.last_error || `Provider status: ${selected.sms.provider_status || "Awaiting dispatch"}. Provider acceptance does not confirm handset delivery.`}</p></div>}
         {available(selected).length > 0 && <><label className="cw-note">Verification / decision notes<textarea value={note} disabled={busy} onChange={e => setNote(e.target.value)} maxLength={2000} placeholder="Record availability checks, preparation details, corrections or collection proof."/></label>
           <div className="cw-actions">{available(selected).map(action => <button disabled={busy} key={action[0]} onClick={() => setPending(action)}>{action[1]}</button>)}</div></>}
+        {pending?.[0] === "ready" && <ReleaseSmsForm request={selected} schedule={schedule} onChange={setSchedule} disabled={busy} smsEnabled={data.sms_enabled}/>}
         {pending && <div className="cw-confirm" role="group" aria-label="Confirm workflow action"><strong>{pending[1]}?</strong><p>{pending[0] === "ready" ? "Confirm that the approved credentials are available for collection. This queues one SMS to the requester." : pending[0] === "submit_review" ? "Confirm you checked availability and prepared the credentials. Include your verification details above." : "This decision will be saved in the request’s history."}</p><button disabled={busy} onClick={confirm}>{busy ? "Saving…" : "Confirm"}</button><button disabled={busy} onClick={() => setPending(null)}>Cancel</button></div>}
         <h4>Request history</h4><ol className="cw-history">{selected.events.map((event, index) => <li key={index}><strong>{LABELS[event.to_status]} · {event.actor || "Requester"}</strong><small>{displayDate(event.created_at)}</small>{event.note && <p>{event.note}</p>}</li>)}</ol>
       </section>}

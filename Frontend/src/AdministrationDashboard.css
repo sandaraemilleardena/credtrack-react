@@ -2121,3 +2121,41 @@ body:has(.administration-dashboard .sidebar.open) { overflow: hidden; }
   content: none;
 }
 
+
+/* Semaphore preparation: unknown balances are never shown as zero. */
+.administration-dashboard .sms-credit-box { display:flex; align-items:center; gap:10px; padding:10px 14px; border:1px solid #efd5d5; border-radius:14px; background:#fff8f8; color:#920c12; flex-shrink:0; }
+.administration-dashboard .sms-credit-box > i { font-size:18px; }
+.administration-dashboard .sms-credit-box span { display:block; font-size:10px; font-weight:800; letter-spacing:1px; }
+.administration-dashboard .sms-credit-box strong { display:block; font-size:18px; line-height:1.4; }
+.administration-dashboard .sms-credit-box small { font-size:11px; font-weight:500; color:#697386; }
+.administration-dashboard .sms-notification-summary { display:flex; flex-direction:column; gap:4px; padding:14px 18px; background:#fff8f8; border-bottom:1px solid #efd5d5; }
+.administration-dashboard .sms-notification-summary strong { font-size:13px; color:#920c12; }
+.administration-dashboard .sms-notification-summary span, .administration-dashboard .sms-notification-summary small { font-size:11px; color:#697386; }
+@media (max-width:600px) { .administration-dashboard .sms-credit-box { padding:7px 9px; gap:6px; } .administration-dashboard .sms-credit-box > i { display:none; } .administration-dashboard .sms-credit-box small { display:block; font-size:10px; } }
+.release-sms-form {margin:18px 0;padding:18px;border:1px solid #eed4d4;border-radius:14px;background:#fff8f8;color:#273248;}
+.release-sms-form h3 {color:#980b13;margin:0 0 10px;}
+.release-sms-form p {font-size:13px;line-height:1.6;}
+.release-sms-form label {display:flex;flex-direction:column;gap:7px;font-weight:600;font-size:13px;}
+.release-sms-fields {display:flex;flex-wrap:wrap;gap:14px;margin:14px 0;}
+.release-sms-fields label {flex:1;min-width:180px;}
+.release-sms-form input,.release-sms-form textarea {padding:11px;border:1px solid #d5dae4;border-radius:8px;background:white;color:#273248;font:inherit;}
+.release-sms-form textarea {resize:vertical;width:100%;box-sizing:border-box;line-height:1.6;}
+.release-picker-backdrop {position:fixed;inset:0;z-index:3000;background:#17203380;display:grid;place-items:center;padding:20px;}
+.release-picker {background:white;border-radius:20px;padding:24px;width:min(620px,100%);max-height:80vh;overflow:auto;}
+.release-picker header {display:flex;justify-content:space-between;align-items:center;gap:16px;}
+.release-picker-request {display:flex;flex-direction:column;gap:8px;text-align:left;padding:16px;margin:12px 0;width:100%;border:1px solid #ecd5d5;border-radius:12px;background:#fff8f8;color:#273248;cursor:pointer;}
+
+/* Keep the heading close to its summary cards. */
+@media screen {
+  .administration-dashboard .page-header {
+    min-height: 0;
+    height: auto;
+    padding: 18px clamp(20px, 3vw, 30px) 16px;
+    margin: 0;
+    gap: 16px;
+  }
+  .administration-dashboard .dashboard-content > .statistics { margin-top: 0; }
+}
+@media screen and (max-width: 760px) {
+  .administration-dashboard .page-header { padding: 16px 16px 14px; gap: 12px; }
+}

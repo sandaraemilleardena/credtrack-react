@@ -57,13 +57,14 @@ export const verificationUrl = (id, kind = "verification") => `${API}/api/creden
 
 export const fetchCredentialQueue = () => call("");
 
-export const actOnCredential = (item, action, note) =>
+export const actOnCredential = (item, action, note, schedule = {}) =>
   call(`${item.id}/action/`, {
     method: "POST",
     body: {
       action,
       version: item.version,
       note,
+      ...schedule,
     },
   });
 export const attachVerification = (item, file) => {

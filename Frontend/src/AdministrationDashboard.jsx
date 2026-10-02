@@ -12,6 +12,7 @@ import "./AdministrationDashboard.css";
 function AdministrationDashboard() {
   const system=usePortal();
   const [reviewId,setReviewId]=useState(null);
+  const [releasePicker,setReleasePicker]=useState(false);
   const reviewRequest=system.data.requests.find(r=>r.id===reviewId);
   const totals=metrics(system.data.requests);
   const [modalError,setModalError]=useState('');
@@ -65,7 +66,15 @@ function AdministrationDashboard() {
   ========================================================= */
 
   const requests=system.data.requests.slice(0,6).map(r=>({...r,student:r.full_name,initials:r.full_name.split(' ').map(x=>x[0]).slice(0,2).join(''),status:statusName(r),date:new Date(r.created_at).toLocaleDateString()}));
-  const notifications=auditRows(system.data).slice(0,5).map(e=>({...e,icon:'fa-clock',color:'blue',title:e.action,description:e.description,time:new Date(e.created_at).toLocaleString()}));
+  const smsRecords = system.data.requests.filter(r => r.sms);
+  const smsAccepted = smsRecords.filter(r => r.sms.status === 'ACCEPTED').length;
+  const smsQueued = smsRecords.filter(r => r.sms.status === 'QUEUED').length;
+  const smsNotifications = smsRecords.map(r => {
+    const delivered = r.sms.status === 'ACCEPTED' && r.sms.provider_status?.toLowerCase() === 'sent';
+    const labels = { QUEUED: 'SMS queued', SENDING: 'SMS sending', ACCEPTED: delivered ? 'SMS sent' : 'SMS accepted by Semaphore', FAILED: 'SMS failed', UNKNOWN: 'SMS status unconfirmed', CANCELLED: 'SMS cancelled' };
+    return { id: `sms:${r.id}`, icon: 'fa-comment-dots', color: r.sms.status === 'FAILED' ? 'red' : 'blue', title: labels[r.sms.status] || 'SMS update', description: `${r.reference} · ${r.full_name} — ${r.sms.status === 'QUEUED' && !system.data.sms_enabled ? 'Waiting for Semaphore approval. No SMS sent yet.' : r.sms.provider_status || labels[r.sms.status] || r.sms.status}`, created_at: r.sms.updated_at, time: new Date(r.sms.updated_at).toLocaleString() };
+  }).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+  const notifications = [...auditRows(system.data).slice(0,5).map(e=>({...e,icon:'fa-clock',color:'blue',title:e.action,description:e.description,time:new Date(e.created_at).toLocaleString()})), ...smsNotifications.slice(0,5)].sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
   const statistics=[{title:'Total Requests',value:totals.total,period:'All saved requests',description:'Student and alumni requests',icon:'fa-folder-open',className:'total'},{title:'Pending',value:totals.pending,period:'Current',description:'Preparation or Principal review',icon:'fa-clock',className:'pending'},{title:'Approved',value:totals.approved,period:'All saved requests',description:totals.ready+' ready for pickup',icon:'fa-circle-check',className:'approved'},{title:'Released',value:totals.released,period:'Completed',description:'Collection acknowledged',icon:'fa-box-open',className:'released'}];
 
   const quickActions = useMemo(
@@ -84,13 +93,7 @@ function AdministrationDashboard() {
         icon: "fa-file-arrow-up",
         accent: "blue",
       },
-      {
-        id: "user",
-        title: "Add User",
-        description: "Create a system account",
-        icon: "fa-user-plus",
-        accent: "green",
-      },
+
       {
         id: "report",
         title: "Generate Report",
@@ -490,7 +493,8 @@ function AdministrationDashboard() {
 
   return (
     <div className="administration-dashboard">
-      {reviewRequest && <RequestReviewModal key={reviewRequest.id} request={reviewRequest} role="ADMIN" onClose={()=>setReviewId(null)} onUpdated={system.refresh}/>}
+      {releasePicker && <div className="release-picker-backdrop" onClick={()=>setReleasePicker(false)}><section className="release-picker" role="dialog" aria-modal="true" aria-label="Choose a request for release notification" onClick={e=>e.stopPropagation()}><header><h2>Notify requester</h2><button onClick={()=>setReleasePicker(false)}>Close</button></header><p>Select a Principal-approved request, then enter its release date and time.</p>{system.data.requests.filter(r=>r.status==='PRINCIPAL_APPROVED').map(r=><button className="release-picker-request" key={r.id} onClick={()=>{setReleasePicker(false);setReviewId(r.id);}}><strong>{r.reference} · {r.full_name}</strong><span>{r.credential} → Schedule release SMS</span></button>)}{!system.data.requests.some(r=>r.status==='PRINCIPAL_APPROVED') && <p>No approved requests are waiting for release.</p>}</section></div>}
+      {reviewRequest && <RequestReviewModal key={reviewRequest.id} request={reviewRequest} role="ADMIN" onClose={()=>setReviewId(null)} onUpdated={system.refresh} smsEnabled={system.data.sms_enabled}/>}
 
       {/* =====================================================
           SIDEBAR OVERLAY
@@ -678,6 +682,11 @@ function AdministrationDashboard() {
 
           <div className="topbar-right">
 
+            <div className="sms-credit-box" role="status" aria-label="Semaphore SMS credits">
+              <i className="fas fa-comment-dots" aria-hidden="true"></i>
+              <div><span>SMS CREDITS</span><strong>— <small>{system.data.sms_enabled ? 'Balance unavailable' : 'Pending approval'}</small></strong></div>
+            </div>
+
             {/* NOTIFICATIONS */}
 
             <div className="notification-wrapper">
@@ -742,6 +751,12 @@ function AdministrationDashboard() {
 
                   </div>
 
+                  <div className="sms-notification-summary">
+                    <strong>SMS activity</strong>
+                    <span>{smsAccepted} accepted by Semaphore · {smsQueued} queued</span>
+                    {!system.data.sms_enabled && <small>Approval pending. SMS sending is disabled.</small>}
+                    {smsRecords.length === 0 && <small>No SMS messages sent yet. Updates will appear here.</small>}
+                  </div>
                   <div className="notification-list">
 
                     {notifications.map(
@@ -1032,6 +1047,7 @@ function AdministrationDashboard() {
 
             <div className="action-grid">
 
+              <button type="button" className="action-card red" onClick={()=>setReleasePicker(true)}><span className="action-icon red"><i className="fas fa-comment-dots"></i></span><div className="action-content"><strong>Notify Requester</strong><small>Schedule release date &amp; time</small></div><span className="action-arrow"><i className="fas fa-arrow-right"></i></span></button>
               {quickActions.map((action) => (
                 <button
                   type="button"

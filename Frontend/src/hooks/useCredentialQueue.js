@@ -37,14 +37,14 @@ export default function useCredentialQueue(role) {
     return () => { state.active = false; state.sequence++; clearTimeout(initial); clearInterval(timer); };
   }, [refresh]);
 
-  const perform = async (item, action, note) => {
+  const perform = async (item, action, note, schedule = {}) => {
     const state = lifecycle.current;
     if (state.locked) return null;
     state.locked = true;
     state.sequence++;
     setBusy(true);
     try {
-      const updated = await actOnCredential(item, action, note);
+      const updated = await actOnCredential(item, action, note, schedule);
       if (state.active) {
         setItems(previous => previous.map(row => row.id === updated.id ? updated : row));
         setError("");

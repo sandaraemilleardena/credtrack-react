@@ -109,5 +109,14 @@ class RequestSerializer(serializers.ModelSerializer):
 
 class ActionSerializer(serializers.Serializer):
     action = serializers.ChoiceField(choices=["prepare", "unavailable", "submit_review", "approve", "return", "ready", "collect", "reject"])
+    release_date = serializers.DateField(required=False)
+    release_time = serializers.TimeField(required=False, input_formats=["%H:%M"])
     version = serializers.IntegerField(min_value=0)
     note = serializers.CharField(max_length=2000, required=False, allow_blank=True, default="")
+
+    def validate(self, attrs):
+        if attrs["action"] == "ready" and not (attrs.get("release_date") and attrs.get("release_time")):
+            raise serializers.ValidationError("Enter the release date and time before sending the SMS.")
+        if attrs["action"] != "ready" and ("release_date" in attrs or "release_time" in attrs):
+            raise serializers.ValidationError("Release scheduling is only allowed when marking a request ready.")
+        return attrs

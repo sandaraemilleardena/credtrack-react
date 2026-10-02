@@ -1,4 +1,5 @@
-import VerificationUpload from './components/VerificationUpload';
+import ReleaseSmsForm from './components/ReleaseSmsForm';
+import './components/CredentialWorkflow.css';
 import WorkflowSupport from './components/WorkflowSupport';
 import useCredentialQueue from "./hooks/useCredentialQueue";
 import RequestWorkflowDetails, { QueueNotice } from "./components/RequestWorkflowDetails";
@@ -71,6 +72,7 @@ function AdministrationCredManagement() {
   const queue = useCredentialQueue("ADMIN");
   const requests = useMemo(() => queue.items.map(convertRequest), [queue.items]);
   const [pendingAction, setPendingAction] = useState(null);
+  const [schedule,setSchedule]=useState({release_date:'',release_time:''});
   const [actionError, setActionError] = useState("");
   const [page, setPage] = useState(1);
   const recentEvents = requests.flatMap(request => request.events.map(event => ({ ...event, requestName: request.name, requestId: request.id }))).sort((a,b) => new Date(b.created_at) - new Date(a.created_at)).slice(0,3);
@@ -137,6 +139,7 @@ function AdministrationCredManagement() {
     if (!request) return;
 
     setCurrentRequest(request);
+    setSchedule({release_date:'',release_time:''});
     setPendingAction(null);
     setActionError("");
     setDrawerOpen(true);
@@ -167,8 +170,9 @@ function AdministrationCredManagement() {
   const handleApprove = async () => {
     if (!currentRequest || !pendingAction || queue.busy) return;
     setActionError("");
+    if(pendingAction[0] === "ready" && (!schedule.release_date || !schedule.release_time)){setActionError("Enter the release date and time before confirming.");return;}
     try {
-      const updated = await queue.perform(currentRequest, pendingAction[0], "");
+      const updated = await queue.perform(currentRequest, pendingAction[0], "", pendingAction[0] === "ready" ? schedule : {});
       if (!updated) return;
       setCurrentRequest(convertRequest(updated));
       setPendingAction(null);
@@ -679,12 +683,13 @@ function AdministrationCredManagement() {
             </div>
 
             <RequestWorkflowDetails request={{...currentRequest,status:currentRequest.stage}} />
-            <VerificationUpload request={{...currentRequest,status:currentRequest.stage}} onUpdated={async updated=>{setCurrentRequest(convertRequest(updated));await queue.refresh();}}/>
+
             {actionError && <p className="request-workflow-notice request-workflow-error" role="alert">{actionError} Close and reopen this request if it has changed.</p>}
             {currentRequest.stage === "PRINCIPAL_APPROVED" && !queue.smsEnabled && <p className="request-workflow-notice">Semaphore is not activated yet. Final release confirmation will queue an SMS without sending it.</p>}
             <div className="decision workflow-actions">
               {(ADMIN_ACTIONS[currentRequest.stage] || []).map((action, index) => <button key={action[0]} className={action[0] === "submit_review" ? "verification-pending" : index ? "workflow-secondary" : "approve"} disabled={queue.busy} onClick={() => { setPendingAction(action); setActionError(""); }}><i className="fas fa-check"></i>{action[1]}</button>)}
             </div>
+            {pendingAction?.[0] === "ready" && <ReleaseSmsForm request={currentRequest} schedule={schedule} onChange={setSchedule} disabled={queue.busy} smsEnabled={queue.smsEnabled}/>}
             {pendingAction && <div className="workflow-confirm"><strong>{pendingAction[1]}?</strong><p>{pendingAction[0] === "ready" ? "Confirm that the Principal-approved credentials are ready for collection. One SMS will be queued for the requester." : "This action will be recorded in the request history."}</p><button disabled={queue.busy} onClick={handleApprove}>{queue.busy ? "Saving…" : "Confirm"}</button><button disabled={queue.busy} onClick={() => setPendingAction(null)}>Cancel</button></div>}
           </div>
         )}

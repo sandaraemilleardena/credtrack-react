@@ -181,7 +181,7 @@ class WorkflowTests(TestCase):
         item = self.submit()
         for user, action, expected in [(self.admin, "approve", 403), (self.principal, "ready", 403), (self.admin, "ready", 409), (self.principal, "approve", 409), (self.ict, "prepare", 403)]:
             self.client.force_authenticate(user)
-            response = self.client.post(f"/api/credentials/{item.pk}/action/", {"action": action, "version": 0}, format="json")
+            response = self.client.post(f"/api/credentials/{item.pk}/action/", {"action": action, "version": 0, **({"release_date":"2026-10-20","release_time":"09:00"} if action=="ready" else {})}, format="json")
             self.assertEqual(response.status_code, expected, response.data)
         self.assertFalse(SmsNotification.objects.exists())
 
@@ -202,7 +202,7 @@ class WorkflowTests(TestCase):
         version = item.version
         self.move(item, self.admin, "ready")
         self.client.force_authenticate(self.admin)
-        response = self.client.post(f"/api/credentials/{item.pk}/action/", {"action": "ready", "version": version}, format="json")
+        response = self.client.post(f"/api/credentials/{item.pk}/action/", {"action": "ready", "version": version, "release_date": "2026-10-20", "release_time": "09:00"}, format="json")
         self.assertEqual(response.status_code, 409)
         self.assertEqual(SmsNotification.objects.count(), 1)
 
@@ -330,7 +330,7 @@ class WorkflowTests(TestCase):
         item=self.move(item,self.principal,"reject","Identity details could not be verified")
         self.assertEqual(item.status,"REJECTED")
         self.client.force_authenticate(self.admin)
-        response=self.client.post(f"/api/credentials/{item.pk}/action/",{"action":"ready","version":item.version},format="json")
+        response=self.client.post(f"/api/credentials/{item.pk}/action/",{"action":"ready","version":item.version,"release_date":"2026-10-20","release_time":"09:00"},format="json")
         self.assertEqual(response.status_code,409)
 
 
@@ -338,7 +338,7 @@ class WorkflowTests(TestCase):
         item = self.submit()
         for actor, action, expected in [(self.admin,"submit_review","PRINCIPAL_REVIEW"),(self.principal,"approve","PRINCIPAL_APPROVED"),(self.admin,"ready","READY"),(self.admin,"collect","COLLECTED")]:
             client=APIClient();client.force_login(actor)
-            response=client.post(f"/api/credentials/{item.pk}/action/",{"action":action,"version":item.version,"note":"Verified for persistence test"},format="json")
+            response=client.post(f"/api/credentials/{item.pk}/action/",{"action":action,"version":item.version,"note":"Verified for persistence test",**({"release_date":"2026-10-20","release_time":"09:00"} if action=="ready" else {})},format="json")
             self.assertEqual(response.status_code,200,response.data)
             item.refresh_from_db();self.assertEqual(item.status,expected)
             fresh=APIClient();fresh.force_login(actor)
@@ -372,7 +372,7 @@ class WorkflowTests(TestCase):
         for user,action in [(self.admin,"approve"),(self.principal,"ready")]:
             self.client.force_authenticate(user)
             for identifier in [item.pk,uuid.uuid4()]:
-                response=self.client.post(f"/api/credentials/{identifier}/action/",{"action":action,"version":0},format="json")
+                response=self.client.post(f"/api/credentials/{identifier}/action/",{"action":action,"version":0,**({"release_date":"2026-10-20","release_time":"09:00"} if action=="ready" else {})},format="json")
                 self.assertEqual(response.status_code,403)
 
     def test_returning_request_revokes_principal_document_access_until_reconfirmed(self):
@@ -384,3 +384,30 @@ class WorkflowTests(TestCase):
         item=self.move(item,self.admin,"submit_review","Rechecked original records and identity")
         response=self.client.get(f"/api/credentials/{item.pk}/verification/")
         self.assertEqual(response.status_code,200);response.close()
+
+
+class ReleaseScheduleTests(TestCase):
+    setUp = WorkflowTests.setUp
+    staff = WorkflowTests.staff
+    post_submission = WorkflowTests.post_submission
+    submit = WorkflowTests.submit
+    move = WorkflowTests.move
+    approved = WorkflowTests.approved
+    @override_settings(SMS_ENABLED=False, SEMAPHORE_API_KEY="")
+    def test_release_requires_manual_schedule_and_saves_standard_message(self):
+        item = self.approved()
+        self.client.force_authenticate(self.admin)
+        endpoint = f"/api/credentials/{item.pk}/action/"
+        base = {"action": "ready", "version": item.version}
+        self.assertEqual(self.client.post(endpoint, base, format="json").status_code, 400)
+        self.assertFalse(SmsNotification.objects.filter(request=item).exists())
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.client.post(endpoint, {**base, "release_date": "2026-10-20", "release_time": "09:30"}, format="json")
+        self.assertEqual(response.status_code, 200, response.data)
+        sms = SmsNotification.objects.get(request=item)
+        self.assertEqual(sms.message, f"CredTrack PMRMIS-South: Request {item.reference} is ready for release on 2026-10-20 at 09:30 (Philippine time). Please collect your credential at the school records office. Bring a valid ID.")
+        self.assertEqual(sms.status, "QUEUED")
+        self.assertEqual(sms.attempts, 0)
+        self.assertIn("2026-10-20 at 09:30", item.events.get(action="ready").note)
+        self.assertEqual(self.client.post(endpoint, {**base, "release_date": "2026-10-20", "release_time": "09:30"}, format="json").status_code, 409)
+        self.assertEqual(SmsNotification.objects.filter(request=item).count(), 1)
