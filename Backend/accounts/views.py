@@ -1,6 +1,9 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.middleware.csrf import get_token
+from django.conf import settings
+from django.utils import timezone
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -232,7 +235,16 @@ def csrf_view(request):
 
     return Response(
         {
-            "message": "CSRF cookie set."
+            "message": "CSRF cookie set.",
+            "csrfToken": get_token(request)
         },
         status=status.HTTP_200_OK
-    ) 
+    )
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def user_activity(request):
+    """Renew an authenticated session after explicit, CSRF-protected activity."""
+    request.session["last_user_activity"] = timezone.now().timestamp()
+    request.session.set_expiry(settings.SESSION_IDLE_TIMEOUT)
+    return Response({"authenticated": True}, status=status.HTTP_200_OK)
