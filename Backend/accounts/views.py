@@ -92,6 +92,10 @@ def login_view(request):
         )
 
     login(request, user)
+    from django.conf import settings
+    from django.utils import timezone
+    request.session["last_user_activity"] = timezone.now().timestamp()
+    request.session.set_expiry(settings.SESSION_IDLE_TIMEOUT)
     from operations.models import AuditEvent
     AuditEvent.objects.create(actor=user, role=role, module="Authentication", action="Signed in")
 
@@ -167,6 +171,16 @@ def current_user(request):
         }
 
     }) 
+@api_view(["POST"])
+@csrf_protect
+def user_activity(request):
+    from django.conf import settings
+    from django.utils import timezone
+    request.session["last_user_activity"] = timezone.now().timestamp()
+    request.session.set_expiry(settings.SESSION_IDLE_TIMEOUT)
+    return Response({"active": True})
+
+
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 

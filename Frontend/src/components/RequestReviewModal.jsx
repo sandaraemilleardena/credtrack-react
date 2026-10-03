@@ -3,6 +3,7 @@ import {useEffect, useRef, useState} from 'react';
 import {actOnCredential} from '../api/credentials';
 import ReleaseSmsForm from './ReleaseSmsForm';
 import RequestWorkflowDetails from './RequestWorkflowDetails';
+import './RequestReviewModal.css';
 const actions = {
  ADMIN: {SUBMITTED:[['submit_review','Confirm Student Information'],['prepare','Start preparation']],PREPARING:[['submit_review','Confirm Student Information'],['unavailable','Unavailable / needs information']],RETURNED:[['submit_review','Confirm Student Information']],UNAVAILABLE:[['prepare','Resume preparation']],PRINCIPAL_APPROVED:[['ready','Release: mark ready and queue SMS']],READY:[['collect','Record release / collection']]},
  PRINCIPAL: {PRINCIPAL_REVIEW:[['approve','Approve Student Information'],['return','Return for correction'],['reject','Reject request']]}
@@ -30,13 +31,15 @@ export default function RequestReviewModal({request: incoming,role,onClose,onUpd
   catch(e){setError(e.message);}finally{locked.current=false;setBusy(false);}
  }
  return <dialog ref={dialog} className="request-review-modal" onCancel={event=>{event.preventDefault();if(!busy)onClose();}} aria-labelledby="request-review-title">
-   <header><h2 id="request-review-title">Request Details · {request.reference}</h2><button disabled={busy} onClick={onClose} aria-label="Close request details">Close</button></header>
+   <header className="request-review-header"><div><span className="request-review-eyebrow">CREDENTIAL REQUEST</span><h2 id="request-review-title">Request Details · {request.reference}</h2><span className="request-review-status">{request.status_label}</span></div><button type="button" disabled={busy} onClick={onClose} aria-label="Close request details">Close <span aria-hidden="true">×</span></button></header>
+   <div className="request-review-body">
    <RequestWorkflowDetails request={request}/>
 
    {releaseOpen && request.status === "PRINCIPAL_APPROVED" && <ReleaseSmsForm request={request} schedule={schedule} onChange={setSchedule} disabled={busy} smsEnabled={smsEnabled}/>}
    {success && <p role="status" className="verification-confirmed">{success}</p>}
    {error && <p role="alert" className="request-workflow-error">{error}</p>}
-   {(actions[role]?.[request.status] || []).length > 0 && <><p>Review the student record and uploaded identity document before confirming. Each action is saved in the request history.</p><div className="review-actions">{actions[role][request.status].map(([action,label])=><button key={action} className={`review-action ${['return','reject','unavailable'].includes(action) ? 'review-action-warning' : 'review-action-approve'}`} disabled={busy} onClick={()=>act(action)}>{busy?'Saving…':action==='ready'?(releaseOpen?(smsEnabled?'Confirm ready & send SMS':'Confirm ready & queue SMS'):'Schedule release & notify requester'):label}</button>)}</div></>}
+   </div>
+   {(actions[role]?.[request.status] || []).length > 0 && <footer className="request-review-footer"><p>Review the student record and uploaded identity document before confirming. Each action is saved in the request history.</p><div className="review-actions">{actions[role][request.status].map(([action,label])=><button type="button" key={action} className={`review-action ${action === 'reject' ? 'review-action-reject' : ['return','unavailable'].includes(action) ? 'review-action-warning' : 'review-action-approve'}`} disabled={busy} onClick={()=>act(action)}>{busy?'Saving…':action==='ready'?(releaseOpen?(smsEnabled?'Confirm ready & send SMS':'Confirm ready & queue SMS'):'Schedule release & notify requester'):label}</button>)}</div></footer>}
  </dialog>;
 }
 

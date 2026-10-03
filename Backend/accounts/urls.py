@@ -9,8 +9,10 @@ from .views import (
 
 
 from .password_reset import request_reset, complete_reset
+from .views import user_activity
 
 urlpatterns = [
+    path("activity/", user_activity),
     path("forgot-password/", request_reset),
     path("reset-password/", complete_reset),
 

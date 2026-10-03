@@ -33,7 +33,7 @@ SCHOOL_DEFAULTS = {
     "auditActions": True, "notifyRelease": True, "notifyNewRequest": True, "notifyApproval": True,
     "notifySecurity": True, "notifyBackup": True, "referencePrefix": "CT-[YEAR]-[5 DIGIT SEQUENCE]",
     "passwordLength": "Django password validators", "mfa": False, "lockout": "3 failures: 1 minute; 3 more: ICT unlock required",
-    "sessionTimeout": "Django session policy", "automaticBackups": False,
+    "sessionTimeout": "15 minutes of inactivity", "automaticBackups": False,
     "backupFrequency": "Not configured", "logRetention": "No automatic deletion",
 }
 

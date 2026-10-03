@@ -243,7 +243,6 @@ function IctUserAccess() {
       activate: "activate",
       deactivate: "deactivate",
       reset: "reset",
-      delete: "deactivate",
       invite: "invite",
     };
 
@@ -400,8 +399,6 @@ function IctUserAccess() {
   const getActionTitle = () => {
     switch (action) {
       case "unlock": return "Unlock Account";
-      case "delete":
-        return "Deactivate Account";
       case "reset":
         return "Reset Access";
       case "activate":
@@ -418,8 +415,6 @@ function IctUserAccess() {
   const getActionDescription = () => {
     switch (action) {
       case "unlock": return "Reset the failed login counter and lock state. This action will be recorded in the audit log.";
-      case "delete":
-        return "This will deactivate the account and remove its active access.";
       case "reset":
         return "Set a new password for this account.";
       case "activate":
@@ -436,8 +431,6 @@ function IctUserAccess() {
   const getActionButtonText = () => {
     switch (action) {
       case "unlock": return "Unlock Account";
-      case "delete":
-        return "Deactivate Account";
       case "reset":
         return "Reset Access";
       case "activate":
@@ -955,19 +948,6 @@ function IctUserAccess() {
                               <i className="fa-solid fa-key" />
                             </button>
 
-                            <button
-                              type="button"
-                              title="Deactivate account"
-                              className="danger"
-                              onClick={() =>
-                                openAccessAction(
-                                  account,
-                                  "delete"
-                                )
-                              }
-                            >
-                              <i className="fa-solid fa-trash" />
-                            </button>
                           </div>
                         </td>
                       </tr>
@@ -1339,7 +1319,6 @@ function IctUserAccess() {
           "activate",
           "deactivate",
           "reset",
-          "delete",
         ].includes(action) &&
           selectedAccount && (
             <div className="ict-modal-content">
@@ -1347,7 +1326,6 @@ function IctUserAccess() {
                 <div>
                   <span
                     className={`ict-modal-icon ${
-                      action === "delete" ||
                       action === "deactivate"
                         ? "danger-icon"
                         : ""
@@ -1355,7 +1333,6 @@ function IctUserAccess() {
                   >
                     <i
                       className={
-                        action === "delete" ||
                         action === "deactivate"
                           ? "fa-solid fa-user-slash"
                           : action === "reset"
@@ -1431,12 +1408,6 @@ function IctUserAccess() {
                   </div>
                 </div>
 
-                {action === "delete" ? (
-                  <p className="ict-warning-text">
-                    This account will be deactivated and will
-                    no longer be able to access CredTrack.
-                  </p>
-                ) : (
                   <p className="ict-confirm-text">
                     Are you sure you want to{" "}
                     {action === "unlock" ? "unlock" : action === "reset"
@@ -1448,7 +1419,6 @@ function IctUserAccess() {
                           : "invite"}{" "}
                     this account?
                   </p>
-                )}
               </div>
 
               <div className="ict-modal-footer">
@@ -1463,7 +1433,6 @@ function IctUserAccess() {
                 <button
                   type="button"
                   className={
-                    action === "delete" ||
                     action === "deactivate"
                       ? "ict-danger-button"
                       : "ict-primary-button"

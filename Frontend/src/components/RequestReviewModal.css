@@ -1,0 +1,47 @@
+/* Scoped to the shared request dialog, independent of dashboard page styles. */
+dialog.request-review-modal { box-sizing:border-box; width:min(940px,calc(100vw - 40px)); max-width:calc(100vw - 40px); max-height:calc(100dvh - 48px); padding:0; margin:auto; overflow:hidden; border:1px solid #e5dce0; border-radius:20px; background:#fff; color:#293345; font-family:'Poppins',Arial,sans-serif; font-size:14px; line-height:1.6; box-shadow:0 24px 80px #20101c40; }
+dialog.request-review-modal[open] { display:flex; flex-direction:column; }
+dialog.request-review-modal::backdrop { background:#18212e99; backdrop-filter:blur(3px); }
+dialog.request-review-modal * { box-sizing:border-box; }
+dialog.request-review-modal .request-review-header { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; flex-shrink:0; padding:22px 28px; border-top:5px solid #8d0e12; border-bottom:1px solid #e9e3e6; background:#fff; }
+dialog.request-review-modal .request-review-eyebrow { display:block; color:#8d0e12; font-size:11px; font-weight:700; letter-spacing:.12em; margin-bottom:5px; }
+dialog.request-review-modal .request-review-header h2 { margin:0; color:#252f40; font-size:21px; font-weight:700; line-height:1.4; overflow-wrap:anywhere; }
+dialog.request-review-modal .request-review-status { display:inline-flex; align-items:center; margin-top:9px; padding:4px 10px; border:1px solid #ead9b6; border-radius:6px; background:#fff8e9; color:#7c5417; font-size:12px; font-weight:600; }
+dialog.request-review-modal button { font-family:inherit; font-size:13px; font-weight:600; line-height:1.5; min-height:42px; cursor:pointer; }
+dialog.request-review-modal .request-review-header > button { display:inline-flex; align-items:center; gap:12px; flex-shrink:0; padding:9px 14px; border:1px solid #dddfe5; border-radius:9px; background:#fff; color:#455166; }
+dialog.request-review-modal .request-review-header > button:hover { background:#f3f4f7; }
+dialog.request-review-modal .request-review-header > button span { font-size:21px; font-weight:400; line-height:1; }
+dialog.request-review-modal .request-review-body { flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; scrollbar-gutter:stable; padding:22px 28px; background:#f6f7fa; }
+dialog.request-review-modal .request-workflow-details { padding:0; margin:0; border:0; color:#293345; font-size:14px; line-height:1.6; }
+dialog.request-review-modal .request-workflow-details > section { margin:0 0 16px; padding:18px 20px; border:1px solid #e3e6ed; border-radius:12px; background:#fff; }
+dialog.request-review-modal .request-workflow-details h3 { margin:0 0 14px; color:#303b4e; font-size:15px; font-weight:700; line-height:1.5; }
+dialog.request-review-modal .request-workflow-details dl { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 28px; margin:0; }
+dialog.request-review-modal .request-workflow-details dl > div { min-width:0; padding:10px 0; border-bottom:1px solid #f0f1f4; }
+dialog.request-review-modal .request-workflow-details dt { margin:0; color:#687488; font-size:12px; font-weight:500; }
+dialog.request-review-modal .request-workflow-details dd { margin:4px 0 0; color:#263246; font-size:14px; font-weight:600; line-height:1.6; overflow-wrap:anywhere; }
+dialog.request-review-modal .request-workflow-details p { margin:8px 0; font-size:13px; line-height:1.7; overflow-wrap:anywhere; }
+dialog.request-review-modal .request-workflow-details ol { margin:0; padding-left:22px; }
+dialog.request-review-modal .request-workflow-details li { padding:10px 0; border-bottom:1px solid #e3e6ed; }
+dialog.request-review-modal .request-workflow-details li small { display:block; margin-top:3px; color:#687488; }
+dialog.request-review-modal .request-review-footer { flex-shrink:0; padding:16px 28px 20px; border-top:1px solid #e3e6ed; background:#fff; }
+dialog.request-review-modal .request-review-footer > p { margin:0 0 12px; color:#687488; font-size:12px; line-height:1.6; }
+dialog.request-review-modal .request-review-footer .review-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:10px; margin:0; padding:0; border:0; }
+dialog.request-review-modal .request-review-footer .review-action { padding:10px 16px; font-size:13px; font-weight:600; border-radius:9px; min-height:44px; box-shadow:none; }
+dialog.request-review-modal .request-review-footer .review-action-approve { background:#16803d; border:1px solid #16803d; color:#fff; }
+dialog.request-review-modal .request-review-footer .review-action-approve:hover:not(:disabled) { background:#126831; border-color:#126831; transform:none; }
+dialog.request-review-modal .request-review-footer .review-action-warning { background:#b94e08; border:1px solid #b94e08; color:#fff; }
+dialog.request-review-modal .request-review-footer .review-action-warning:hover:not(:disabled) { background:#943e06; border-color:#943e06; transform:none; }
+dialog.request-review-modal .request-review-footer .review-action-reject { background:#c62828; border:1px solid #c62828; color:#fff; }
+dialog.request-review-modal .request-review-footer .review-action-reject:hover:not(:disabled) { background:#a61f1f; border-color:#a61f1f; transform:none; }
+dialog.request-review-modal button:disabled { opacity:.6; cursor:not-allowed; }
+dialog.request-review-modal :is(button,input,select,textarea):focus-visible { outline:3px solid #b88b35; outline-offset:3px; }
+@media(max-width:600px) {
+  dialog.request-review-modal { width:calc(100vw - 20px); max-width:calc(100vw - 20px); max-height:calc(100dvh - 20px); border-radius:14px; }
+  dialog.request-review-modal .request-review-header { padding:16px; gap:12px; }
+  dialog.request-review-modal .request-review-header h2 { font-size:17px; }
+  dialog.request-review-modal .request-review-body { padding:14px; }
+  dialog.request-review-modal .request-workflow-details > section { padding:14px; }
+  dialog.request-review-modal .request-workflow-details dl { grid-template-columns:1fr; }
+  dialog.request-review-modal .request-review-footer { padding:14px 16px; }
+  dialog.request-review-modal .request-review-footer .review-action { flex:1 1 100%; }
+}

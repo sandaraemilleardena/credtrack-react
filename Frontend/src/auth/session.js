@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '../api/config.js';
+import { createIdleSession } from './idleSession.js';
 
 const listeners = new Set();
 let state = { status: 'checking', user: null, routeKey: null, error: '' };
@@ -10,6 +11,17 @@ let staffEntryRole = null;
 export const hasFreshStaffLogin = role => staffEntryRole === role;
 let installed = false;
 const SESSION_EVENT = 'credtrack-auth-change';
+const ACTIVITY_EVENT = 'credtrack-user-activity';
+const idle = createIdleSession({
+  keepAlive: async () => {
+    try {
+      const token = await getCsrfToken();
+      await authRequest('activity/', {method:'POST', headers:{'X-CSRFToken':token}});
+    } catch { void verifySession(); }
+  },
+  expire: async () => { try { await logoutUser(); } catch { /* Protected content stays locked. */ } },
+  broadcast: timestamp => { try { localStorage.setItem(ACTIVITY_EVENT, String(timestamp)); } catch { /* Per-tab idle expiry still applies. */ } },
+});
 
 function publish(next) {
   state = next;
@@ -21,6 +33,7 @@ export const subscribeSession = listener => { listeners.add(listener); return ()
 export const getSessionState = () => state;
 
 export function enterLoginScreen() {
+  idle.stop();
   // Visiting a login page ends this document's staff entry permission.
   // Invalidate pending checks so history navigation cannot restore that permission.
   staffEntryRole = null;
@@ -70,7 +83,7 @@ export async function verifySession(routeKey = state.routeKey) {
   try {
     const result = await getCurrentSession();
     if (current !== sequence) return;
-    if (!result.authenticated) staffEntryRole = null;
+    if (!result.authenticated) { staffEntryRole = null; idle.stop(); }
     publish({ status: result.authenticated ? 'authenticated' : 'anonymous', user: result.user, routeKey, validatedRouteKey: routeKey, error: '' });
   } catch (error) {
     if (current === sequence) publish({ status: 'error', user: null, routeKey, error: error.message });
@@ -79,18 +92,26 @@ export async function verifySession(routeKey = state.routeKey) {
 export function installSessionProtection() {
   if (installed) return;
   installed = true;
+  for (const eventName of ['pointerdown', 'pointermove', 'keydown', 'wheel', 'touchstart', 'input']) {
+    document.addEventListener(eventName, event => {
+      if (event.isTrusted && staffEntryRole && !signingOut) idle.activity();
+    }, {passive:true});
+  }
+  const idleTimer = setInterval(() => idle.check(), 1000);
+  idleTimer.unref?.();
   window.addEventListener('pagehide', lock);
   window.addEventListener('pageshow', event => {
     if (event.persisted) enterLoginScreen();
     verifySession();
   });
   window.addEventListener('popstate', lock);
-  window.addEventListener('focus', () => verifySession());
+  window.addEventListener('focus', () => { idle.check(); verifySession(); });
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') lock();
-    else verifySession();
+    else { idle.check(); verifySession(); }
   });
   window.addEventListener('storage', event => {
+    if (event.key === ACTIVITY_EVENT) { idle.activity(Number(event.newValue), true); idle.check(); }
     if (event.key === SESSION_EVENT) { enterLoginScreen(); verifySession(); }
   });
 }
@@ -105,12 +126,14 @@ export async function loginUser(username, password, role) {
     throw new Error('This account is not authorized for the selected role.');
   }
   staffEntryRole = role;
+  idle.start();
   clearLegacySession();
   lock();
   notifyOtherTabs();
   return data;
 }
 export async function logoutUser() {
+  idle.stop();
   staffEntryRole = null;
   signingOut = true;
   lock();

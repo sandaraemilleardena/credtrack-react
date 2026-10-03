@@ -1,6 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./IctDashboard.css";
+import IctQuickTools from "./components/IctQuickTools";
+
+const ictQuickActions = [
+  { id: 'create', title: 'Create staff account', detail: 'Set a role and initial password', icon: 'users' },
+  { id: 'access', title: 'Unlock account', detail: 'Restore access after a login lock', icon: 'key' },
+  { id: 'support', title: 'Resolve support ticket', detail: 'Update status and add a work note', icon: 'support' },
+  { id: 'maintenance', title: 'Schedule maintenance', detail: 'Plan a service window', icon: 'tools' },
+  { id: 'health', title: 'Run diagnostics', detail: 'Check current service connectivity', icon: 'pulse' },
+  { id: 'protection', title: 'Review protection', detail: 'Check recovery and security status', icon: 'shield' },
+];
 
 const DEMO = {
   updatedAt: null,
@@ -208,6 +218,7 @@ const DEFAULT_ROUTES = {
 // =========================================================
 export default function IctDashboard({
   snapshot,
+  onAction,
   onLogout,
   onNavigate,
   routes = {},
@@ -226,7 +237,8 @@ export default function IctDashboard({
   const [action, setAction] = useState(null);
   const dialogRef = useRef(null);
   const actionTrigger = useRef(null);
-  const openTickets = (data.tickets ?? []).filter(ticket => ticket.status !== "Resolved");
+  const lockedAccounts = (data.accounts ?? []).filter(account => /locked/i.test(account.status));
+  const openTickets = (data.tickets ?? []).filter(ticket => !["Resolved", "Closed"].includes(ticket.status));
 
   useEffect(() => {
     if (!action) return;
@@ -237,15 +249,15 @@ export default function IctDashboard({
     return () => { dialog.close(); document.body.style.overflow = overflow; };
   }, [action]);
 
-  function openAction() {
-    actionTrigger.current = document.activeElement;
+  function openAction(type = "quick") {
+    if (!action) actionTrigger.current = document.activeElement;
     setMenu(null);
-    setAction("quick");
+    setAction(type);
   }
 
   function closeAction() {
     setAction(null);
-    actionTrigger.current?.focus();
+    requestAnimationFrame(() => actionTrigger.current?.focus());
   }
 
   const sidebarRef = useRef(null);
@@ -435,23 +447,20 @@ export default function IctDashboard({
 
   const taskCount =
     tasks.filter(
-      (task) => !task.done
+      (task) => !task.done && !["Completed", "Cancelled"].includes(task.status)
     ).length;
 
   const operational = services.length - issues;
   const availability = services.length ? Math.round(operational / services.length * 100) : 0;
   const recentEvents = (data.events ?? []).slice(0, 3);
   const attention = [
+    ...(data.backupConfigured === false ? [{id: 'backup-setup', title: 'Verify backup and recovery setup', detail: 'No configured backup is reported for this deployment.', label: 'Recovery readiness', icon: 'shield', route: 'protection'}] : []),
+    ...lockedAccounts.map(account => ({id: 'lock-' + account.id, title: account.name, detail: account.status + ' · ' + account.username, label: 'Account locked', icon: 'key', route: 'access'})),
+    ...openTickets.filter(ticket => ticket.priority === 'High').map(ticket => ({id: 'ticket-' + ticket.id, title: ticket.subject, detail: ticket.requester + ' · ' + ticket.status, label: 'Urgent support', icon: 'support', route: 'support'})),
     ...services.filter((service) => service.status !== "Operational").map((service) => ({ id: "service-" + service.id, title: service.name, detail: service.detail || "Review the latest service status.", label: service.status, icon: "pulse", route: "health" })),
-    ...tasks.filter((task) => !task.done && task.priority === "High").map((task) => ({ id: "task-" + task.id, title: task.title, detail: task.detail, label: "High priority", icon: "tools", route: "maintenance" })),
+    ...tasks.filter((task) => !task.done && !["Completed", "Cancelled"].includes(task.status) && task.priority === "High").map((task) => ({ id: "task-" + task.id, title: task.title, detail: task.detail, label: "High priority", icon: "tools", route: "maintenance" })),
   ];
-  const quickActions = [
-    { id: "access", title: "User access", detail: "Manage accounts and approved roles", icon: "users" },
-    { id: "support", title: "Technical support", detail: "Open the support ticket workspace", icon: "support" },
-    { id: "maintenance", title: "System maintenance", detail: "Manage service checks and schedules", icon: "tools" },
-    { id: "protection", title: "Data protection", detail: "Review backups and recovery", icon: "shield" },
-    { id: "settings", title: "Settings", detail: "Manage workspace preferences", icon: "settings" },
-  ];
+  const quickActions = ictQuickActions;
 
   // =========================================================
   // RENDER
@@ -772,41 +781,45 @@ export default function IctDashboard({
         =================================================== */}
         <main className="principal-content ict-overview" id="ict-overview" tabIndex={-1}>
           <section className="ov-heading">
-            <div><div className="ov-eyebrow">ICT WORKSPACE <span>/</span> OVERVIEW</div><h1>Dashboard</h1><p>Your school’s digital operations, at a glance.</p></div>
+            <div><div className="ov-eyebrow">ICT WORKSPACE <span>/</span> OVERVIEW</div><h1>Dashboard</h1><p>Account access, support incidents, and system reliability.</p></div>
             <button type="button" className="ov-primary" onClick={() => openAction("quick")}><Icon name="plus" />Quick actions</button>
           </section>
           <div role="status" aria-live="polite" className={notice ? "ov-notice" : "ict-sr-only"}>{notice}</div>
 
           <section className="ov-intro" aria-label="Operations overview">
-            <div className="ov-intro-copy"><span className="ov-pill"><span aria-hidden="true" />ICT PERSONNEL</span><h2>School operations,<br /> in one view.</h2><p>Manage user access, resolve support issues, and keep CredTrack reliable and protected.</p><div className="ov-intro-foot"><Icon name="shield" width="16" height="16" /><span>Technical operations & account management</span></div></div>
-            <div className="ov-readiness"><div className="ov-readiness-head"><span>SERVICE AVAILABILITY</span><span className={`ov-status ${issues ? "attention" : ""}`}>{!services.length ? "No data" : issues ? "Needs attention" : "Operational"}</span></div><div className="ov-readiness-body"><div className="ov-ring" style={{ "--availability": availability + "%" }} role="img" aria-label={`${operational} of ${services.length} services operational`}><div><strong>{services.length ? availability + "%" : "—"}</strong><span>operational</span></div></div><div><strong className="ov-service-count">{operational}<span> / {services.length}</span></strong><p>services operational</p><button className="ov-text-link" onClick={() => jump("health")}>View system health <Icon name="chevron" width="14" height="14" /></button></div></div><p className="ov-readiness-note">{demo ? "Sample readings · not a live monitoring feed" : data.updatedAt ? `Last reported: ${data.updatedAt}` : "No update timestamp reported"}</p></div>
+            <div className="ov-intro-copy"><span className="ov-pill"><span aria-hidden="true" />ICT PERSONNEL</span><h2>Keep CredTrack<br /> running securely.</h2><p>Manage user access, resolve support issues, and keep CredTrack reliable and protected.</p><div className="ov-intro-foot"><Icon name="shield" width="16" height="16" /><span>Technical operations & account management</span></div></div>
+            <div className="ov-readiness"><div className="ov-readiness-head"><span>SERVICE CHECKS</span><span className={`ov-status ${issues ? "attention" : ""}`}>{!services.length ? "No data" : issues ? "Needs attention" : "Operational"}</span></div><div className="ov-readiness-body"><div className="ov-ring" style={{ "--availability": availability + "%" }} role="img" aria-label={`${operational} of ${services.length} checks operational`}><div><strong>{services.length ? availability + "%" : "—"}</strong><span>operational</span></div></div><div><strong className="ov-service-count">{operational}<span> / {services.length}</span></strong><p>checks operational</p><button className="ov-text-link" onClick={() => openAction("health")}>View system health <Icon name="chevron" width="14" height="14" /></button></div></div><p className="ov-readiness-note">{demo ? "Sample readings · not a live monitoring feed" : data.updatedAt ? `Last reported: ${data.updatedAt}` : "No update timestamp reported"}</p></div>
           </section>
 
           <section className="ov-metrics" aria-label="Key operational metrics">
             {[
-              { label: "Active users", value: data.activeUsers ?? "—", detail: `${data.pendingAccess ?? "—"} pending access requests`, icon: "users", target: "access" },
+              { label: "Locked accounts", value: lockedAccounts.length, detail: `${data.activeUsers ?? "—"} active accounts · review access`, icon: "key", target: "access" },
               { label: "Open support tickets", value: openTickets.length, detail: `${openTickets.filter(t => t.priority === "High").length} high priority`, icon: "support", target: "support" },
               { label: "Open maintenance", value: taskCount, detail: "Tasks awaiting completion", icon: "tools", target: "maintenance" },
               { label: "Latest backup", value: data.backupStatus || "—", detail: data.lastBackup || "No backup reported", icon: "shield", target: "protection" },
-            ].map((metric) => <button type="button" className="ov-metric" key={metric.label} onClick={() => jump(metric.target)}><div className="ov-metric-head"><span>{metric.label}</span><span className="ov-icon"><Icon name={metric.icon} /></span></div><strong>{metric.value}</strong><div className="ov-metric-foot"><span>{metric.detail}</span><Icon name="chevron" width="13" height="13" /></div></button>)}
+            ].map((metric) => <button type="button" className="ov-metric" key={metric.label} onClick={() => openAction(metric.target)}><div className="ov-metric-head"><span>{metric.label}</span><span className="ov-icon"><Icon name={metric.icon} /></span></div><strong>{metric.value}</strong><div className="ov-metric-foot"><span>{metric.detail}</span><Icon name="chevron" width="13" height="13" /></div></button>)}
           </section>
 
-          <section className="ov-section" aria-labelledby="ov-quick-title"><div className="ov-section-heading"><div><h2 id="ov-quick-title">Quick actions</h2><p>Open a dedicated workspace to manage each area.</p></div><span className="ov-small-label">YOUR TOOLS</span></div><div className="ov-actions">{quickActions.map((action) => <button type="button" className="ov-action" key={action.id} onClick={() => jump(action.id)}><div className="ov-action-top"><span className="ov-action-icon"><Icon name={action.icon} width="22" height="22" /></span><span className="ov-action-arrow" aria-hidden="true">↗</span></div><strong>{action.title}</strong><span>{action.detail}</span></button>)}</div></section>
+          <section className="ov-section" aria-labelledby="ov-quick-title"><div className="ov-section-heading"><div><h2 id="ov-quick-title">Quick actions</h2><p>Complete routine ICT tasks without leaving your dashboard.</p></div><span className="ov-small-label">YOUR TOOLS</span></div><div className="ov-actions">{quickActions.map((action) => <button type="button" className="ov-action" key={action.id} onClick={() => openAction(action.id)}><div className="ov-action-top"><span className="ov-action-icon"><Icon name={action.icon} width="22" height="22" /></span><span className="ov-action-arrow" aria-hidden="true">+</span></div><strong>{action.title}</strong><span>{action.detail}</span></button>)}</div></section>
 
                     <div className="ov-lower-grid">
-            <section className="ov-panel" aria-labelledby="ov-attention-title"><div className="ov-panel-heading"><h2 id="ov-attention-title">Needs attention</h2><span className="ov-count">{attention.length} items</span></div><div className="ov-attention-list">{attention.slice(0,3).map((item) => <button type="button" className="ov-attention-item" key={item.id} onClick={() => jump(item.route)}><span className="ov-warning-icon"><Icon name={item.icon} width="18" height="18" /></span><span className="ov-item-copy"><span className="ov-item-label">{item.label}</span><strong>{item.title}</strong><span>{item.detail}</span></span><Icon name="chevron" width="15" height="15" /></button>)}{!attention.length && <div className="ov-empty"><Icon name="check" /><strong>{services.length || tasks.length ? "Nothing urgent reported" : "No operational data reported"}</strong><p>{services.length || tasks.length ? "No service alerts or high-priority tasks in the current snapshot." : "Connect your services to display an operations overview."}</p></div>}</div><div className="ov-panel-footer"><span>{attention.length > 3 ? `Showing 3 of ${attention.length} priority items` : "Service alerts and high-priority tasks"}</span><button className="ov-text-link" onClick={() => jump("maintenance")}>Open maintenance <Icon name="chevron" width="13" height="13" /></button></div></section>
+            <section className="ov-panel" aria-labelledby="ov-attention-title"><div className="ov-panel-heading"><h2 id="ov-attention-title">Needs attention</h2><span className="ov-count">{attention.length} items</span></div><div className="ov-attention-list">{attention.slice(0,3).map((item) => <button type="button" className="ov-attention-item" key={item.id} onClick={() => openAction(item.route)}><span className="ov-warning-icon"><Icon name={item.icon} width="18" height="18" /></span><span className="ov-item-copy"><span className="ov-item-label">{item.label}</span><strong>{item.title}</strong><span>{item.detail}</span></span><Icon name="chevron" width="15" height="15" /></button>)}{!attention.length && <div className="ov-empty"><Icon name="check" /><strong>{services.length || tasks.length ? "Nothing urgent reported" : "No operational data reported"}</strong><p>{services.length || tasks.length ? "No service alerts or high-priority tasks in the current snapshot." : "Connect your services to display an operations overview."}</p></div>}</div><div className="ov-panel-footer"><span>{attention.length > 3 ? `Showing 3 of ${attention.length} priority items` : "Service alerts and high-priority tasks"}</span><button className="ov-text-link" onClick={() => openAction("maintenance")}>Schedule maintenance <Icon name="chevron" width="13" height="13" /></button></div></section>
             <section className="ov-panel" id="ict-activity" tabIndex={-1} aria-labelledby="ov-recent-title"><div className="ov-panel-heading"><h2 id="ov-recent-title">Recent activity</h2><span className="ov-small-label">LATEST EVENTS</span></div><ol className="ov-timeline">{recentEvents.map((event) => <li key={event.id}><span className={`ov-event-dot ${event.level === "Warning" ? "warning" : event.level === "Success" ? "success" : event.level === "Error" ? "error" : ""}`} aria-hidden="true" /><div><div className="ov-event-heading"><strong>{event.title}</strong><span>{event.level || "Info"}</span></div><p>{event.detail}</p><small>{event.time || "Time not reported"}</small></div></li>)}</ol>{!recentEvents.length && <div className="ov-empty"><Icon name="clock" /><strong>No recent activity</strong><p>Reported technical events will appear here.</p></div>}<div className="ov-panel-footer"><span>Latest {recentEvents.length} reported events</span><span>Account, support & system events</span></div></section>
+          </div>
+          <div className="ov-lower-grid ix-work-queues">
+            <section className="ov-panel" aria-labelledby="ict-ticket-queue"><div className="ov-panel-heading"><h2 id="ict-ticket-queue">Support queue</h2><span className="ov-count">{openTickets.length} open</span></div><div className="ix-panel-body">{openTickets.slice(0, 4).map(ticket => <button className="ix-queue-row" key={ticket.id} onClick={() => openAction('support')}><span><strong>{ticket.subject}</strong><small>{ticket.requester} · {ticket.status}</small></span><span className="ov-item-label">{ticket.priority}</span></button>)}{!openTickets.length && <p>No support tickets need action.</p>}</div></section>
+            <section className="ov-panel" aria-labelledby="ict-maintenance-queue"><div className="ov-panel-heading"><h2 id="ict-maintenance-queue">Maintenance schedule</h2><span className="ov-count">{taskCount} outstanding</span></div><div className="ix-panel-body">{tasks.filter(task => !task.done && !['Completed', 'Cancelled'].includes(task.status)).slice(0, 4).map(task => <div className="ix-task" key={task.id}><span className="ix-task-dot"><Icon name="tools" width="15" /></span><div><strong>{task.title}</strong><small>{task.service || 'Service not specified'} · {task.status || 'Pending'}</small><small>{task.startsAt ? new Date(task.startsAt).toLocaleString() : task.detail}</small></div></div>)}{!taskCount && <p>No outstanding maintenance tasks.</p>}<button className="ov-text-link" onClick={() => openAction('maintenance')}>Schedule a service window</button></div></section>
           </div>
           <footer className="ov-footer"><span>CredTrack <span aria-hidden="true">·</span> ICT Operations</span><span>{demo ? "Demo workspace · sample data" : "Operations overview"}</span></footer>
         </main>
         {action && (
           <dialog ref={dialogRef} className="ix-modal" aria-labelledby="quick-title" onCancel={event => { event.preventDefault(); closeAction(); }}>
             <div className="ix-modal-heading"><span className="ov-action-icon"><Icon name="plus" /></span><button className="ix-close" onClick={closeAction} aria-label="Close quick actions"><Icon name="close" /></button></div>
-            <h2 id="quick-title">Where would you like to go?</h2>
-            <p id="ix-modal-description">Each tool opens its own page.</p>
-            <div className="ix-modal-actions">{quickActions.map(item => (
-              <button key={item.id} onClick={() => jump(item.id)}><span className="ov-action-icon"><Icon name={item.icon} /></span><span><strong>{item.title}</strong><small>{item.detail}</small></span><Icon name="chevron" width="16" /></button>
-            ))}</div>
+            <h2 id="quick-title">{action === 'quick' ? 'Quick actions' : quickActions.find(item => item.id === action)?.title}</h2>
+            <p id="ix-modal-description">{action === 'quick' ? 'Choose a task to complete here.' : quickActions.find(item => item.id === action)?.detail}</p>
+            {action === 'quick' ? <div className="ix-modal-actions">{quickActions.map(item => (
+              <button key={item.id} onClick={() => openAction(item.id)}><span className="ov-action-icon"><Icon name={item.icon} /></span><span><strong>{item.title}</strong><small>{item.detail}</small></span><Icon name="chevron" width="16" /></button>
+            ))}</div> : <IctQuickTools key={action} action={action} data={data} onAction={onAction} onClose={closeAction} />}
           </dialog>
         )}
 

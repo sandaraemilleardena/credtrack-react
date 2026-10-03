@@ -45,3 +45,4 @@ work/
 *.dump
 *.backup
 staticfiles/
+.venv*/

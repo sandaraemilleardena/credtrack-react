@@ -62,6 +62,7 @@ INSTALLED_APPS = [
 # ============================================================
 
 MIDDLEWARE = [
+    "accounts.middleware.SecurityHeadersMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
 
@@ -75,6 +76,7 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
 
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "accounts.middleware.IdleSessionMiddleware",
 
     "django.contrib.messages.middleware.MessageMiddleware",
 
@@ -237,8 +239,9 @@ SESSION_COOKIE_SAMESITE = "Lax"
 # Use HTTPS-only cookies outside local development.
 SESSION_COOKIE_SECURE = not DEBUG
 
-# Session lasts for 1 hour.
-SESSION_COOKIE_AGE = 60 * 60
+# Sliding expiry is renewed only by user activity, not dashboard polling.
+SESSION_COOKIE_AGE = 15 * 60
+SESSION_IDLE_TIMEOUT = 15 * 60
 
 # Session ends when the browser is closed.
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
@@ -263,6 +266,32 @@ CSRF_COOKIE_SECURE = not DEBUG
 # ============================================================
 
 SECURE_SSL_REDIRECT = not DEBUG
+
+# Begin with one hour; increase after verifying production HTTPS.
+SECURE_HSTS_SECONDS = 0 if DEBUG else int(os.environ.get("DJANGO_HSTS_SECONDS", "3600"))
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+SECURE_HSTS_PRELOAD = False
+SECURE_REFERRER_POLICY = "same-origin"
+
+# Allow existing font services, React inline styles, and blob PDF previews.
+# Scripts cannot use unsafe-inline or unsafe-eval.
+CREDTRACK_CONTENT_SECURITY_POLICY = "; ".join([
+    "default-src 'self'",
+    "base-uri 'self'",
+    "object-src 'none'",
+    "frame-ancestors 'none'",
+    "form-action 'self'",
+    "script-src 'self'",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com",
+    "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com",
+    "img-src 'self' data: blob:",
+    "connect-src 'self'",
+    "frame-src 'self' blob:",
+    "upgrade-insecure-requests",
+])
+CREDTRACK_PERMISSIONS_POLICY = (
+    "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+)
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
@@ -292,6 +321,7 @@ AUTHENTICATION_BACKENDS = ["accounts.security.CredTrackBackend"]
 PASSWORD_RESET_TIMEOUT = 3600
 CREDTRACK_FRONTEND_URL = os.environ.get("FRONTEND_URL", os.environ.get("CREDTRACK_FRONTEND_URL", "http://localhost:7787"))
 EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "localhost")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")

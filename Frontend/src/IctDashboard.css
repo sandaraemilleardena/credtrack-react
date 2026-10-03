@@ -2522,7 +2522,15 @@
 @media print { .ict-dashboard .ix-modal { display: none; } }
 
 
-/* Overview-only page: detailed management belongs to its dedicated route. */
+/* Dashboard task dialogs and live ICT queues. */
+.ict-dashboard .ov-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width:760px) { .ict-dashboard .ov-actions { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:460px) { .ict-dashboard .ov-actions { grid-template-columns:1fr; } }
+.ict-dashboard .ix-work-queues { margin-top: 24px; }
+.ict-dashboard .ix-queue-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%; padding: 14px 0; border: 0; border-bottom: 1px solid #edf0f4; background: transparent; color: #344054; text-align: left; }
+.ict-dashboard .ix-queue-row strong { display: block; }
+.ict-dashboard .ix-queue-row small { display: block; color: #515d70; margin-top: 4px; }
+.ict-dashboard .ix-tool-error { color: #9b1024; background: #fff0f1; padding: 12px; border-radius: 8px; }
 .ict-dashboard .ov-action:focus-visible,
 .ict-dashboard .ov-metric:focus-visible { outline: 3px solid #bc8b28; outline-offset: 3px; }
 .ict-dashboard .ov-action:hover .ov-action-arrow { color: #8d0e12; }

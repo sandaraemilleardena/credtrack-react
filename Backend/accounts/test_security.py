@@ -13,6 +13,27 @@ from .models import UserProfile
 
 @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
 class LoginAndResetTests(TestCase):
+    @override_settings(
+        EMAIL_BACKEND="accounts.email_backend.ResendEmailBackend",
+        RESEND_API_KEY="test-key",
+        DEFAULT_FROM_EMAIL="noreply@pmrmis-southcredtrack.site",
+        CREDTRACK_FRONTEND_URL="https://pmrmis-southcredtrack.site",
+    )
+    @patch("accounts.email_backend.urlopen")
+    def test_reset_uses_resend_with_production_link(self, open_url):
+        import json
+        open_url.return_value.__enter__.return_value.read.return_value = b'{"id":"accepted-email"}'
+        response = self.post("/api/auth/forgot-password/", {
+            "username": "account", "email": "person@example.test",
+        })
+        self.assertEqual(response.status_code, 200)
+        payload = json.loads(open_url.call_args.args[0].data)
+        self.assertEqual(payload["to"], ["person@example.test"])
+        self.assertEqual(payload["from"], "noreply@pmrmis-southcredtrack.site")
+        self.assertIn("https://pmrmis-southcredtrack.site/reset-password/", payload["text"])
+        self.assertIn("Reset Password", payload["html"])
+        self.assertNotIn("localhost", payload["text"])
+
     def setUp(self):
         self.client = APIClient(enforce_csrf_checks=True)
         self.user = User.objects.create_user("account", email="person@example.test", password="Original-password-739!")
