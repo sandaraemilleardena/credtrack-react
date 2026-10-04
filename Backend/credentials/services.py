@@ -10,8 +10,6 @@ TRANSITIONS = {
     "unavailable": ("ADMIN", {S.SUBMITTED, S.PREPARING, S.RETURNED}, S.UNAVAILABLE),
     "submit_review": ("ADMIN", {S.SUBMITTED, S.PREPARING, S.RETURNED}, S.PRINCIPAL_REVIEW),
     "approve": ("PRINCIPAL", {S.PRINCIPAL_REVIEW}, S.PRINCIPAL_APPROVED),
-    "reject": ("PRINCIPAL", {S.PRINCIPAL_REVIEW}, S.REJECTED),
-    "return": ("PRINCIPAL", {S.PRINCIPAL_REVIEW}, S.RETURNED),
     "ready": ("ADMIN", {S.PRINCIPAL_APPROVED}, S.READY),
     "collect": ("ADMIN", {S.READY}, S.COLLECTED),
 }
@@ -31,6 +29,8 @@ def user_role(user):
 
 @transaction.atomic
 def transition(request_id, actor, action, version, note="", release_date=None, release_time=None):
+    if action not in TRANSITIONS:
+        raise ValidationError("Choose an available workflow action.")
     role, allowed, destination = TRANSITIONS[action]
     if user_role(actor) != role:
         raise PermissionDenied("Your role cannot perform this action.")
@@ -54,8 +54,6 @@ def transition(request_id, actor, action, version, note="", release_date=None, r
         if not item.confirmed_at or not (item.verification_document or item.psa_document or item.id_document):
             raise Conflict("Administration identity verification is required before approval.")
         item.approved_by, item.approved_at = actor, timezone.now()
-    elif action == "return":
-        item.confirmed_at = None
     elif action == "ready":
         if not item.approved_at:
             raise Conflict("Principal approval is required before release.")

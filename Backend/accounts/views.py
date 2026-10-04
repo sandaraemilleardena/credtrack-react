@@ -1,6 +1,6 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
 from django.middleware.csrf import get_token
 from django.conf import settings
 from django.utils import timezone
@@ -20,6 +20,7 @@ from .models import UserProfile
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+@csrf_protect
 def login_view(request):
 
     username = request.data.get("username")
@@ -50,6 +51,11 @@ def login_view(request):
     )
 
     if user is None:
+
+        failure = getattr(request, 'login_failure', None)
+        if failure:
+            return Response(failure, status=423 if failure.get('account_locked') else 429,
+                            headers={'Retry-After': str(failure['retry_after'])} if failure.get('retry_after') else {})
 
         return Response(
             {
@@ -142,6 +148,7 @@ def login_view(request):
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+@csrf_protect
 def logout_view(request):
 
     logout(request)

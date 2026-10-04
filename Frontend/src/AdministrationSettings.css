@@ -2263,3 +2263,6 @@ body:has(.administration-settings-page .sidebar.open) { overflow: hidden; }
 }
 .administration-settings-page .notification-icon { background: var(--maroon-light); color: var(--maroon); }
 .administration-settings-page .switch input:focus-visible + .slider { outline: 3px solid var(--focus-ring); outline-offset: 3px; }
+
+.administration-settings-page .backup-history p { padding: 16px; margin: 0; color: var(--muted); }
+.administration-settings-page .settings-section :is(button, select, input):disabled { cursor: not-allowed; opacity: .6; }

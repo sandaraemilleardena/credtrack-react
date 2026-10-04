@@ -601,7 +601,7 @@ function AdministrationStudRecord() {
               onChange={handleFilter(setSectionFilter)}
             >
               <option value="">All Sections</option>
-              {[...new Set(['FAITH','HUMILITY','LOVE','KINDESS','HOPE',...students.map(student=>student.section).filter(Boolean)])].map(section=><option key={section}>{section}</option>)}
+              {[...new Set(['LOVE','PEACE','KINDNESS','SPJ','FAITH',...students.map(student=>student.section).filter(Boolean)])].map(section=><option key={section}>{section}</option>)}
             </select>
 
             <select

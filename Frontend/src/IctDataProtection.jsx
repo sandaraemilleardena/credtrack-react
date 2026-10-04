@@ -17,6 +17,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./IctDataProtection.css";
+import { API_BASE_URL } from './api/config.js';
 
 // =========================================================
 // ICON PATHS
@@ -1271,6 +1272,13 @@ export default function IctDataProtection({
               </p>
             </div>
 
+            <a
+              className="ov-primary"
+              href={`${API_BASE_URL}/api/operations/backups/documents/`}
+              download
+            >
+              Export private documents
+            </a>
             <button
               type="button"
               className="ov-primary"

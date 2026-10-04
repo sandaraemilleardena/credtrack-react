@@ -4,10 +4,11 @@ import Sf10Preview, {Sf10Record} from '../src/components/Sf10Preview';
 export function smoke() {
  const base={id:'test-request',reference:'CT-2026-00001',version:0,status:'SUBMITTED',status_label:'Pending Administration Verification',created_at:'2026-09-29T00:00:00Z',events:[],full_name:'Test Student',credential:'SF10',has_verification_document:true};
  const results=[];
- for(const [status,role,expected] of [['SUBMITTED','ADMIN','Confirm Student Information'],['PRINCIPAL_REVIEW','PRINCIPAL','Approve Student Information'],['PRINCIPAL_APPROVED','ADMIN','STUDENT INFORMATION APPROVED'],['REJECTED','PRINCIPAL','Request Rejected']]) {
+ for(const [status,role,expected] of [['SUBMITTED','ADMIN','Confirm Student Information'],['PRINCIPAL_REVIEW','PRINCIPAL','Approve'],['PRINCIPAL_APPROVED','ADMIN','STUDENT INFORMATION APPROVED'],['REJECTED','PRINCIPAL','Request Rejected']]) {
   const request={...base,status,confirmed_at:status==='SUBMITTED'?null:base.created_at,approved_at:status==='PRINCIPAL_APPROVED'?base.created_at:null};
   const html=renderToString(<RequestReviewModal request={request} role={role} onClose={()=>{}} onUpdated={async()=>({})}/>);
   if(!html.includes('<dialog')||!html.includes(expected))throw Error('Missing modal or state '+status);
+  if(status==='PRINCIPAL_REVIEW' && /Return for correction|Reject request/.test(html))throw Error('Principal must only approve');
   if(status==='REJECTED' && html.includes('Pending Principal Approval'))throw Error('Rejected request shown as pending');
   if(status==='SUBMITTED' && html.includes('STUDENT INFORMATION CONFIRMED'))throw Error('Unconfirmed request shown as confirmed');
   results.push(status+': modal state passed');

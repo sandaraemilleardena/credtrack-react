@@ -87,7 +87,7 @@ function PrincipalDashboard() {
     setDecisionNote("");
   };
 
-  const finishRequest=async(requestId,newStatus,message)=>{try{await actOnCredential(currentRequest,newStatus==='Approved'?'approve':'return',decisionNote);await system.refresh();closeDrawer();showToast(message);}catch(e){showToast(e.message,'error');}};
+  const finishRequest=async(requestId,newStatus,message)=>{try{await actOnCredential(currentRequest,'approve',decisionNote);await system.refresh();closeDrawer();showToast(message);}catch(e){showToast(e.message,'error');}};
 
   const handleApprove = () => {
     if (!currentRequest) return;
@@ -99,23 +99,6 @@ function PrincipalDashboard() {
     );
   };
 
-  const handleReturn = () => {
-    if (!currentRequest) return;
-
-    if (!decisionNote.trim()) {
-      showToast(
-        "Please provide a reason before returning the request.",
-        "error"
-      );
-      return;
-    }
-
-    finishRequest(
-      currentRequest.id,
-      "Returned",
-      `${currentRequest.reference} has been returned for correction.`
-    );
-  };
 
   /* =========================================================
      LOGOUT
@@ -627,7 +610,7 @@ function PrincipalDashboard() {
                 <strong>{requests.filter(r=>r.status==='Pending').length}</strong>
 
                 <small>
-                  4 require your attention
+                  {requests.filter(r=>r.status==='Pending').length} require your attention
                 </small>
               </div>
             </div>
@@ -846,11 +829,11 @@ function PrincipalDashboard() {
 
                 <span>
                   <i className="fas fa-arrow-up"></i>
-                  8.4%
+                  {totals.total ? Math.round(totals.released / totals.total * 100) : 0}%
                 </span>
 
                 <p>
-                  Completion rate compared to last month
+                  Released requests as a share of all requests
                 </p>
 
               </div>
@@ -1080,7 +1063,7 @@ function PrincipalDashboard() {
 
                 <textarea
                   className="decision-textarea"
-                  placeholder="Add a note or reason if returning this request..."
+                  placeholder="Add an optional approval note..."
                   value={decisionNote}
                   onChange={(event) =>
                     setDecisionNote(event.target.value)
@@ -1096,20 +1079,11 @@ function PrincipalDashboard() {
 
               <button
                 type="button"
-                className="drawer-return-button"
-                onClick={handleReturn}
-              >
-                <i className="fas fa-rotate-left"></i>
-                Return
-              </button>
-
-              <button
-                type="button"
                 className="drawer-approve-button"
                 onClick={handleApprove}
               >
                 <i className="fas fa-check"></i>
-                Approve Request
+                Approve
               </button>
 
             </div>

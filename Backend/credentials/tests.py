@@ -193,8 +193,8 @@ class WorkflowTests(TestCase):
         item.refresh_from_db()
         item = self.move(item, self.admin, "prepare")
         item = self.move(item, self.admin, "submit_review", "")
-        item = self.move(item, self.principal, "return", "")
-        self.assertEqual(item.status, "RETURNED")
+        item = self.move(item, self.principal, "approve", "")
+        self.assertEqual(item.status, "PRINCIPAL_APPROVED")
         self.assertFalse(SmsNotification.objects.exists())
 
     def test_stale_double_release_has_only_one_notification(self):
@@ -307,7 +307,7 @@ class WorkflowTests(TestCase):
         StudentRecord.objects.create(lrn="987654321012",data={"grade":"Grade 9","section":"Actual section","firstName":"Private"})
         response=self.client.get("/api/credentials/options/")
         self.assertEqual(len(response.data["grade_sections"]),10)
-        self.assertEqual(response.data["grade_sections"]["Grade 9"],["LOVE", "FAITH", "KINDNESS", "SPJ", "HUMILITY"])
+        self.assertEqual(response.data["grade_sections"]["Grade 9"],["LOVE", "PEACE", "KINDNESS", "SPJ", "FAITH"])
         self.assertNotIn("Private",str(response.data));self.assertNotIn("987654321012",str(response.data))
 
 
@@ -325,10 +325,13 @@ class WorkflowTests(TestCase):
         self.move(item,self.admin,"submit_review")
         self.assertEqual(upload(2).status_code,409)
 
-    def test_principal_can_reject_but_rejected_request_cannot_be_released(self):
+    def test_principal_only_has_approval_action(self):
         item=self.submit();item=self.move(item,self.admin,"submit_review")
-        item=self.move(item,self.principal,"reject","Identity details could not be verified")
-        self.assertEqual(item.status,"REJECTED")
+        self.client.force_authenticate(self.principal)
+        for action in ("reject", "return", "ready", "prepare", "collect"):
+            response=self.client.post(f"/api/credentials/{item.pk}/action/",{"action":action,"version":item.version},format="json")
+            self.assertIn(response.status_code,(400,403))
+        item.refresh_from_db();self.assertEqual(item.status,"PRINCIPAL_REVIEW")
         self.client.force_authenticate(self.admin)
         response=self.client.post(f"/api/credentials/{item.pk}/action/",{"action":"ready","version":item.version,"release_date":"2026-10-20","release_time":"09:00"},format="json")
         self.assertEqual(response.status_code,409)
@@ -375,9 +378,9 @@ class WorkflowTests(TestCase):
                 response=self.client.post(f"/api/credentials/{identifier}/action/",{"action":action,"version":0,**({"release_date":"2026-10-20","release_time":"09:00"} if action=="ready" else {})},format="json")
                 self.assertEqual(response.status_code,403)
 
-    def test_returning_request_revokes_principal_document_access_until_reconfirmed(self):
+    def test_legacy_unconfirmed_request_requires_admin_reconfirmation_for_document_access(self):
         item=self.submit();item=self.move(item,self.admin,"submit_review")
-        item=self.move(item,self.principal,"return","Correct student information")
+        item.status="RETURNED";item.confirmed_at=None;item.save(update_fields=["status","confirmed_at"])
         item.refresh_from_db();self.assertIsNone(item.confirmed_at)
         self.client.force_authenticate(self.principal)
         self.assertEqual(self.client.get(f"/api/credentials/{item.pk}/verification/").status_code,403)

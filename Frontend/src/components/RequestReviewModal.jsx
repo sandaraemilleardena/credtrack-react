@@ -6,7 +6,7 @@ import RequestWorkflowDetails from './RequestWorkflowDetails';
 import './RequestReviewModal.css';
 const actions = {
  ADMIN: {SUBMITTED:[['submit_review','Confirm Student Information'],['prepare','Start preparation']],PREPARING:[['submit_review','Confirm Student Information'],['unavailable','Unavailable / needs information']],RETURNED:[['submit_review','Confirm Student Information']],UNAVAILABLE:[['prepare','Resume preparation']],PRINCIPAL_APPROVED:[['ready','Release: mark ready and queue SMS']],READY:[['collect','Record release / collection']]},
- PRINCIPAL: {PRINCIPAL_REVIEW:[['approve','Approve Student Information'],['return','Return for correction'],['reject','Reject request']]}
+ PRINCIPAL: {PRINCIPAL_REVIEW:[['approve','Approve']]}
 };
 export default function RequestReviewModal({request: incoming,role,onClose,onUpdated,smsEnabled=false}) {
  const [saved,setSaved]=useState(null);
@@ -39,7 +39,7 @@ export default function RequestReviewModal({request: incoming,role,onClose,onUpd
    {success && <p role="status" className="verification-confirmed">{success}</p>}
    {error && <p role="alert" className="request-workflow-error">{error}</p>}
    </div>
-   {(actions[role]?.[request.status] || []).length > 0 && <footer className="request-review-footer"><p>Review the student record and uploaded identity document before confirming. Each action is saved in the request history.</p><div className="review-actions">{actions[role][request.status].map(([action,label])=><button type="button" key={action} className={`review-action ${action === 'reject' ? 'review-action-reject' : ['return','unavailable'].includes(action) ? 'review-action-warning' : 'review-action-approve'}`} disabled={busy} onClick={()=>act(action)}>{busy?'Saving…':action==='ready'?(releaseOpen?(smsEnabled?'Confirm ready & send SMS':'Confirm ready & queue SMS'):'Schedule release & notify requester'):label}</button>)}</div></footer>}
+   {(actions[role]?.[request.status] || []).length > 0 && <footer className="request-review-footer"><p>Review the student record and uploaded identity document before confirming. Each action is saved in the request history.</p><div className="review-actions">{actions[role][request.status].map(([action,label])=><button type="button" key={action} className={`review-action ${action === 'unavailable' ? 'review-action-warning' : 'review-action-approve'}`} disabled={busy} onClick={()=>act(action)}>{busy?'Saving…':action==='ready'?(releaseOpen?(smsEnabled?'Confirm ready & send SMS':'Confirm ready & queue SMS'):'Schedule release & notify requester'):label}</button>)}</div></footer>}
  </dialog>;
 }
 

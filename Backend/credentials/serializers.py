@@ -108,7 +108,7 @@ class RequestSerializer(serializers.ModelSerializer):
 
 
 class ActionSerializer(serializers.Serializer):
-    action = serializers.ChoiceField(choices=["prepare", "unavailable", "submit_review", "approve", "return", "ready", "collect", "reject"])
+    action = serializers.ChoiceField(choices=["prepare", "unavailable", "submit_review", "approve", "ready", "collect"])
     release_date = serializers.DateField(required=False)
     release_time = serializers.TimeField(required=False, input_formats=["%H:%M"])
     version = serializers.IntegerField(min_value=0)

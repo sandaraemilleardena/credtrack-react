@@ -1164,7 +1164,7 @@ function AdministrationSettings() {
                     <div className="panel-body">
 
                       <div className="status-card">
-                        <i className="fas fa-circle-check" />
+                        <i className="fas fa-circle-info" />
 
                         <div>
                           <strong>
@@ -1181,10 +1181,9 @@ function AdministrationSettings() {
 
                       <SettingSwitch
                         title="Automatic backups"
-                        description="Create encrypted backups on the selected schedule."
-                        checked={
-                          settings.automaticBackups
-                        }
+                        description="Unavailable until protected backup storage and scheduling are configured."
+                        checked={false}
+                        disabled
                         onChange={(value) =>
                           updateSetting(
                             "automaticBackups",
@@ -1195,6 +1194,7 @@ function AdministrationSettings() {
 
                       <SettingSelect
                         title="Backup frequency"
+                        disabled
                         description="More frequent backups reduce possible data loss."
                         value={
                           settings.backupFrequency
@@ -1214,6 +1214,7 @@ function AdministrationSettings() {
 
                       <SettingSelect
                         title="Audit-log retention"
+                        disabled
                         description="Retention must follow applicable school, privacy, and records policies."
                         value={settings.logRetention}
                         options={[
@@ -1235,11 +1236,7 @@ function AdministrationSettings() {
                         <button
                           type="button"
                           className="secondary"
-                          onClick={() =>
-                            notify(
-                              "Manual backup started"
-                            )
-                          }
+                          disabled title="Backup service is not configured"
                         >
                           <i className="fas fa-database" />
                           Back Up Now
@@ -1248,11 +1245,7 @@ function AdministrationSettings() {
                         <button
                           type="button"
                           className="secondary"
-                          onClick={() =>
-                            notify(
-                              "Latest backup verification passed"
-                            )
-                          }
+                          disabled title="Backup service is not configured"
                         >
                           <i className="fas fa-shield-halved" />
                           Verify Latest Backup
@@ -1260,50 +1253,8 @@ function AdministrationSettings() {
 
                       </div>
 
-                      <div className="backup-history">
-
-                        <div className="backup-row">
-                          <strong>
-                            BKP-2026-0721
-                          </strong>
-
-                          <span>
-                            Jul 21, 2026 · 2:47 PM
-                          </span>
-
-                          <span className="success">
-                            Completed
-                          </span>
-                        </div>
-
-                        <div className="backup-row">
-                          <strong>
-                            BKP-2026-0720
-                          </strong>
-
-                          <span>
-                            Jul 20, 2026 · 11:00 PM
-                          </span>
-
-                          <span className="success">
-                            Completed
-                          </span>
-                        </div>
-
-                        <div className="backup-row">
-                          <strong>
-                            BKP-2026-0719
-                          </strong>
-
-                          <span>
-                            Jul 19, 2026 · 11:00 PM
-                          </span>
-
-                          <span className="success">
-                            Completed
-                          </span>
-                        </div>
-
+                      <div className="backup-history" role="status">
+                        <p>No backup history is available. No backup or restore has been verified.</p>
                       </div>
 
                     </div>
@@ -1528,6 +1479,7 @@ function SettingSwitch({
   title,
   description,
   checked,
+  disabled = false,
   onChange,
 }) {
   return (
@@ -1541,7 +1493,7 @@ function SettingSwitch({
       <label className="switch">
         <input
           type="checkbox"
-          checked={checked}
+          checked={checked} disabled={disabled}
           onChange={(e) =>
             onChange(e.target.checked)
           }
@@ -1559,6 +1511,7 @@ function SettingSelect({
   description,
   value,
   options,
+  disabled = false,
   onChange,
 }) {
   return (
@@ -1572,6 +1525,7 @@ function SettingSelect({
       <select
         className="inline-control"
         value={value}
+        disabled={disabled}
         onChange={(e) =>
           onChange(e.target.value)
         }

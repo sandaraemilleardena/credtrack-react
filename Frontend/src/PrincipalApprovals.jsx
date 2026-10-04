@@ -88,7 +88,6 @@ function PrincipalApprovals() {
   const todayKey = new Date().toDateString();
   const todayEvents = queue.items.flatMap(item => item.events).filter(event => new Date(event.created_at).toDateString() === todayKey);
   const approvedToday = todayEvents.filter(event => event.action === "approve").length;
-  const returnedToday = todayEvents.filter(event => event.action === "return").length;
 
   /* =======================================================
      BODY CLASS
@@ -226,14 +225,14 @@ function PrincipalApprovals() {
      FINISH REVIEW
      ======================================================= */
 
-  const finishReview = async (action) => {
+  const finishReview = async () => {
     if (!currentRequest?.readyForApproval || queue.busy) return;
     setActionError("");
     try {
-      const updated = await queue.perform(currentRequest, action === "approved" ? "approve" : "return", decisionNote);
+      const updated = await queue.perform(currentRequest, "approve", decisionNote);
       if (!updated) return;
       closeReview();
-      showToast(action === "approved" ? "Approved and returned to Admin for final release confirmation." : "Returned to Admin for correction.");
+      showToast("Approved and sent to Administration for final release confirmation.");
     } catch (error) {
       setActionError(error.message);
     }
@@ -844,33 +843,6 @@ function PrincipalApprovals() {
 
             </article>
 
-            {/* RETURNED */}
-            <article className="principal-summary-card returned">
-
-              <div className="principal-summary-icon">
-
-                <i className="fas fa-rotate-left" />
-
-              </div>
-
-              <div>
-
-                <span>
-                  Returned Today
-                </span>
-
-                <strong>
-                  {returnedToday}
-                </strong>
-
-                <small>
-                  Requests sent for correction
-                </small>
-
-              </div>
-
-            </article>
-
           </section>
 
           {/* FILTERS */}
@@ -1448,28 +1420,13 @@ function PrincipalApprovals() {
                     event.target.value
                   )
                 }
-                placeholder="Add an approval note or explain why the request must be corrected."
+                placeholder="Add an optional approval note."
               />
 
             </div>
 
             {/* DECISION BUTTONS */}
             <div className="principal-decision-actions">
-
-              <button
-                type="button"
-                className="principal-return-button"
-                disabled={queue.busy}
-                onClick={() =>
-                  finishReview("returned")
-                }
-              >
-
-                <i className="fas fa-rotate-left" />
-
-                Return for Correction
-
-              </button>
 
               <button
                 type="button"
@@ -1482,7 +1439,7 @@ function PrincipalApprovals() {
 
                 <i className="fas fa-file-signature" />
 
-                Approve and Authorize
+                Approve
 
               </button>
 
