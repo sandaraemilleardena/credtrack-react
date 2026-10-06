@@ -6,3 +6,6 @@ PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 SMS_ENABLED = False
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 ALLOWED_HOSTS = ["testserver", "localhost", "127.0.0.1"]
+
+SMS_PROVIDER = "SEMAPHORE"
+PHILSMS_API_TOKEN = ""

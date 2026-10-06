@@ -332,3 +332,16 @@ EMAIL_TIMEOUT = 10
 PRIVATE_DOCUMENT_ROOT = Path(os.environ.get("PRIVATE_DOCUMENT_ROOT", str(BASE_DIR / "private_documents")))
 DATA_UPLOAD_MAX_MEMORY_SIZE = 6 * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024
+
+# PhilSMS test credentials; the existing Semaphore queue remains separate.
+PHILSMS_API_TOKEN = os.environ.get("PHILSMS_API_TOKEN", "")
+PHILSMS_SENDER_ID = os.environ.get("PHILSMS_SENDER_ID", "PhilSMS")
+
+# Prefer the configured PhilSMS account for new notifications.
+SMS_PROVIDER = os.environ.get("SMS_PROVIDER", "PHILSMS" if PHILSMS_API_TOKEN else "SEMAPHORE").upper()
+PHILSMS_ENABLED = os.environ.get("PHILSMS_ENABLED", "True").lower() == "true"
+
+# Account endpoint shown in PhilSMS Developers; keep credentials server-side.
+PHILSMS_BASE_URL = os.environ.get("PHILSMS_BASE_URL", "https://dashboard.philsms.com/api/v3").rstrip("/")
+if PHILSMS_BASE_URL not in {"https://dashboard.philsms.com/api/v3", "https://app.philsms.com/api/v3"}:
+    raise ImproperlyConfigured("PHILSMS_BASE_URL must be an official PhilSMS API endpoint.")

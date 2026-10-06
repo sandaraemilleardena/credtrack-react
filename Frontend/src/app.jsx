@@ -11,12 +11,13 @@ import FirstPage from "./First Page";
 import { hasSchoolEntry } from "./auth/schoolEntry";
 import AdministrationLogin from "./AdministrationLogin";
 import PrincipalLogin from "./PrincipalLogin";
-import IctLogin from "./Ictlogin";
 
 // ADMINISTRATION
 import AdministrationDashboard from "./AdministrationDashboard";
 import AdministrationCredManagement from "./AdministrationCredManagement";
-import PrincipalApprovals from "./PrincipalApprovals";
+import RequestQueue from "./components/RequestQueue";
+import PrincipalUserAccess from "./PrincipalUserAccess";
+import WorkflowSupport from "./components/WorkflowSupport";
 import AdministrationStudRecord from "./AdministrationStudRecord";
 import AdministrationReports from "./AdministrationReports";
 import AdministrationActLogs from "./AdministrationActLogs";
@@ -28,13 +29,7 @@ import PrincipalDashboard from "./PrincipalDashboard";
 import PrincipalReports from "./PrincipalReports";
 import PrincipalActivity from "./PrincipalActivity";
 
-// ICT PERSONNEL
-import IctDashboard from "./IctDashboard";
-import IctUserAccess from "./IctUserAccess";
-import IctTechnicalSupport from "./IctTechnicalSupport";
-import IctSystemMaintenance from "./IctSystemMaintenance";
-import IctDataProtection from "./IctDataProtection";
-import IctSettings from "./IctSettings";
+
 
 function SchoolEntry({ children }) {
   return hasSchoolEntry() ? children : <Navigate to="/" replace />;
@@ -45,7 +40,7 @@ function UnknownRoute() {
   const path = pathname.toLowerCase();
   const login = /^\/(admin|administration)(?:[-/]|$)/.test(path) ? '/admin-login'
     : /^\/principal(?:[-/]|$)/.test(path) ? '/principal-login'
-    : /^\/ict(?:[-/]|$)/.test(path) ? '/ict-login' : '/';
+    : '/';
   return <Navigate to={login} replace />;
 }
 
@@ -53,7 +48,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/principal-students" element={<ProtectedRoute allowedRoles={["PRINCIPAL"]}><Navigate to="/principal-approvals" replace /></ProtectedRoute>} />
+        <Route path="/principal-students" element={<ProtectedRoute allowedRoles={["PRINCIPAL"]}><Navigate to="/principal-requests" replace /></ProtectedRoute>} />
         <Route path="/principal-profile" element={<ProtectedRoute allowedRoles={["PRINCIPAL"]}><Navigate to="/principal-dashboard" replace /></ProtectedRoute>} />
         <Route path="/forgot-password" element={<PasswordReset />} />
         <Route path="/reset-password/:uid/:token" element={<PasswordReset />} />
@@ -63,7 +58,6 @@ function App() {
         <Route path="/login/school" element={<SchoolEntry><LoginEntry><Login audience="school" /></LoginEntry></SchoolEntry>} />
         <Route path="/admin-login" element={<SchoolEntry><LoginEntry><AdministrationLogin /></LoginEntry></SchoolEntry>} />
         <Route path="/principal-login" element={<SchoolEntry><LoginEntry><PrincipalLogin /></LoginEntry></SchoolEntry>} />
-        <Route path="/ict-login" element={<SchoolEntry><LoginEntry><IctLogin /></LoginEntry></SchoolEntry>} />
 
         {/* ADMINISTRATION */}
         <Route
@@ -91,6 +85,9 @@ function App() {
           element={<StaffPortal role="ADMIN" component={AdministrationSettings} />}
         />
 
+        <Route path="/admin-report-issue" element={<StaffPortal role="ADMIN" component={WorkflowSupport}/>}/>
+        <Route path="/principal-user-access" element={<StaffPortal role="PRINCIPAL" component={PrincipalUserAccess}/>}/>
+        <Route path="/principal-requests" element={<StaffPortal role="PRINCIPAL" component={RequestQueue}/>}/>
         {/* PRINCIPAL */}
         <Route
           path="/principal-dashboard"
@@ -98,7 +95,7 @@ function App() {
         />
         <Route
           path="/principal-approvals"
-          element={<StaffPortal role="PRINCIPAL" component={PrincipalApprovals} />}
+          element={<ProtectedRoute allowedRoles={["PRINCIPAL"]}><Navigate to="/principal-requests" replace /></ProtectedRoute>}
         />
         <Route
           path="/principal-reports"
@@ -109,31 +106,6 @@ function App() {
           element={<StaffPortal role="PRINCIPAL" component={PrincipalActivity} />}
         />
 
-        {/* ICT PERSONNEL */}
-        <Route
-          path="/ict-dashboard"
-          element={<StaffPortal role="ICT" component={IctDashboard} />}
-        />
-        <Route
-          path="/ict-user-access"
-          element={<StaffPortal role="ICT" component={IctUserAccess} />}
-        />
-        <Route
-          path="/ict-technical-support"
-          element={<StaffPortal role="ICT" component={IctTechnicalSupport} />}
-        />
-        <Route
-          path="/ict-system-maintenance"
-          element={<StaffPortal role="ICT" component={IctSystemMaintenance} />}
-        />
-        <Route
-          path="/ict-data-protection"
-          element={<StaffPortal role="ICT" component={IctDataProtection} />}
-        />
-        <Route
-          path="/ict-settings"
-          element={<StaffPortal role="ICT" component={IctSettings} />}
-        />
       <Route path="*" element={<UnknownRoute />} />
       </Routes>
       <DeveloperCredit />

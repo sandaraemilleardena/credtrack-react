@@ -4,7 +4,7 @@ export const IDLE_TIMEOUT_MS = 15 * 60 * 1000;
 export function createIdleSession({ now = Date.now, keepAlive, expire, broadcast }) {
   let last = null, sent = 0, pending = false, stopped = true;
   return {
-    start() { stopped = false; last = now(); sent = now(); pending = false; broadcast?.(last); },
+    start(timestamp = now(), announce = true) { stopped = false; last = Number.isFinite(timestamp) ? Math.min(timestamp, now()) : now(); sent = now(); pending = false; if (announce) broadcast?.(last); },
     stop() { stopped = true; last = null; pending = false; },
     activity(timestamp = now(), remote = false) {
       if (stopped) return;

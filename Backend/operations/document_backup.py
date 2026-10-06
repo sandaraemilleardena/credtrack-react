@@ -22,8 +22,8 @@ from .models import AuditEvent, StudentCredential
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def export_documents(request):
-    if user_role(request.user) != 'ICT':
-        raise PermissionDenied('Only ICT Personnel can export recovery documents.')
+    if not (request.user.is_superuser and request.user.is_staff):
+        raise PermissionDenied('Only backend superusers can export recovery documents.')
     if rate_limit('document-export', str(request.user.pk), 2, 3600):
         return Response(
             {'detail': 'Export limit reached. Try again in one hour.'}, status=429)
@@ -53,7 +53,7 @@ def export_documents(request):
                             size += len(chunk)
                             total += len(chunk)
                             if total > maximum:
-                                raise ValidationError('Document export exceeds the configured size limit. Use an ICT server-side backup.')
+                                raise ValidationError('Document export exceeds the configured size limit. Use an developer server-side backup.')
                             sha.update(chunk)
                             target.write(chunk)
                 except FileNotFoundError:
@@ -64,7 +64,7 @@ def export_documents(request):
                 'files': manifest, 'databaseIncluded': False,
             }))
         output.seek(0)
-        AuditEvent.objects.create(actor=request.user, role='ICT', module='Backup',
+        AuditEvent.objects.create(actor=request.user, role='BACKEND', module='Backup',
                                   action='Exported private documents', detail=f'{len(files)} files; {total} bytes')
         response = FileResponse(output, as_attachment=True,
                                 filename='credtrack-documents.zip', content_type='application/zip')

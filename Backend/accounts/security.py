@@ -32,7 +32,7 @@ def rate_limit(scope, identity, limit, seconds):
 
 def lock_error(profile):
     if profile.account_locked:
-        return {"error": "Your account has been locked due to multiple failed login attempts. Please contact the ICT Personnel for assistance.", "account_locked": True}
+        return {"error": "Your account has been locked due to multiple failed login attempts. Please contact the Principal for assistance.", "account_locked": True}
     if profile.temporary_locked_until and profile.temporary_locked_until > timezone.now():
         seconds = max(1, math.ceil((profile.temporary_locked_until-timezone.now()).total_seconds()))
         wait = "1 minute" if seconds == 60 else f"{seconds} seconds"

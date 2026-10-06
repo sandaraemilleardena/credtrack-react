@@ -25,13 +25,13 @@ export default function FirstPage() {
       <h1 id="first-title">Welcome to <span>CredTrack</span></h1>
       <p className="first-description">Choose how you would like to continue.</p>
       <div className="first-choices">
-        <button className="first-choice" onClick={() => { clearSchoolEntry(); navigate("/login/public"); }}>
-          <span className="first-icon" aria-hidden="true">🎓</span><strong>STUDENT/ALUMNI</strong>
-          <span>Request your school credentials</span><small>Public access <b aria-hidden="true">→</b></small>
-        </button>
         <button className="first-choice" onClick={() => { clearSchoolEntry(); setShowPin(true); }}>
-          <span className="first-icon" aria-hidden="true">🏫</span><strong>SCHOOL ADMIN</strong>
-          <span>Principal, Administration & ICT</span><small>PIN required <b aria-hidden="true">→</b></small>
+          <span className="first-icon" aria-hidden="true">🏫</span><strong>SCHOOL ADMINISTRATION</strong>
+          <span>Administration and Principal</span><small>PIN required <b aria-hidden="true">→</b></small>
+        </button>
+        <button className="first-choice" onClick={() => { clearSchoolEntry(); navigate("/login/public"); }}>
+          <span className="first-icon" aria-hidden="true">🎓</span><strong>STUDENT / ALUMNI</strong>
+          <span>Request your school credentials</span><small>Public access <b aria-hidden="true">→</b></small>
         </button>
       </div>
       <p className="first-footer">Access · Manage · Serve</p>

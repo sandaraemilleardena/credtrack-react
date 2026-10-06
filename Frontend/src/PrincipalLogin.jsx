@@ -3,6 +3,7 @@ import { useState } from "react";
 import { loginUser } from "./auth/session.js";
 import { useNavigate } from "react-router-dom";
 import "./PrincipalLogin.css";
+import "./StaffLogin.css";
 
 function PrincipalLogin() {
   const navigate = useNavigate();
@@ -68,6 +69,7 @@ function PrincipalLogin() {
         >
 
           {/* LOGO */}
+          <div className="staff-login-branding">
           <img
             className="principal-logo"
             src="/logo.png"
@@ -104,6 +106,8 @@ function PrincipalLogin() {
           </div>
 
           {/* LOGIN FORM */}
+          <p className="staff-login-brand-note">Access · Manage · Serve</p></div>
+          <div className="staff-login-content"><div className="staff-login-welcome"><span>STAFF PORTAL</span><h2>Welcome back</h2><p>Sign in to your Principal account.</p></div>
           <form
             className="principal-login-form"
             onSubmit={handleSubmit}
@@ -266,6 +270,7 @@ function PrincipalLogin() {
           </div>
 
 
+        </div>
         </section>
       </main>
     </div>

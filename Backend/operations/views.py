@@ -19,20 +19,21 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from accounts.models import UserProfile
 from credentials.models import CredentialRequest, SmsNotification
+from credentials.sms import sms_available, philsms_balance
 from credentials.serializers import RequestSerializer
 from credentials.services import user_role, Conflict
 from .models import StudentRecord, WorkItem, Preference, AuditEvent
 
-ROLE_LABELS = {"ADMIN": "Administrator", "PRINCIPAL": "Principal", "ICT": "ICT Personnel"}
+ROLE_LABELS = {"ADMIN": "Administrator", "PRINCIPAL": "Principal"}
 SCHOOL_DEFAULTS = {
     "schoolName": "President Manuel Roxas Memorial Integrated School – South",
     "schoolId": "301905", "division": "", "schoolEmail": "", "schoolPhone": "", "address": "",
     "academicYear": "2026–2027", "timezone": "Asia/Manila (UTC+8)", "processingDays": "3 working days",
     "pickupInstructions": "Please bring a valid ID to the school records office.", "acceptRequests": True,
-    "principalApproval": True, "documentVerification": True, "releaseAcknowledgment": True,
+    "principalApproval": False, "documentVerification": True, "releaseAcknowledgment": True,
     "auditActions": True, "notifyRelease": True, "notifyNewRequest": True, "notifyApproval": True,
     "notifySecurity": True, "notifyBackup": True, "referencePrefix": "CT-[YEAR]-[5 DIGIT SEQUENCE]",
-    "passwordLength": "Django password validators", "mfa": False, "lockout": "3 failures: 1 minute; 3 more: ICT unlock required",
+    "passwordLength": "Django password validators", "mfa": False, "lockout": "3 failures: 1 minute; 3 more: Principal unlock required",
     "sessionTimeout": "15 minutes of inactivity", "automaticBackups": False,
     "backupFrequency": "Not configured", "logRetention": "No automatic deletion",
 }
@@ -73,7 +74,7 @@ def diagnostics():
     return [
         {"id": "api", "name": "Application API", "detail": "Responding to this request", "status": "Operational"},
         {"id": "database", "name": "Database service", "detail": f"Connection verified in {round((time.monotonic()-start)*1000)} ms", "status": "Operational"},
-        {"id": "sms", "name": "Semaphore SMS", "detail": "Configured; delivery depends on provider" if settings.SMS_ENABLED and settings.SEMAPHORE_API_KEY else "Awaiting approval / configuration", "status": "Configured" if settings.SMS_ENABLED and settings.SEMAPHORE_API_KEY else "Pending"},
+        {"id": "sms", "name": settings.SMS_PROVIDER + " SMS", "detail": "Configured; delivery depends on provider" if settings.SMS_ENABLED and settings.SEMAPHORE_API_KEY else "Awaiting approval / configuration", "status": "Configured" if settings.SMS_ENABLED and settings.SEMAPHORE_API_KEY else "Pending"},
     ]
 
 
@@ -83,35 +84,27 @@ def snapshot(request):
     role = staff(request, ROLE_LABELS)
     school, _ = Preference.objects.get_or_create(key="school", defaults={"data": SCHOOL_DEFAULTS})
     events = AuditEvent.objects.select_related("actor")
-    if role == "PRINCIPAL":
-        events = events.filter(role="PRINCIPAL")
-    elif role == "ICT":
-        from django.db.models import Q
-        events = events.filter(Q(role="ICT") | Q(module="Authentication") | Q(module="User Access"))
+
     logs = [{"id": f"AUD-{event.pk}", "actor": event.actor.username if event.actor else "System",
              "role": event.role, "module": event.module, "action": event.action, "detail": event.detail,
-             "object_id": event.object_id, "created_at": event.created_at.isoformat()} for event in events[:1000]]
+             "object_id": event.object_id, "created_at": event.created_at.isoformat()} for event in events]
     data = {"role": role, "user": account_json(request.user), "settings": {**SCHOOL_DEFAULTS, **school.data, "referencePrefix": SCHOOL_DEFAULTS["referencePrefix"], "lockout": SCHOOL_DEFAULTS["lockout"]},
             "settings_version": school.version, "audit": logs, "updatedAt": timezone.now().isoformat(),
-            "sms_enabled": bool(settings.SMS_ENABLED and settings.SEMAPHORE_API_KEY)}
+            "sms_enabled": sms_available()}
     if role in {"ADMIN", "PRINCIPAL"}:
         items = CredentialRequest.objects.select_related("prepared_by", "approved_by", "sms").prefetch_related("events__actor")
-        if role == "PRINCIPAL":
-            items = items.filter(status__in=["PRINCIPAL_REVIEW", "PRINCIPAL_APPROVED", "RETURNED", "READY", "COLLECTED", "REJECTED"])
+
         data["requests"] = RequestSerializer(items, many=True).data
         if role == "ADMIN":
             data["students"] = [{**record.data, "id": record.pk, "lrn": record.lrn, "version": record.version, "credentialFiles": [{"id": file.pk, "title": file.title, "isSample": file.is_sample} for file in record.credential_files.all()]} for record in StudentRecord.objects.prefetch_related("credential_files").order_by("lrn")]
-    if role in {"ADMIN", "ICT"}:
+    if role == "ADMIN":
         data["tickets"] = [work_json(item) for item in WorkItem.objects.filter(kind="ticket").order_by("-created_at")]
-    if role == "ICT":
-        data["accounts"] = [account_json(user) for user in User.objects.filter(userprofile__isnull=False).select_related("userprofile")]
-        data["tasks"] = [work_json(item) for item in WorkItem.objects.filter(kind="maintenance").order_by("-created_at")]
-        data["backupJobs"] = []
-        data["services"] = diagnostics()
-        data["sms_summary"] = {status: SmsNotification.objects.filter(status=status).count() for status in ["QUEUED", "ACCEPTED", "FAILED", "UNKNOWN", "SENDING"]}
-        preferences = Preference.objects.filter(key=f"user:{request.user.pk}").first()
-        data["preferences"] = preferences.data if preferences else {}
-        data["sessions"] = [{"id": "current", "device": "Current browser", "detail": "Authenticated Django session", "current": True, "lastActive": "Active now"}]
+    if role == "PRINCIPAL":
+        data["accounts"] = [account_json(user) for user in User.objects.filter(userprofile__role__in=ROLE_LABELS).select_related("userprofile")]
+    from .notifications import notification_rows, statistics
+    data["notifications"] = notification_rows(request.user)
+    data["statistics"] = statistics()
+    data["settings"]["principalApproval"] = False
     return Response(data)
 
 
@@ -182,7 +175,7 @@ def student_action(request):
 @permission_classes([IsAuthenticated])
 @transaction.atomic
 def settings_action(request):
-    role = staff(request, {"ADMIN", "ICT"})
+    role = staff(request, {"ADMIN"})
     values = request.data.get("settings", {})
     if not isinstance(values, dict):
         raise ValidationError("Invalid settings.")
@@ -222,92 +215,31 @@ def settings_action(request):
 @permission_classes([IsAuthenticated])
 @transaction.atomic
 def work_action(request):
-    staff(request, {"ADMIN", "ICT", "PRINCIPAL"})
-    action = request.data.get("action")
-    values = request.data.get("values", {})
-    if not isinstance(values, dict): raise ValidationError("Invalid work item.")
-    if action in {"update-ticket", "update-maintenance"}:
-        try: uuid.UUID(str(values.get("id", "")))
-        except (ValueError, TypeError, AttributeError): raise ValidationError("Invalid work item reference.")
-    if action == "run-diagnostics":
-        staff(request, {"ICT"})
-        result = diagnostics()
-        audit(request, "Maintenance", "Ran connectivity diagnostics")
-        return Response({"services": result, "message": "API and database connectivity checked. Semaphore configuration reported."})
-    if action in {"create-ticket", "ticket"}:
-        data = {key: text(values, key, key in {"subject", "description"}) for key in ["subject", "description", "category", "requester", "priority", "requestId"]}
-        if data["requestId"]:
-            try: uuid.UUID(data["requestId"])
-            except (ValueError, TypeError, AttributeError): raise ValidationError("Enter the full credential request reference.")
-        if data["requestId"] and not CredentialRequest.objects.filter(pk=data["requestId"]).exists():
-            raise ValidationError("Linked credential request does not exist.")
-        data.update(requester=data["requester"] or request.user.username, priority=data["priority"] or "Normal", assignee="Unassigned", notes=[])
-        item = WorkItem.objects.create(kind="ticket", data=data, created_by=request.user)
-    elif action == "update-ticket":
-        staff(request, {"ICT"})
-        item = get_object_or_404(WorkItem.objects.select_for_update(), pk=values.get("id"), kind="ticket")
-        if values.get("version") != item.version: raise Conflict()
-        status = values.get("status", item.status)
-        if status not in {"Open", "In progress", "Waiting", "Resolved"}: raise ValidationError("Invalid ticket status.")
-        note = text(values, "note", status == "Resolved")
-        item.status = status
-        item.data = {**item.data, "priority": text(values, "priority") or item.data.get("priority", "Normal"), "assignee": text(values, "assignee") or "Unassigned"}
-        if note:
-            item.data["notes"] = [*item.data.get("notes", []), {"id": str(time.time_ns()), "body": note, "author": request.user.username, "createdAt": timezone.now().isoformat()}]
-        item.version += 1
-        item.save()
-    elif action == "schedule-maintenance":
-        staff(request, {"ICT"})
-        data = {key: text(values, key, key in {"title", "owner", "service", "startsAt"}) for key in ["title", "owner", "service", "startsAt", "notes"]}
-        start = parse_datetime(data["startsAt"])
-        try: duration = int(values.get("duration", 0))
-        except (ValueError, TypeError): raise ValidationError("Invalid duration.")
-        if not start or timezone.is_naive(start) or start <= timezone.now() or not 1 <= duration <= 1440:
-            raise ValidationError("Choose a future maintenance window of 1–1440 minutes.")
-        # Serialize scheduling even when the task table is initially empty.
-        lock, _ = Preference.objects.get_or_create(key="maintenance-lock")
-        Preference.objects.select_for_update().get(pk=lock.pk)
-        for existing in WorkItem.objects.filter(kind="maintenance", status__in=["Scheduled", "Running"]):
-            other = parse_datetime(existing.data["startsAt"])
-            if (data["service"] == existing.data["service"] or "All services" in {data["service"], existing.data["service"]}) and start < other + timedelta(minutes=existing.data["duration"]) and other < start + timedelta(minutes=duration):
-                raise Conflict("This service already has maintenance scheduled for that window.")
-        data["duration"] = duration
-        item = WorkItem.objects.create(kind="maintenance", status="Scheduled", data=data, created_by=request.user)
-    elif action == "update-maintenance":
-        staff(request, {"ICT"})
-        item = get_object_or_404(WorkItem.objects.select_for_update(), pk=values.get("id"), kind="maintenance")
-        if values.get("version") != item.version: raise Conflict()
-        allowed = {"Scheduled": {"Running", "Cancelled"}, "Running": {"Completed", "Cancelled"}}
-        if values.get("status") not in allowed.get(item.status, set()): raise Conflict("Invalid maintenance transition.")
-        note = text(values, "notes", True)
-        item.status, item.data = values["status"], {**item.data, "notes": note}
-        item.version += 1
-        item.save()
-    else:
-        raise ValidationError("This operation requires deployment configuration; no change was made.")
-    audit(request, "Support" if item.kind == "ticket" else "Maintenance", action, item.pk)
-    return Response({"message": "Saved successfully.", "item": work_json(item)})
+    staff(request, set())
+    raise PermissionDenied("Technical maintenance is managed through the developer backend. Use Report an Issue for system problems.")
 
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 @transaction.atomic
 def account_action(request):
-    staff(request, {"ICT", "ADMIN"})
+    staff(request, {"PRINCIPAL"})
     action, values = request.data.get("action"), request.data.get("values", {})
     if not isinstance(values, dict): raise ValidationError("Invalid account details.")
     role = {value: key for key, value in ROLE_LABELS.items()}.get(values.get("role"), values.get("role"))
     if action == "unlock":
-        staff(request, {"ICT"})
+        staff(request, {"PRINCIPAL"})
         if not str(values.get("id", "")).isdigit(): raise ValidationError("Invalid account identifier.")
         profile = get_object_or_404(UserProfile.objects.select_for_update(), user_id=values["id"])
+        if profile.role not in ROLE_LABELS or profile.user.is_superuser:
+            raise PermissionDenied("Only school personnel accounts can be unlocked here.")
         profile.failed_login_attempts = 0
         profile.temporary_locked_until = None
         profile.account_locked = False
         profile.locked_at = None
         profile.unlocked_at, profile.unlocked_by = timezone.now(), request.user
         profile.save()
-        audit(request, "User Access", "ICT account unlock", profile.user_id, "Account lock and failed attempt counter reset.")
+        audit(request, "User Access", "Principal account unlock", profile.user_id, "Account lock and failed attempt counter reset.")
         return Response({"message": "Account unlocked.", "account": account_json(profile.user)})
     if action == "create":
         username = text(values, "username", True, 150)
@@ -411,3 +343,10 @@ def student_credential_preview(request, student_id, credential_id):
     response["X-Content-Type-Options"] = "nosniff"
     response["Content-Security-Policy"] = "default-src 'none'; sandbox"
     return response
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def sms_balance(request):
+    staff(request, {"ADMIN"})
+    return Response(philsms_balance(), headers={"Cache-Control":"no-store"})

@@ -11,8 +11,8 @@ class SessionSecurityTests(TestCase):
     def setUp(self):
         self.client = APIClient(enforce_csrf_checks=True)
         self.user = User.objects.create_user('security-test', password='Test-only-password-384!')
-        UserProfile.objects.create(user=self.user, role='ICT')
-        self.payload = {'username': self.user.username, 'password': 'Test-only-password-384!', 'role': 'ICT'}
+        UserProfile.objects.create(user=self.user, role='PRINCIPAL')
+        self.payload = {'username': self.user.username, 'password': 'Test-only-password-384!', 'role': 'PRINCIPAL'}
 
     def token(self, client=None):
         response = (client or self.client).get('/api/auth/csrf/')
@@ -48,7 +48,7 @@ class SessionSecurityTests(TestCase):
         for _ in range(2):
             response = refreshed.get('/api/auth/session/')
             self.assertTrue(response.json()['authenticated'])
-            self.assertEqual(response.json()['user']['role'], 'ICT')
+            self.assertEqual(response.json()['user']['role'], 'PRINCIPAL')
             self.assertIn('no-store', response['Cache-Control'])
         self.assertEqual(refreshed.get('/api/operations/snapshot/').status_code, 200)
 

@@ -2237,3 +2237,41 @@ body {
 .role-selection-caption{font-size:12px;color:#6e1426;margin:10px 0 0;text-align:center}
 .role-selection-page .bottom-message{position:absolute;right:5%;bottom:18px;z-index:6;pointer-events:none;margin:0;width:auto;color:#fff}
 @media(max-width:600px){.role-selection-page .school-logo{width:95px;height:95px}.role-selection-page .landing-content{padding:24px 18px 65px}.role-selection-page .role-name{font-size:15px}.role-selection-page .system-header h2{letter-spacing:1.5px}.role-selection-page .bottom-message{display:none}.role-selection-page .role-menu{width:min(440px,100%)}}
+
+/* Two balanced school workspaces with the existing campus identity. */
+.school-role-selection .role-menu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;width:min(820px,calc(100vw - 48px));max-width:820px;margin:22px auto 0}
+.school-role-selection .school-access-card{display:flex;flex-direction:column;align-items:flex-start;text-align:left;padding:28px;border:1px solid #e4d7d9;border-top:4px solid #980b1b;border-radius:18px;background:#ffffffed;box-shadow:0 14px 35px #4b172014;font-family:inherit;color:#263047;cursor:pointer;transition:transform .2s,box-shadow .2s}
+.school-access-card:hover{transform:translateY(-4px);box-shadow:0 18px 42px #4b172024}
+.school-access-card:focus-visible{outline:3px solid #980b1b;outline-offset:5px}
+.school-access-icon{display:grid;place-items:center;width:52px;height:52px;border-radius:14px;background:#fff0f1;color:#980b1b;margin-bottom:20px}
+.school-access-icon svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.school-access-label{font-size:10px;letter-spacing:1px;color:#8d0e12;font-weight:700;line-height:1.6}
+.school-access-card strong{font-size:23px;line-height:1.4;margin:5px 0 12px;font-weight:700}
+.school-access-description{font-size:13px;line-height:1.8;color:#657084;max-width:290px;margin-bottom:24px}
+.school-access-continue{display:flex;align-items:center;justify-content:space-between;width:100%;padding-top:16px;margin-top:auto;border-top:1px solid #e8e9ee;font-size:12px;font-weight:600;color:#980b1b}
+.school-access-continue>span{font-size:20px}
+.school-role-selection .role-selection-caption{font-size:17px;font-weight:600;color:#263047;margin:20px 0 0}
+.school-role-selection .role-selection-back{background:#fff;border:1px solid #e4d7d9;color:#980b1b;font-size:12px;padding:9px 16px;border-radius:8px}
+.school-role-selection .header-logo{max-width:110px}
+.school-role-selection .header-content h1{font-size:36px}
+@media(max-width:600px){.school-role-selection .role-menu{grid-template-columns:1fr;gap:16px;width:calc(100vw - 36px)}.school-role-selection .school-access-card{padding:22px}.school-access-card strong{font-size:21px}.school-access-icon{margin-bottom:14px}.school-access-description{max-width:none;margin-bottom:16px}}
+
+/* Accessible student/alumni choices with simple language and generous tap targets. */
+.public-role-selection .role-menu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;width:min(820px,calc(100vw - 48px));max-width:820px;margin:22px auto 0}
+.public-access-card{display:flex;flex-direction:column;align-items:flex-start;text-align:left;padding:28px;border:1px solid #e4d7d9;border-top:4px solid #980b1b;border-radius:18px;background:#ffffffed;box-shadow:0 14px 35px #4b172014;font-family:inherit;color:#263047;cursor:pointer;transition:transform .2s,box-shadow .2s}
+.public-access-card:hover{transform:translateY(-4px);box-shadow:0 18px 42px #4b172024}
+.public-access-card:focus-visible{outline:3px solid #980b1b;outline-offset:5px}
+.public-access-icon{display:grid;place-items:center;width:56px;height:56px;border-radius:15px;background:#fff0f1;color:#980b1b;margin-bottom:18px}
+.public-access-icon svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.public-access-card strong{font-size:25px;font-weight:700;line-height:1.4;margin-bottom:10px}
+.public-access-description{font-size:15px;font-weight:500;line-height:1.75;color:#58657a;margin-bottom:24px}
+.public-access-action{display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:auto;padding-top:16px;border-top:1px solid #e8e9ee;font-size:14px;font-weight:600;color:#980b1b}
+.public-access-action>span{font-size:23px}
+.public-role-selection .role-selection-caption{font-size:17px;font-weight:600;color:#263047;margin:20px 0 0;padding:0 18px;line-height:1.6}
+.public-role-selection .role-selection-back{background:#fff;border:1px solid #e4d7d9;border-radius:8px;padding:9px 16px;font-size:12px;color:#980b1b}
+.public-access-help{max-width:660px;margin:20px auto 0;padding:12px 18px;background:#ffffffd9;border-radius:10px;font-size:13px;line-height:1.7;text-align:center;color:#58657a}
+@media(max-width:600px){.public-role-selection .role-menu{grid-template-columns:1fr;gap:16px;width:calc(100vw - 36px)}.public-access-card{padding:22px}.public-access-card strong{font-size:23px}.public-access-icon{margin-bottom:12px}.public-access-description{font-size:14px;margin-bottom:18px}.public-access-help{margin:18px;width:calc(100% - 36px);box-sizing:border-box}.public-role-selection .role-selection-caption{font-size:15px}}
+
+/* Public selection: focus on the two choices, with return navigation last. */
+.public-role-selection .role-selection-back{margin:20px auto 0;display:block}
+.public-role-selection .landing-content{min-height:100dvh;box-sizing:border-box;padding-top:48px;padding-bottom:48px}

@@ -6,7 +6,7 @@ import "./login.css";
 
 
 const initialForm = {
-  firstName: "", middleName: "", lastName: "", otherPurpose: "", deliveryMethod: "", receivingSchool: "", psaDocument: null, idDocument: null,
+  firstName: "", middleName: "", lastName: "", otherPurpose: "", deliveryMethod: "", receivingSchool: "", identityDocuments: [],
   lrn: "",
   gradeLevel: "",
   section: "",
@@ -66,10 +66,6 @@ function Login({ audience = "public" }) {
 
       case "ADMIN":
         navigate("/admin-login");
-        break;
-
-      case "ICT":
-        navigate("/ict-login");
         break;
 
       default:
@@ -157,12 +153,8 @@ function Login({ audience = "public" }) {
     if (requesterType === "Alumni" && formData.graduationYear && !/^[0-9]{4}$/.test(formData.graduationYear)) next.graduationYear = "Enter a four-digit year.";
     if (formData.purpose === "Other Documents" && !formData.otherPurpose.trim()) next.otherPurpose = "This is a required question";
     if (formData.deliveryMethod === "SCHOOL_TO_SCHOOL" && !formData.receivingSchool.trim()) next.receivingSchool = "This is a required question";
-    if (!formData.psaDocument && !formData.idDocument) next.psaDocument = "Upload at least one PSA document or valid ID.";
-    for (const key of ['psaDocument', 'idDocument']) {
-      const file = formData[key];
-      if (!file) continue;
-      if (file.size === 0 || file.size > 20 * 1024 * 1024) next[key] = "Choose a non-empty file no larger than 20 MB.";
-    }
+    if (formData.identityDocuments.length < 1 || formData.identityDocuments.length > 3) next.identityDocuments = "Upload 1–3 supporting documents.";
+    if (formData.identityDocuments.some(file=>file.size===0 || file.size>20*1024*1024)) next.identityDocuments = "Each file must be non-empty and no larger than 20 MB.";
     return next;
   };
 
@@ -192,7 +184,7 @@ function Login({ audience = "public" }) {
         submission_key: submissionKey.current,
         requester_type: requesterType,
         first_name: formData.firstName.trim(), middle_name: formData.middleName.trim(), last_name: formData.lastName.trim(),
-        other_purpose: formData.otherPurpose.trim(), delivery_method: formData.deliveryMethod, receiving_school: formData.receivingSchool.trim(), psa_document: formData.psaDocument, id_document: formData.idDocument,
+        other_purpose: formData.otherPurpose.trim(), delivery_method: formData.deliveryMethod, receiving_school: formData.receivingSchool.trim(), identity_documents: formData.identityDocuments,
         lrn: formData.lrn.trim(),
         grade_level: requesterType === "Student" ? formData.gradeLevel : "",
         section: requesterType === "Student" ? formData.section.trim() : "",
@@ -208,7 +200,7 @@ function Login({ audience = "public" }) {
       setSubmitted(true);
       setErrors({});
     } catch (error) {
-      const names = {first_name: "firstName", last_name: "lastName", middle_name: "middleName", grade_level: "gradeLevel", graduation_year: "graduationYear", other_purpose: "otherPurpose", delivery_method: "deliveryMethod", receiving_school: "receivingSchool", psa_document: "psaDocument", id_document: "idDocument"};
+      const names = {first_name: "firstName", last_name: "lastName", middle_name: "middleName", grade_level: "gradeLevel", graduation_year: "graduationYear", other_purpose: "otherPurpose", delivery_method: "deliveryMethod", receiving_school: "receivingSchool", identity_documents: "identityDocuments", verification_document: "identityDocuments", psa_document: "identityDocuments", id_document: "identityDocuments"};
       const fields = Object.fromEntries(Object.entries(error.fields || {}).filter(([key]) => key in initialForm || names[key]).map(([key, value]) => [names[key] || key, Array.isArray(value) ? value.join(" ") : String(value)]));
       setErrors({...fields, submit: error.message || "Please check the highlighted questions."});
       document.querySelector(".request-modal-body")?.scrollTo({top: 0, behavior: "smooth"});
@@ -219,7 +211,7 @@ function Login({ audience = "public" }) {
   };
 
   return (
-    <div className="landing-page role-selection-page">
+    <div className={`landing-page role-selection-page ${audience === "school" ? "school-role-selection" : "public-role-selection"}`}>
 
       {/* ===================================================
           BACKGROUND
@@ -247,7 +239,7 @@ function Login({ audience = "public" }) {
             HEADER
             ================================================= */}
 
-        <section className="system-header">
+        {audience === "school" && <section className="system-header">
 
           <img
             src="/logo.png"
@@ -291,165 +283,40 @@ function Login({ audience = "public" }) {
 
           </div>
 
-        </section>
+        </section>}
 
         {/* =================================================
             ROLE MENU
             ================================================= */}
 
-        <button className="role-selection-back" type="button" onClick={() => navigate("/")}>← Back to role selection</button>
-        <p className="role-selection-caption">{audience === "school" ? "Choose your staff role" : "Select Student or Alumni to request a credential"}</p>
+        {audience === "school" && <button className="role-selection-back" type="button" onClick={() => navigate("/")}>← Back to role selection</button>}
+        <p className="role-selection-caption">{audience === "school" ? "Choose your workspace" : "Need a school document? Choose below to get started."}</p>
         <section className="role-menu" aria-label={audience === "school" ? "School staff roles" : "Credential requester type"}>
-          {audience === "school" ? <><button
-            type="button"
-            className="role-button"
-            onClick={() =>
-              handleRole("PRINCIPAL")
-            }
-          >
-
-            <span className="role-icon principal-icon">
-
-              <svg viewBox="0 0 24 24">
-                <path
-                  d="M12 3L4 7v2h16V7l-8-4zm-6 8v8H4v2h16v-2h-2v-8h-2v8h-2v-8h-2v8H6v-8z"
-                />
-              </svg>
-
-            </span>
-
-            <span className="role-divider"></span>
-
-            <span className="role-name">
-              Principal
-            </span>
-
-            <span className="role-arrow">
-              ›
-            </span>
-
+          {audience === "school" ? <>
+            <button type="button" className="school-access-card" onClick={()=>handleRole("ADMIN")}>
+              <span className="school-access-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z M8 8h8 M8 12h8 M8 16h5"/></svg></span>
+              <span className="school-access-label">OPERATIONS</span><strong>Administration</strong>
+              <span className="school-access-description">Verify requests, manage records, and release credentials.</span>
+              <span className="school-access-continue">Continue to login <span aria-hidden="true">→</span></span>
+            </button>
+            <button type="button" className="school-access-card" onClick={()=>handleRole("PRINCIPAL")}>
+              <span className="school-access-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 9l9-6 9 6 M4 10h16 M6 10v10 M12 10v10 M18 10v10 M3 21h18"/></svg></span>
+              <span className="school-access-label">MONITORING & MANAGEMENT</span><strong>Principal</strong>
+              <span className="school-access-description">Monitor school activity, view reports, and manage personnel.</span>
+              <span className="school-access-continue">Continue to login <span aria-hidden="true">→</span></span>
+            </button>
+</> : <>
+          <button type="button" className="public-access-card" onClick={()=>openRequestModal("Student")}>
+           <span className="public-access-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2 8l10-5 10 5-10 5-10-5 M6 10v7c4 4 8 4 12 0v-7 M22 8v8"/></svg></span>
+           <strong>Student</strong><span className="public-access-description">I am currently studying at PMRMIS-SOUTH.</span>
+           <span className="public-access-action">Request a document <span aria-hidden="true">→</span></span>
           </button>
-<button
-            type="button"
-            className="role-button"
-            onClick={() =>
-              handleRole("ADMIN")
-            }
-          >
-
-            <span className="role-icon">
-
-              <svg viewBox="0 0 24 24">
-                <path
-                  d="M19.43 12.98c.04-.32.07-.65.07-.98s-.02-.66-.07-.98l2.11-1.65-2-3.46-2.49 1c-.52-.4-1.08-.73-1.69-.98L15 3h-4l-.37 2.53c-.61.25-1.17.59-1.69.98l-2.49-1-2 3.46 2.11 1.65c-.04.32-.08.65-.08.98s.03.66.08.98l-2.11 1.65 2 3.46 2.49-1c.52.4 1.08.73 1.69.98L11 21h4l.37-2.53c.61-.25 1.17-.58 1.69-.98l2.49 1 2-3.46-2.12-1.65zM13 16h-2v-4h2v4zm0-6h-2V8h2v2z"
-                />
-              </svg>
-
-            </span>
-
-            <span className="role-divider"></span>
-
-            <span className="role-name">
-              Administration
-            </span>
-
-            <span className="role-arrow">
-              ›
-            </span>
-
+          <button type="button" className="public-access-card" onClick={()=>openRequestModal("Alumni")}>
+           <span className="public-access-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 3a4 4 0 1 1 0 8 4 4 0 0 1 0-8 M2 21v-3c0-7 14-7 14 0v3 M18 5a3 3 0 0 1 0 6 M19 14c3 0 3 4 3 7"/></svg></span>
+           <strong>Alumni</strong><span className="public-access-description">I graduated or studied at PMRMIS-SOUTH before.</span>
+           <span className="public-access-action">Request a document <span aria-hidden="true">→</span></span>
           </button>
-<button
-            type="button"
-            className="role-button"
-            onClick={() =>
-              handleRole("ICT")
-            }
-          >
-
-            <span className="role-icon">
-
-              <svg viewBox="0 0 24 24">
-                <path
-                  d="M4 5h16c1.1 0 2 .9 2 2v10c0 1.1-.9 2-2 2h-5v2h3v2H6v-2h3v-2H4c-1.1 0-2-.9-2-2V7c0-1.1.9-2 2-2zm0 2v10h16V7H4z"
-                />
-              </svg>
-
-            </span>
-
-            <span className="role-divider"></span>
-
-            <span className="role-name">
-              ICT Personnel
-            </span>
-
-            <span className="role-arrow">
-              ›
-            </span>
-
-          </button></> : <><button
-            type="button"
-            className="role-button"
-            onClick={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-
-              openRequestModal("Student");
-            }}
-          >
-
-            <span className="role-icon">
-
-              <svg viewBox="0 0 24 24">
-                <path
-                  d="M12 3L1 9l4 2.18v6.1c0 .72.39 1.39 1.01 1.75C7.72 20.01 9.78 21 12 21s4.28-.99 5.99-1.97A2 2 0 0019 17.28v-6.1L21 10v6h2V9L12 3zm5 14.28C15.6 18.06 13.82 19 12 19s-3.6-.94-5-1.72v-5.04l5 2.76 5-2.76v5.04z"
-                />
-              </svg>
-
-            </span>
-
-            <span className="role-divider"></span>
-
-            <span className="role-name">
-              Students
-            </span>
-
-            <span className="role-arrow">
-              ›
-            </span>
-
-          </button>
-<button
-            type="button"
-            className="role-button"
-            onClick={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-
-              openRequestModal("Alumni");
-            }}
-          >
-
-            <span className="role-icon">
-
-              <svg viewBox="0 0 24 24">
-                <path
-                  d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zM8 11c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm8 2c-2 0-6 1-6 3v3h12v-3c0-2-4-3-6-3zM8 13c-2.33 0-7 1.17-7 3.5V19h7v-3c0-1.17.53-2.23 1.43-3.04C9.74 13.36 8.86 13 8 13z"
-                />
-              </svg>
-
-            </span>
-
-            <span className="role-divider"></span>
-
-            <span className="role-name">
-              Alumni
-            </span>
-
-            <span className="role-arrow">
-              ›
-            </span>
-
-          </button></>}
+         </>}
         </section>
 
         {/* =================================================
@@ -470,6 +337,8 @@ function Login({ audience = "public" }) {
 
         </div>
 
+        {audience === "public" && <p className="public-access-help">Fill out the form and upload your supporting documents. We will text you when your document is ready.</p>}
+        {audience === "public" && <button className="role-selection-back" type="button" onClick={() => navigate("/")}>← Back to role selection</button>}
       </main>
 
       {/* ===================================================
@@ -596,13 +465,14 @@ function Login({ audience = "public" }) {
 
                 </div>
 
+                <p>We will text you when your document is ready.</p>
                 <div className="request-success-note">
 
                   <i className="fas fa-mobile-screen-button"></i>
 
                   <span>
                     {smsEnabled
-                      ? "An SMS will be queued after Principal approval and the Administrator’s final confirmation that your credentials are ready for collection."
+                      ? "An SMS will be queued after Administration approval and the Administrator’s final confirmation that your credentials are ready for collection."
                       : "Your request is saved. SMS service is awaiting activation; please keep your request ID and contact the school records office for updates."}
                   </span>
 
@@ -1017,18 +887,13 @@ function Login({ audience = "public" }) {
                     {errors.otherPurpose && <small className="field-error">{errors.otherPurpose}</small>}
                   </div>
                   <div className="form-field full-width">
-                    <label>Identity verification <span>*</span></label>
-                    <p>Upload your PSA document or valid ID. At least one is required; you may attach both. Only authorized school staff can review these files.</p>
-                    <div className="identity-upload-grid">
-                      {[['psaDocument', 'PSA birth certificate', 'fa-file-lines'], ['idDocument', 'Valid ID', 'fa-id-card']].map(([key, title, icon]) => <div className="identity-upload-card" key={key}>
-                        <i className={`fas ${icon}`} aria-hidden="true" />
-                        <h4>{title}</h4>
-                        <p>All file types accepted · Maximum 20 MB per file</p>
-                        <label className="identity-file-button" htmlFor={key}>Choose {key === 'psaDocument' ? 'PSA file' : 'ID file'}<input id={key} type="file"  aria-invalid={Boolean(errors[key])} onChange={event => { setFormData(previous => ({...previous, [key]: event.target.files[0] || null})); setErrors(previous => ({...previous, [key]: ''})); }} /></label>
-                        <div className="identity-file-summary" aria-live="polite">{formData[key] ? `${formData[key].name} (${(formData[key].size / 1024 / 1024).toFixed(2)} MB)` : 'No file selected'}</div>
-                        {formData[key] && <button type="button" className="identity-file-remove" onClick={() => { setFormData(previous => ({...previous, [key]: null})); document.getElementById(key).value = ''; }}>Remove file</button>}
-                        {errors[key] && <small className="field-error" role="alert">{errors[key]}</small>}
-                      </div>)}
+                    <label htmlFor="identityDocuments">Identity Verification Documents <span>*</span></label>
+                    <p>Upload 1–3 supporting documents for identity verification. At least one document is required. Only authorized school personnel can view these files.</p>
+                    <p>You may upload: PSA Birth Certificate, Parent/Guardian Valid ID, Student Valid ID, Request Form of Credentials, or other valid supporting identity documents. Choose the applicable documents; every listed document is not required.</p>
+                    <div className="identity-upload-card"><input id="identityDocuments" type="file" multiple disabled={submitting} onChange={event=>{const files=Array.from(event.target.files);event.target.value='';if(formData.identityDocuments.length+files.length>3){setErrors(previous=>({...previous,identityDocuments:'Maximum 3 files. Remove a file before adding another.'}));return;}setFormData(previous=>({...previous,identityDocuments:[...previous.identityDocuments,...files]}));setErrors(previous=>({...previous,identityDocuments:''}));}}/>
+                    <p>Maximum 20 MB per file.</p>
+                    {formData.identityDocuments.map((file,index)=><div className="identity-file-summary" key={index}><strong>{file.name}</strong> · {(file.size/1024/1024).toFixed(2)} MB · {file.size===0 || file.size>20*1024*1024?'Invalid file size':submitting?'Uploading…':'Ready to upload'} <button type="button" disabled={submitting} onClick={()=>setFormData(previous=>({...previous,identityDocuments:previous.identityDocuments.filter((_,i)=>i!==index)}))}>Remove</button></div>)}
+                    {errors.identityDocuments&&<p className="field-error" role="alert">{errors.identityDocuments}</p>}
                     </div>
                   </div>
                   <div className="form-field full-width">

@@ -175,375 +175,16 @@ function AdministrationSettings() {
     <div className="administration-settings-page">
 
       {/* MOBILE SIDEBAR OVERLAY */}
-      <button
-        type="button"
-        className={`sidebar-overlay ${
-          sidebarOpen ? "show" : ""
-        }`}
-        onClick={closeSidebar}
-        aria-label="Close sidebar"
-      />
+
 
       {/* SIDEBAR */}
-      <aside
-        className={`sidebar ${
-          sidebarOpen ? "open" : ""
-        }`}
-      >
-        {/* BRAND */}
-        <div className="brand">
-          <div className="brand-logo">
-            <img
-              src="/logo.png"
-              alt="PMRMIS-South school seal"
-            />
-          </div>
 
-          <div className="brand-copy">
-            <h2>CredTrack</h2>
-            <span>PMRMIS–SOUTH</span>
-          </div>
-
-          <button
-            type="button"
-            className="close-sidebar"
-            onClick={closeSidebar}
-            aria-label="Close sidebar"
-          >
-            <i className="fas fa-xmark" />
-          </button>
-        </div>
-
-        {/* SYSTEM CARD */}
-
-
-        {/* NAVIGATION */}
-        <nav className="sidebar-navigation">
-          <ul className="menu">
-
-            <li className="menu-item">
-              <button
-                type="button"
-                className="menu-link"
-                onClick={() =>
-                  navigateTo("/admin-dashboard")
-                }
-              >
-                <span className="menu-icon">
-                  <i className="fas fa-table-columns" />
-                </span>
-
-                <span className="menu-text">
-                  Dashboard
-                </span>
-              </button>
-            </li>
-
-            <li className="menu-item">
-              <button
-                type="button"
-                className="menu-link"
-                onClick={() =>
-                  navigateTo(
-                    "/admin-credential-management"
-                  )
-                }
-              >
-                <span className="menu-icon">
-                  <i className="fas fa-folder-open" />
-                </span>
-
-                <span className="menu-text">
-                  Credential Management
-                </span>
-              </button>
-            </li>
-
-            <li className="menu-item">
-              <button
-                type="button"
-                className="menu-link"
-                onClick={() =>
-                  navigateTo("/admin-student-records")
-                }
-              >
-                <span className="menu-icon">
-                  <i className="fas fa-user-graduate" />
-                </span>
-
-                <span className="menu-text">
-                  Student Records
-                </span>
-              </button>
-            </li>
-
-            <li className="menu-item">
-              <button
-                type="button"
-                className="menu-link"
-                onClick={() =>
-                  navigateTo("/admin-reports")
-                }
-              >
-                <span className="menu-icon">
-                  <i className="fas fa-chart-line" />
-                </span>
-
-                <span className="menu-text">
-                  Reports
-                </span>
-              </button>
-            </li>
-
-            <li className="menu-item">
-              <button
-                type="button"
-                className="menu-link"
-                onClick={() =>
-                  navigateTo("/admin-activity-logs")
-                }
-              >
-                <span className="menu-icon">
-                  <i className="fas fa-clock-rotate-left" />
-                </span>
-
-                <span className="menu-text">
-                  Activity Logs
-                </span>
-              </button>
-            </li>
-
-            <li className="menu-item active">
-              <button
-                type="button"
-                className="menu-link"
-                onClick={() =>
-                  navigateTo("/admin-settings")
-                }
-              >
-                <span className="menu-icon">
-                  <i className="fas fa-gear" />
-                </span>
-
-                <span className="menu-text">
-                  System Settings
-                </span>
-
-                <span className="active-indicator">
-                
-                </span>
-              </button>
-            </li>
-
-          </ul>
-        </nav>
-
-
-      </aside>
 
       {/* MAIN SHELL */}
       <div className="shell">
 
         {/* TOPBAR */}
-        <header className="topbar">
 
-          <div className="top-left">
-
-            <button
-              type="button"
-              className="menu-btn"
-              onClick={() => setSidebarOpen(true)}
-              aria-label="Open sidebar"
-            >
-              <i className="fas fa-bars" />
-            </button>
-
-            <img
-              className="school-seal"
-              src="/logo.png"
-              alt="PMRMIS-South school seal"
-            />
-
-            <div className="school">
-              <strong>
-                President Manuel Roxas Memorial Integrated
-                School – South
-              </strong>
-
-              <span>
-                Digital Credentials Management System
-              </span>
-            </div>
-
-          </div>
-
-          <div className="top-right">
-
-            {/* NOTIFICATIONS */}
-            <div
-              className="notification-wrapper"
-              ref={notificationRef}
-            >
-              <button
-                type="button"
-                className={`bell ${
-                  notificationOpen ? "active" : ""
-                }`}
-                onClick={toggleNotifications}
-                aria-label="Notifications"
-                aria-expanded={notificationOpen}
-              >
-                <i className="far fa-bell" />
-
-                {unreadCount > 0 && (
-                  <b>{unreadCount}</b>
-                )}
-              </button>
-
-              {notificationOpen && (
-                <div className="notification-panel">
-
-                  <div className="notification-head">
-                    <div>
-                      <strong>Notifications</strong>
-
-                      <span>
-                        {unreadCount > 0
-                          ? `${unreadCount} unread notification${
-                              unreadCount > 1
-                                ? "s"
-                                : ""
-                            }`
-                          : "All notifications are read"}
-                      </span>
-                    </div>
-
-                    {unreadCount > 0 && (
-                      <button
-                        type="button"
-                        onClick={
-                          markAllNotificationsRead
-                        }
-                      >
-                        Mark all as read
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="notification-list">
-
-                    {notifications.length > 0 ? (
-                      notifications.map(
-                        (notification) => (
-                          <button
-                            type="button"
-                            key={notification.id}
-                            className={`notification-item ${
-                              notification.unread
-                                ? "unread"
-                                : ""
-                            }`}
-                            onClick={() =>
-                              openNotification(
-                                notification.id
-                              )
-                            }
-                          >
-                            <span className="notification-icon">
-                              <i
-                                className={`fas ${notification.icon}`}
-                              />
-                            </span>
-
-                            <span className="notification-copy">
-                              <strong>
-                                {notification.title}
-                              </strong>
-
-                              <span>
-                                {notification.message}
-                              </span>
-
-                              <small>
-                                {notification.time}
-                              </small>
-                            </span>
-
-                            {notification.unread && (
-                              <span className="unread-dot" />
-                            )}
-                          </button>
-                        )
-                      )
-                    ) : (
-                      <div className="empty-notifications">
-                        <i className="far fa-bell-slash" />
-
-                        <strong>
-                          No notifications
-                        </strong>
-
-                        <span>
-                          You are all caught up.
-                        </span>
-                      </div>
-                    )}
-
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* ADMIN MENU */}
-            <div
-              className="admin-menu-wrap"
-              ref={adminMenuRef}
-            >
-              <button
-                type="button"
-                className={`profile ${
-                  adminMenuOpen ? "open" : ""
-                }`}
-                onClick={toggleAdminMenu}
-                aria-label="Open administrator menu"
-                aria-expanded={adminMenuOpen}
-              >
-                <img
-                  src="/logo.png"
-                  alt="Administrator"
-                />
-
-                <div>
-                  <strong>ADMINISTRATOR</strong>
-
-                </div>
-
-                
-             
-              </button>
-
-              {adminMenuOpen && (
-                <div className="admin-dropdown">
-
-                  <div className="admin-menu-divider" />
-
-
-
-                  <button
-                    type="button"
-                    className="admin-logout"
-                    onClick={logout}
-                  >
-                    <i className="fas fa-right-from-bracket" />
-                    <span>Logout</span>
-                  </button>
-
-                </div>
-              )}
-            </div>
-
-          </div>
-        </header>
 
         {/* CONTENT */}
         <main className="content">
@@ -666,7 +307,7 @@ function AdministrationSettings() {
             <div className="settings-content">
 
               {/* GENERAL */}
-              <div className="settings-card" style={{padding:20,marginBottom:16}}><label><input type="checkbox" checked={settings.acceptRequests!==false} onChange={e=>updateSetting('acceptRequests',e.target.checked)}/> Accept student/alumni requests</label><label style={{display:'block',marginTop:12}}>Pickup instructions<input style={{width:'100%'}} value={settings.pickupInstructions||''} onChange={e=>updateSetting('pickupInstructions',e.target.value)}/></label><p>Principal approval, release acknowledgment, and audit history are mandatory. SMS is queued until Semaphore is configured.</p></div>
+              <div className="settings-card" style={{padding:20,marginBottom:16}}><label><input type="checkbox" checked={settings.acceptRequests!==false} onChange={e=>updateSetting('acceptRequests',e.target.checked)}/> Accept student/alumni requests</label><label style={{display:'block',marginTop:12}}>Pickup instructions<input style={{width:'100%'}} value={settings.pickupInstructions||''} onChange={e=>updateSetting('pickupInstructions',e.target.value)}/></label><p>Administration approval, release acknowledgment, and audit history are mandatory. SMS is queued until Semaphore is configured.</p></div>
 {activeTab === "general" && (
                 <section className="settings-section active">
                   <article className="panel">
@@ -884,14 +525,14 @@ function AdministrationSettings() {
                     <div className="panel-body">
 
                       <SettingSwitch
-                        title="Require Principal approval"
-                        description="Official credentials must be authorized by the designated Principal account before release."
+                        disabled title="Administration verifies and approves credentials"
+                        description="Administration verifies and approves requests. The Principal monitors activities."
                         checked={
-                          settings.principalApproval
+                          settings.documentVerification
                         }
                         onChange={(value) =>
                           updateSetting(
-                            "principalApproval",
+                            "documentVerification",
                             value
                           )
                         }
@@ -899,7 +540,7 @@ function AdministrationSettings() {
 
                       <SettingSwitch
                         title="Require document verification"
-                        description="Administrator verifies supporting documents before sending a request for approval."
+                        description="Administrator verifies supporting documents before approving a request."
                         checked={
                           settings.documentVerification
                         }
@@ -990,8 +631,8 @@ function AdministrationSettings() {
                       />
 
                       <SettingSwitch
-                        title="Approval required"
-                        description="Notify the Principal when a verified request needs authorization."
+                        title="Credential approved"
+                        description="Notify the Principal when Administration approves a credential."
                         checked={settings.notifyApproval}
                         onChange={(value) =>
                           updateSetting(
@@ -1015,7 +656,7 @@ function AdministrationSettings() {
 
                       <SettingSwitch
                         title="Security warnings"
-                        description="Alert Administrators and ICT Personnel about repeated failed logins or unusual access."
+                        description="Alert Administrators and Principal about repeated failed logins or unusual access."
                         checked={
                           settings.notifySecurity
                         }
@@ -1029,7 +670,7 @@ function AdministrationSettings() {
 
                       <SettingSwitch
                         title="Backup failures"
-                        description="Alert ICT Personnel immediately when a scheduled backup fails."
+                        description="Developers manage backup failures through the backend."
                         checked={settings.notifyBackup}
                         onChange={(value) =>
                           updateSetting(
@@ -1083,7 +724,7 @@ function AdministrationSettings() {
 
                       <SettingSwitch
                         title="Multi-factor authentication"
-                        description="Require a second verification step for Administrator, Principal, and ICT Personnel accounts."
+                        description="Require a second verification step for Administration and Principal accounts."
                         checked={settings.mfa}
                         onChange={(value) =>
                           updateSetting("mfa", value)
@@ -1172,7 +813,7 @@ function AdministrationSettings() {
                           </strong>
 
                           <span>
-                            No backup or restore has been verified. Configure protected storage with ICT.
+                            No backup or restore has been verified. Configure protected storage with the developers.
                           </span>
                         </div>
 
@@ -1273,7 +914,7 @@ function AdministrationSettings() {
 
                       <p>
                         Technical operations intended for
-                        authorized ICT Personnel.
+                        authorized Principal.
                       </p>
                     </div>
 

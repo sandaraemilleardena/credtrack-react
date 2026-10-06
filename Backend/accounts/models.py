@@ -10,7 +10,7 @@ class UserProfile(models.Model):
 
         ("PRINCIPAL", "Principal"),
 
-        ("ICT", "ICT Personnel"),
+
 
         ("STUDENTS", "Students"),
 

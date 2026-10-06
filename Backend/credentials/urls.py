@@ -2,6 +2,8 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path("<uuid:request_id>/sms/status/", views.refresh_sms_status),
+    path("track/", views.track),
     path("<uuid:request_id>/verification/upload/", views.attach_verification),
     path("options/", views.options),
     path("<uuid:request_id>/verification/", views.verification_document),

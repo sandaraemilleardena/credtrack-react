@@ -2,6 +2,7 @@ import useLoginLockout from "./auth/useLoginLockout";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./AdministrationLogin.css";
+import "./StaffLogin.css";
 
 // Django session utility
 import { loginUser } from "./auth/session.js";
@@ -123,6 +124,7 @@ function AdministrationLogin() {
           aria-labelledby="admin-login-title"
         >
           {/* LOGO */}
+          <div className="staff-login-branding">
           <img
             className="admin-logo"
             src="/logo.png"
@@ -159,6 +161,8 @@ function AdministrationLogin() {
           </div>
 
           {/* LOGIN FORM */}
+          <p className="staff-login-brand-note">Access · Manage · Serve</p></div>
+          <div className="staff-login-content"><div className="staff-login-welcome"><span>STAFF PORTAL</span><h2>Welcome back</h2><p>Sign in to your Administration account.</p></div>
           <form
             className="admin-login-form"
             onSubmit={handleSubmit}
@@ -328,6 +332,7 @@ function AdministrationLogin() {
           <footer className="admin-footer">
             © 2026 CredTrack · ARDEÑA S.E · PMRMIS–South
           </footer>
+        </div>
         </section>
       </main>
     </div>

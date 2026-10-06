@@ -36,7 +36,7 @@ function AdministrationStudRecord() {
     () => [
       { label: "Dashboard", icon: "fa-table-columns", path: "/admin-dashboard" },
       { label: "Credential Management", icon: "fa-folder-open", path: "/admin-credential-management" },
-      { label: "Student Records", icon: "fa-user-graduate", path: "/admin-student-records" }, 
+      { label: "Student Records", icon: "fa-user-graduate", path: "/admin-student-records" },
       { label: "Reports", icon: "fa-chart-line", path: "/admin-reports" },
       { label: "Activity Logs", icon: "fa-clock-rotate-left", path: "/admin-activity-logs" },
       { label: "System Settings", icon: "fa-gear", path: "/admin-settings" },
@@ -349,36 +349,9 @@ function AdministrationStudRecord() {
     <div className="student-records-page">
 
       {/* Shared dashboard sidebar */}
-      <button
-        type="button"
-        className={`sidebar-overlay ${sidebarOpen ? "show" : ""}`}
-        aria-label="Close navigation menu"
-        onClick={() => setSidebarOpen(false)}
-      />
-
-      <aside className={`sidebar ${sidebarOpen ? "open" : ""}`} aria-label="Administrator navigation">
-        <div className="brand">
-          <div className="brand-logo"><img src="/logo.png" alt="PMRMIS-South logo" /></div>
-          <div className="brand-copy"><h2>CredTrack</h2><span>PMRMIS–SOUTH</span></div>
-          <button type="button" className="close-sidebar" aria-label="Close sidebar" onClick={() => setSidebarOpen(false)}><i className="fas fa-xmark" /></button>
-        </div>
-
-        <nav className="sidebar-navigation" aria-label="Administrator navigation">
-          <ul className="menu">
-            {navigationItems.map((item) => (
-              <li className={`menu-item ${isActiveRoute(item.path) ? "active" : ""}`} key={item.path}>
-                <button type="button" className="menu-link" onClick={() => handleNavigation(item.path)}>
-                  <span className="menu-icon"><i className={`fas ${item.icon}`} /></span>
-                  <span className="menu-text">{item.label}</span>
-                  {isActiveRoute(item.path) && <span className="active-indicator"><i className="fas fa-chevron-right" /></span>}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
 
 
-      </aside>
+
 
       {/* MAIN */}
 
@@ -386,87 +359,7 @@ function AdministrationStudRecord() {
 
         {/* TOPBAR */}
 
-        <header className="topbar">
 
-          <div className="topbar-left">
-
-            <button
-              type="button"
-              className="menu-button"
-              aria-label="Open navigation"
-              onClick={() => setSidebarOpen(true)}
-            >
-              <i className="fas fa-bars" />
-            </button>
-
-            <div className="school-seal">
-              <img
-                src="/logo.png"
-                alt="PMRMIS-South school seal"
-              />
-            </div>
-
-            <div className="school-name">
-              <strong>
-                President Manuel Roxas Memorial
-                Integrated School – South
-              </strong>
-
-              <span>
-                Digital Credentials Management System
-              </span>
-            </div>
-
-          </div>
-
-          <div className="topbar-right">
-<button
-              type="button"
-              className="notification-button"
-              aria-label="Notifications"
-              onClick={() =>
-                showToast("You have 3 notifications.")
-              }
-            >
-              <i className="far fa-bell" />
-              <b>3</b>
-            </button>
-
-            <div className="admin-menu-wrap">
-              <button
-                type="button"
-                className="admin-menu"
-                aria-expanded={adminMenuOpen}
-                aria-haspopup="menu"
-                onClick={() => setAdminMenuOpen((open) => !open)}
-              >
-                <img src="/logo.png" alt="Administrator" />
-                <div>
-                  <strong>ADMINISTRATOR</strong>
-        
-                </div>
-                <i className="fas fa-chevron-down admin-chevron" />
-              </button>
-
-              {adminMenuOpen && (
-                <div className="admin-dropdown" role="menu">
-                
-                  <button
-                    type="button"
-                    className="admin-logout"
-                    role="menuitem"
-                    onClick={handleLogout}
-                  >
-                    <i className="fas fa-right-from-bracket" />
-                    Log out
-                  </button>
-                </div>
-              )}
-            </div>
-
-          </div>
-
-        </header>
 
         {/* CONTENT */}
 
@@ -524,7 +417,7 @@ function AdministrationStudRecord() {
 
           <section className="summary-grid">
 
-            <div className="summary-card">
+            <div role="button" tabIndex={0} onClick={()=>{setStatusFilter("");setPage(1);}} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setStatusFilter("");setPage(1);}}} className="summary-card">
               <div className="summary-icon burgundy">
                 <i className="fas fa-user-graduate" />
               </div>
@@ -535,7 +428,7 @@ function AdministrationStudRecord() {
               </div>
             </div>
 
-            <div className="summary-card">
+            <div role="button" tabIndex={0} onClick={()=>{setStatusFilter("Active");setPage(1);}} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setStatusFilter("Active");setPage(1);}}} className="summary-card">
               <div className="summary-icon green">
                 <i className="fas fa-check-circle" />
               </div>
@@ -546,7 +439,7 @@ function AdministrationStudRecord() {
               </div>
             </div>
 
-            <div className="summary-card">
+            <div role="button" tabIndex={0} onClick={()=>{setStatusFilter("Graduated");setPage(1);}} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setStatusFilter("Graduated");setPage(1);}}} className="summary-card">
               <div className="summary-icon orange">
                 <i className="fas fa-graduation-cap" />
               </div>
@@ -557,7 +450,7 @@ function AdministrationStudRecord() {
               </div>
             </div>
 
-            <div className="summary-card">
+            <div role="button" tabIndex={0} onClick={()=>{setStatusFilter("Archived");setPage(1);}} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setStatusFilter("Archived");setPage(1);}}} className="summary-card">
               <div className="summary-icon gray">
                 <i className="fas fa-archive" />
               </div>
@@ -1802,4 +1695,4 @@ function StudentForm({
   );
 }
 
-export default AdministrationStudRecord; 
+export default AdministrationStudRecord;

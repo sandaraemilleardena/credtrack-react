@@ -49,13 +49,13 @@ async function call(path, { method = "GET", body, publicRequest = false } = {}) 
 
 export const submitCredential = values => {
   const body = new FormData();
-  Object.entries(values).forEach(([key, value]) => { if (value !== null && value !== undefined) body.append(key, value); });
+  Object.entries(values).forEach(([key, value]) => { if (Array.isArray(value)) value.forEach(file => body.append(key, file)); else if (value !== null && value !== undefined) body.append(key, value); });
   return call("submit/", { method: "POST", body, publicRequest: true });
 };
 export const fetchRequestOptions = () => call("options/", { publicRequest: true });
 export const verificationUrl = (id, kind = "verification") => `${API}/api/credentials/${id}/verification/?kind=${kind}`;
 
-export const fetchCredentialQueue = () => call("");
+export const fetchCredentialQueue = (query = "") => call(query ? `?${query}` : "");
 
 export const actOnCredential = (item, action, note, schedule = {}) =>
   call(`${item.id}/action/`, {
@@ -71,3 +71,7 @@ export const attachVerification = (item, file) => {
  const body = new FormData(); body.append('verification_document',file); body.append('version',item.version);
  return call(`${item.id}/verification/upload/`,{method:'POST',body});
 };
+
+export const trackCredential = tracking_token => call("track/", {method:"POST", body:{tracking_token}, publicRequest:true});
+
+export const refreshSmsStatus = item => call(`${item.id}/sms/status/`, {method:"POST", body:{}});

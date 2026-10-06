@@ -6,12 +6,9 @@ from .models import CredentialRequest, RequestEvent, SmsNotification
 
 S = CredentialRequest.Status
 TRANSITIONS = {
-    "prepare": ("ADMIN", {S.SUBMITTED, S.UNAVAILABLE, S.RETURNED}, S.PREPARING),
-    "unavailable": ("ADMIN", {S.SUBMITTED, S.PREPARING, S.RETURNED}, S.UNAVAILABLE),
-    "submit_review": ("ADMIN", {S.SUBMITTED, S.PREPARING, S.RETURNED}, S.PRINCIPAL_REVIEW),
-    "approve": ("PRINCIPAL", {S.PRINCIPAL_REVIEW}, S.PRINCIPAL_APPROVED),
-    "ready": ("ADMIN", {S.PRINCIPAL_APPROVED}, S.READY),
-    "collect": ("ADMIN", {S.READY}, S.COLLECTED),
+    "approve": ("ADMIN", {S.PENDING}, S.APPROVED),
+    "ready": ("ADMIN", {S.APPROVED}, S.APPROVED),
+    "collect": ("ADMIN", {S.APPROVED}, S.RELEASED),
 }
 
 
@@ -39,26 +36,29 @@ def transition(request_id, actor, action, version, note="", release_date=None, r
         raise Conflict()
     if item.status not in allowed:
         raise Conflict("This action is not allowed at the current stage.")
-    if action == "ready" and bool(release_date) != bool(release_time):
+    if action == "ready" and not (release_date and release_time):
         raise ValidationError("Enter both release date and time.")
     if action == "ready" and release_date and release_time:
         schedule = f"{release_date.isoformat()} at {release_time.strftime('%H:%M')} (Philippine time)"
         note = f"{note}\nRelease schedule: {schedule}".strip()
     previous = item.status
-    if action == "submit_review":
+    if action == "approve":
         if not (item.verification_document or item.psa_document or item.id_document):
-            raise ValidationError({"verification_document": "A PSA or valid ID is required before confirmation."})
+            raise ValidationError({"verification_document": "At least one identity document is required before approval."})
         item.prepared_by = actor
         item.confirmed_at = timezone.now()
-    elif action == "approve":
-        if not item.confirmed_at or not (item.verification_document or item.psa_document or item.id_document):
-            raise Conflict("Administration identity verification is required before approval.")
+
         item.approved_by, item.approved_at = actor, timezone.now()
     elif action == "ready":
         if not item.approved_at:
-            raise Conflict("Principal approval is required before release.")
+            raise Conflict("Administration approval is required before release.")
+        if item.ready_at:
+            raise Conflict("Release is already scheduled. The original schedule is preserved.")
+        item.scheduled_release_date, item.scheduled_release_time = release_date, release_time
         item.release_confirmed_by, item.ready_at = actor, timezone.now()
     elif action == "collect":
+        if not item.ready_at:
+            raise Conflict("Schedule the release before recording it as released.")
         item.collected_at = timezone.now()
         SmsNotification.objects.filter(request=item, status="QUEUED").update(
             status="CANCELLED", last_error="Already collected before the queued SMS was sent.",
@@ -67,14 +67,19 @@ def transition(request_id, actor, action, version, note="", release_date=None, r
     item.version += 1
     item.save()
     RequestEvent.objects.create(request=item, actor=actor, action=action, from_status=previous, to_status=destination, note=note)
+    from operations.notifications import notify_staff
+    notify_staff("Credential approved by Administration." if action == "approve" else "Credential released." if action == "collect" else "Credential scheduled for release.", item)
     if action == "ready":
-        from operations.models import Preference
-        school = Preference.objects.filter(key="school").first()
-        instructions = school.data.get("pickupInstructions", "Please bring a valid ID.") if school else "Please bring a valid ID."
-        delivery = f"is approved for forwarding to {item.receiving_school}. Please contact the records office for forwarding details." if item.delivery_method == "SCHOOL_TO_SCHOOL" else f"is ready for collection at the school records office. {instructions}"
+        months = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+        date_label = f"{months[release_date.month - 1]} {release_date.day}, {release_date.year}"
+        time_label = f"{release_time.hour % 12 or 12}:{release_time.minute:02d} {'AM' if release_time.hour < 12 else 'PM'}"
+        when = f"{date_label} at {time_label}"
+        if item.delivery_method == "SCHOOL_TO_SCHOOL":
+            message = f"CredTrack: {item.reference} scheduled for school-to-school sending on {when}. Contact PMRMIS-SOUTH admin office for details."
+        else:
+            message = f"CredTrack: {item.reference} ready for pickup on {when}. Visit PMRMIS-SOUTH admin office. Bring a valid ID."
         notification, _ = SmsNotification.objects.get_or_create(
-            request=item,
-            defaults={"phone": item.phone, "message": (f"CredTrack PMRMIS-South: Request {item.reference} {delivery}" if not release_date else (f"CredTrack PMRMIS-South: Request {item.reference} is ready for release on {schedule}. " + (f"Please contact the school records office for forwarding to {item.receiving_school}." if item.delivery_method == "SCHOOL_TO_SCHOOL" else "Please collect your credential at the school records office. Bring a valid ID.")))},
+            request=item, defaults={"phone": item.phone, "message": message},
         )
         from .sms import send_notification
         transaction.on_commit(lambda: send_notification(notification.pk), robust=True)

@@ -90,7 +90,7 @@ class LoginAndResetTests(TestCase):
         for _ in range(3): response = self.login()
         self.assertEqual(response.status_code, 429)
 
-    def test_only_ict_can_unlock_and_action_is_audited(self):
+    def test_only_principal_can_unlock_and_action_is_audited(self):
         self.permanent_lock()
         endpoint = "/api/operations/accounts/"
         payload = {"action":"unlock", "values":{"id":self.user.pk}}
@@ -100,12 +100,12 @@ class LoginAndResetTests(TestCase):
             UserProfile.objects.create(user=staff,role=role)
             client = APIClient(enforce_csrf_checks=True);client.force_login(staff)
             response = self.post(endpoint,payload,client)
-            self.assertEqual(response.status_code,200 if role=="ICT" else 403)
+            self.assertEqual(response.status_code,200 if role=="PRINCIPAL" else 403)
         self.profile.refresh_from_db()
         self.assertFalse(self.profile.account_locked)
         self.assertEqual(self.profile.failed_login_attempts,0)
-        event = AuditEvent.objects.get(action="ICT account unlock")
-        self.assertEqual(event.actor.username,"ICT")
+        event = AuditEvent.objects.get(action="Principal account unlock")
+        self.assertEqual(event.actor.username,"PRINCIPAL")
         self.assertEqual(event.object_id,str(self.user.pk))
         self.assertEqual(self.login("Original-password-739!").status_code,200)
 

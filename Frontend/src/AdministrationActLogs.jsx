@@ -185,312 +185,14 @@ function AdministrationActLogs() {
   return (
     <div className="activity-logs-page">
       {/* Mobile sidebar overlay */}
-      <div
-        className={`sidebar-screen ${
-          sidebarOpen ? "show" : ""
-        }`}
-        onClick={() => setSidebarOpen(false)}
-      />
+
 
       {/* Sidebar */}
-      <aside
-        className={`sidebar ${
-          sidebarOpen ? "show" : ""
-        }`}
-      >
-        <div className="brand">
-          <img
-            src="/logo.png"
-            alt="PMRMIS-South school seal"
-          />
 
-          <div>
-            <h2>CredTrack</h2>
-            <span>PMRMIS–SOUTH</span>
-          </div>
-
-          <button
-            type="button"
-            className="mobile-close"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <i className="fas fa-xmark"></i>
-          </button>
-        </div>
-
-        <ul className="nav">
-          <li>
-            <button
-              type="button"
-              onClick={() =>
-                navigatePage("/admin-dashboard")
-              }
-            >
-              <i className="fas fa-table-columns"></i>
-              <span>Dashboard</span>
-            </button>
-          </li>
-
-          <li>
-            <button
-              type="button"
-              onClick={() =>
-                navigatePage(
-                  "/admin-credential-management"
-                )
-              }
-            >
-              <i className="fas fa-folder-open"></i>
-              <span>Credential Management</span>
-            </button>
-          </li>
-
-          <li>
-            <button
-              type="button"
-              onClick={() =>
-                navigatePage("/admin-student-records")
-              }
-            >
-              <i className="fas fa-user-graduate"></i>
-              <span>Student Records</span>
-            </button>
-          </li>
-
-          <li>
-            <button
-              type="button"
-              onClick={() =>
-                navigatePage("/admin-reports")
-              }
-            >
-              <i className="fas fa-chart-line"></i>
-              <span>Reports</span>
-            </button>
-          </li>
-
-          <li className="active">
-            <button
-              type="button"
-              onClick={() =>
-                navigatePage("/admin-activity-logs")
-              }
-            >
-              <i className="fas fa-clock-rotate-left"></i>
-              <span>Activity Logs</span>
-            </button>
-          </li>
-
-          <li>
-            <button
-              type="button"
-              onClick={() =>
-                navigatePage("/admin-settings")
-              }
-            >
-              <i className="fas fa-gear"></i>
-              <span>System Settings</span>
-            </button>
-          </li>
-        </ul>
-      </aside>
 
       <div className="shell">
         {/* Topbar */}
-        <header className="topbar">
-          <div className="top-left">
-            <button
-              type="button"
-              className="menu-btn"
-              onClick={() => setSidebarOpen(true)}
-            >
-              <i className="fas fa-bars"></i>
-            </button>
 
-            <img
-              className="school-seal"
-              src="/logo.png"
-              alt="PMRMIS-South school seal"
-            />
-
-            <div className="school">
-              <strong>
-                President Manuel Roxas Memorial Integrated
-                School – South
-              </strong>
-
-              <span>
-                Digital Credentials Management System
-              </span>
-            </div>
-          </div>
-
-          <div className="top-right">
-            {/* Notifications */}
-            <div
-              className="notification-wrapper"
-              ref={notificationRef}
-            >
-              <button
-                type="button"
-                className={`bell ${
-                  notificationOpen ? "active" : ""
-                }`}
-                onClick={toggleNotifications}
-                aria-label="Notifications"
-                title="Notifications"
-              >
-                <i className="far fa-bell"></i>
-
-                {unreadCount > 0 && (
-                  <b>{unreadCount}</b>
-                )}
-              </button>
-
-              {notificationOpen && (
-                <div className="notification-panel">
-                  <div className="notification-head">
-                    <div>
-                      <h3>Notifications</h3>
-
-                      <span>
-                        {unreadCount > 0
-                          ? `${unreadCount} unread notification${
-                              unreadCount > 1 ? "s" : ""
-                            }`
-                          : "You're all caught up"}
-                      </span>
-                    </div>
-
-                    {unreadCount > 0 && (
-                      <button
-                        type="button"
-                        onClick={markAllNotificationsRead}
-                      >
-                        Mark all read
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="notification-list">
-                    {notifications.map(
-                      (notification) => {
-                        const isRead =
-                          readNotifications.includes(
-                            notification.id
-                          );
-
-                        return (
-                          <button
-                            type="button"
-                            key={notification.id}
-                            className={`notification-item ${
-                              isRead ? "read" : "unread"
-                            }`}
-                            onClick={() =>
-                              markNotificationRead(
-                                notification.id
-                              )
-                            }
-                          >
-                            <span
-                              className={`notification-icon ${notification.type}`}
-                            >
-                              <i
-                                className={`fas ${notification.icon}`}
-                              ></i>
-                            </span>
-
-                            <span className="notification-content">
-                              <strong>
-                                {notification.title}
-                              </strong>
-
-                              <span>
-                                {notification.message}
-                              </span>
-
-                              <small>
-                                {notification.time}
-                              </small>
-                            </span>
-
-                            {!isRead && (
-                              <span className="unread-dot"></span>
-                            )}
-                          </button>
-                        );
-                      }
-                    )}
-                  </div>
-
-                  <div className="notification-footer">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setNotificationOpen(false);
-                        showToast(
-                          "Notifications are up to date"
-                        );
-                      }}
-                    >
-                      View all notifications
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Administrator Menu */}
-            <div
-              className="profile-wrapper"
-              ref={adminMenuRef}
-            >
-              <button
-                type="button"
-                className={`profile ${
-                  adminMenuOpen ? "active" : ""
-                }`}
-                onClick={toggleAdminMenu}
-                aria-label="Administrator menu"
-              >
-                <img
-                  src="/logo.png"
-                  alt="Administrator"
-                />
-
-                <div>
-                  <strong>ADMINISTRATOR</strong>
-             
-                </div>
-
-                <i
-                  className={`fas ${
-                    adminMenuOpen
-                      ? "fa-chevron-up"
-                      : "fa-chevron-down"
-                  }`}
-                ></i>
-              </button>
-
-              {adminMenuOpen && (
-                <div className="admin-menu">
-                 
-                 
-
-                  <button
-                    type="button"
-                    className="logout-menu-item"
-                    onClick={logout}
-                  >
-                    <i className="fas fa-right-from-bracket"></i>
-                    <span>Logout</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </header>
 
         {/* Main */}
         <main className="content">
@@ -528,7 +230,7 @@ function AdministrationActLogs() {
 
           {/* Overview */}
           <section className="overview">
-            <article className="metric events">
+            <article role="button" tabIndex={0} onClick={()=>{setDateFilter(localDay(system.data.updatedAt));setModuleFilter('all');}} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setDateFilter(localDay(system.data.updatedAt));setModuleFilter('all');}}} className="metric events">
               <i className="fas fa-list-check"></i>
 
               <div>
@@ -537,7 +239,7 @@ function AdministrationActLogs() {
               </div>
             </article>
 
-            <article className="metric security">
+            <article role="button" tabIndex={0} onClick={()=>{setModuleFilter('Authentication');setDateFilter('');}} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setModuleFilter('Authentication');setDateFilter('');}}} className="metric security">
               <i className="fas fa-shield-halved"></i>
 
               <div>
@@ -546,7 +248,7 @@ function AdministrationActLogs() {
               </div>
             </article>
 
-            <article className="metric users">
+            <article role="button" tabIndex={0} onClick={()=>{setRoleFilter('all');setModuleFilter('all');setDateFilter('');}} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setRoleFilter('all');setModuleFilter('all');setDateFilter('');}}} className="metric users">
               <i className="fas fa-user-clock"></i>
 
               <div>
@@ -614,8 +316,8 @@ function AdministrationActLogs() {
                 <option value="Principal">
                   Principal
                 </option>
-                <option value="ICT Personnel">
-                  ICT Personnel
+                <option value="Principal">
+                  Principal
                 </option>
               </select>
 

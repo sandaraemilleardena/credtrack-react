@@ -11,6 +11,7 @@ from .models import CredentialRequest, RequestEvent, ReferenceSequence
 from django.utils import timezone
 from .serializers import SubmissionSerializer, RequestSerializer, ActionSerializer
 from .services import user_role, transition
+from .sms import sms_available
 
 
 class SubmissionThrottle(AnonRateThrottle):
@@ -46,9 +47,11 @@ def submit(request):
             sequence.save(update_fields=["value"])
             item = CredentialRequest.objects.create(submission_key=key, reference=f"CT-{year}-{sequence.value:05d}", **values)
             RequestEvent.objects.create(request=item, action="submitted", to_status=item.status)
+            from operations.notifications import notify_staff
+            notify_staff("New credential request received.", item)
     # Public submission never exposes the staff queue or personal details.
     return Response({"id": str(item.id), "reference": item.reference, "status": item.status,
-                     "sms_enabled": bool(settings.SMS_ENABLED and settings.SEMAPHORE_API_KEY)},
+                     "tracking_token": str(key), "sms_enabled": sms_available()},
                     status=201 if created else 200)
 
 
@@ -64,11 +67,41 @@ def staff_access(user):
 def queue(request):
     role = staff_access(request.user)
     items = CredentialRequest.objects.select_related("prepared_by", "approved_by", "sms").prefetch_related("events__actor")
-    if role == "PRINCIPAL":
-        items = items.filter(status__in=["PRINCIPAL_REVIEW", "PRINCIPAL_APPROVED", "RETURNED", "READY", "COLLECTED", "REJECTED"])
+
+    from rest_framework.exceptions import ValidationError
+    from django.utils.dateparse import parse_date
+    for parameter, lookup in [("date_from", "created_at__date__gte"), ("date_to", "created_at__date__lte")]:
+        value = request.query_params.get(parameter)
+        if value:
+            parsed = parse_date(value)
+            if not parsed:
+                raise ValidationError("Invalid report date.")
+            items = items.filter(**{lookup: parsed})
+    if request.query_params.get("grade"):
+        items = items.filter(grade_level=request.query_params["grade"])
+    if request.query_params.get("credential"):
+        items = items.filter(credential__icontains=request.query_params["credential"])
+    status = request.query_params.get("status")
+    if status:
+        if status not in CredentialRequest.Status.values:
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError("Invalid request status.")
+        items = items.filter(status=status)
+    date_fields = {"requested_today": "created_at", "approved_today": "approved_at", "processed_today": "ready_at", "released_today": "collected_at"}
+    category = request.query_params.get("category")
+    if category in date_fields:
+        items = items.filter(**{date_fields[category] + "__date": timezone.localdate()})
+    elif category == "processing":
+        items = items.filter(status="APPROVED", ready_at__isnull=True)
+    elif category == "scheduled":
+        items = items.filter(status="APPROVED", ready_at__isnull=False)
+    elif category == "ready":
+        from django.db.models import Q
+        now = timezone.localtime()
+        items = items.filter(status="APPROVED", ready_at__isnull=False).filter(Q(scheduled_release_date__isnull=True) | Q(scheduled_release_date__lt=now.date()) | Q(scheduled_release_date=now.date(), scheduled_release_time__lte=now.time().replace(tzinfo=None)))
     return Response({
         "role": role,
-        "sms_enabled": bool(settings.SMS_ENABLED and settings.SEMAPHORE_API_KEY),
+        "sms_enabled": sms_available(),
         "requests": RequestSerializer(items, many=True).data,
     })
 
@@ -103,8 +136,7 @@ def verification_document(request, request_id):
     from operations.models import AuditEvent
     role = staff_access(request.user)
     item = get_object_or_404(CredentialRequest, pk=request_id)
-    if role == "PRINCIPAL" and not item.confirmed_at:
-        raise PermissionDenied("Administration verification is required first.")
+
     kind = request.query_params.get("kind", "verification")
     if kind not in {"verification", "psa", "id"}: raise Http404()
     stored = getattr(item, f"{kind}_document")
@@ -170,7 +202,7 @@ def attach_verification(request, request_id):
     from rest_framework.exceptions import ValidationError
     if staff_access(request.user) != "ADMIN": raise PermissionDenied("Only Administration may attach verification documents.")
     item = get_object_or_404(CredentialRequest.objects.select_for_update(), pk=request_id)
-    if item.status not in {"SUBMITTED", "PREPARING", "UNAVAILABLE", "RETURNED"}:
+    if item.status not in {"PENDING"}:
         raise Conflict("Verification documents cannot change after confirmation.")
     try: version = int(request.data.get("version", -1))
     except (ValueError, TypeError): raise ValidationError({"version": "Invalid version."})
@@ -186,4 +218,38 @@ def attach_verification(request, request_id):
     if previous_name:
         storage = item.verification_document.storage
         transaction.on_commit(lambda: storage.delete(previous_name), robust=True)
+    return Response(RequestSerializer(item).data)
+
+class TrackingThrottle(AnonRateThrottle):
+    scope = "credential_tracking"
+    rate = "30/hour"
+
+
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+@throttle_classes([TrackingThrottle])
+def track(request):
+    from rest_framework import serializers
+    from rest_framework.exceptions import ValidationError
+    try:
+        key = serializers.UUIDField().run_validation(request.data.get("tracking_token"))
+    except serializers.ValidationError:
+        raise ValidationError("Enter the tracking code from your submission confirmation.")
+    item = get_object_or_404(CredentialRequest.objects.select_related("sms"), submission_key=key)
+    # The private tracking code reveals only operational status, never identity documents or personnel data.
+    sms = getattr(item, "sms", None)
+    return Response({"reference": item.reference, "status": item.status, "status_label": item.get_status_display(), "scheduled_release_date": item.scheduled_release_date, "scheduled_release_time": item.scheduled_release_time, "released_at": item.collected_at, "sms_status": sms.status if sms else "Not queued"})
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def refresh_sms_status(request, request_id):
+    if staff_access(request.user) != "ADMIN":
+        raise PermissionDenied("Only Administration processes SMS notifications.")
+    item = get_object_or_404(CredentialRequest, pk=request_id)
+    sms = getattr(item, "sms", None)
+    if sms:
+        from .sms import sync_notification_status
+        sync_notification_status(sms.pk)
+    item.refresh_from_db()
     return Response(RequestSerializer(item).data)

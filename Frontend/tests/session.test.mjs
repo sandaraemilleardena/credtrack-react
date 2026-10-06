@@ -11,28 +11,40 @@ globalThis.localStorage = storage();
 globalThis.sessionStorage = storage();
 const auth = await import('../src/auth/session.js');
 const ok = data => Promise.resolve({ ok: true, json: async () => data });
-const signedIn = { authenticated: true, user: { id: 1, role: 'ICT' } };
+const signedIn = { authenticated: true, user: { id: 1, role: 'ADMIN' } };
 const tick = () => new Promise(resolve => setImmediate(resolve));
 auth.installSessionProtection();
 
 test('session lifecycle blocks stale history and trusts only the server', async t => {
+  await t.test('refresh restores a server-validated session without a new login', async () => {
+    assert.equal(auth.hasFreshStaffLogin('ADMIN'),false);
+    globalThis.fetch=()=>ok(signedIn);
+    await auth.verifySession('refreshed-dashboard');
+    assert.equal(auth.hasFreshStaffLogin('ADMIN'),true);
+    assert.equal(auth.getSessionState().status,'authenticated');
+    window.dispatchEvent(new Event('pagehide'));
+    const restored=new Event('pageshow');restored.persisted=true;
+    window.dispatchEvent(restored);await tick();
+    assert.equal(auth.hasFreshStaffLogin('ADMIN'),true);
+    assert.equal(auth.getSessionState().status,'authenticated');
+  });
   await t.test('returning to login revokes dashboard entry even if the server cookie is still valid', async () => {
     globalThis.fetch = url => ok(url.endsWith('csrf/') ? {csrfToken:'test-token'} : signedIn);
-    await auth.loginUser('ict','password','ICT');
-    assert.equal(auth.hasFreshStaffLogin('ICT'),true);
+    await auth.loginUser('ict','password','ADMIN');
+    assert.equal(auth.hasFreshStaffLogin('ADMIN'),true);
     let finish;
     globalThis.fetch = () => new Promise(resolve => {finish=resolve;});
     const pending=auth.verifySession('dashboard');
     auth.enterLoginScreen();
-    assert.equal(auth.hasFreshStaffLogin('ICT'),false);
+    assert.equal(auth.hasFreshStaffLogin('ADMIN'),false);
     finish({ok:true,json:async()=>signedIn}); await pending;
     assert.equal(auth.getSessionState().status,'anonymous');
     globalThis.fetch=()=>ok(signedIn);
     await auth.verifySession('old-dashboard-history-entry');
-    assert.equal(auth.hasFreshStaffLogin('ICT'),false);
+    assert.equal(auth.hasFreshStaffLogin('ADMIN'),false);
     globalThis.fetch = url => ok(url.endsWith('csrf/') ? {csrfToken:'test-token'} : signedIn);
-    await auth.loginUser('ict','password','ICT');
-    assert.equal(auth.hasFreshStaffLogin('ICT'),true);
+    await auth.loginUser('ict','password','ADMIN');
+    assert.equal(auth.hasFreshStaffLogin('ADMIN'),true);
     auth.enterLoginScreen();
   });
   await t.test('fresh navigation locks before validation and uses credentialed no-store requests', async () => {
@@ -99,7 +111,7 @@ test('session lifecycle blocks stale history and trusts only the server', async 
     globalThis.fetch=()=>ok({authenticated:true,user:{id:1}});
     await auth.verifySession('dashboard');
     assert.equal(auth.getSessionState().status,'anonymous');
-    const result=await auth.requireSession('ICT');
+    const result=await auth.requireSession('ADMIN');
     assert.equal(result.allowed,false);
   });
 });

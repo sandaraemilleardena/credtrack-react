@@ -5,3 +5,6 @@ DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": ":memor
 PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 SMS_ENABLED = False
 ALLOWED_HOSTS = ["testserver", "localhost", "127.0.0.1"]
+
+SMS_PROVIDER="SEMAPHORE"
+PHILSMS_API_TOKEN=""

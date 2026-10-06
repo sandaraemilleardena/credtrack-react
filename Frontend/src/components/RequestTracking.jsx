@@ -1,0 +1,7 @@
+import {useState} from 'react';
+import {trackCredential} from '../api/credentials';
+export default function RequestTracking(){
+ const [code,setCode]=useState(''),[result,setResult]=useState(null),[error,setError]=useState(''),[busy,setBusy]=useState(false);
+ async function submit(e){e.preventDefault();if(busy)return;setBusy(true);setError('');setResult(null);try{setResult(await trackCredential(code.trim()));}catch(e){setError(e.message);}finally{setBusy(false);}}
+ return <section className="request-tracking" style={{marginTop:24,padding:20,border:'1px solid #e8e9ee',borderRadius:14,background:'white'}}><h2>Track Your Request</h2><form onSubmit={submit}><label htmlFor="tracking-code">Tracking code from your submission confirmation</label><div style={{display:'flex',gap:8,marginTop:10}}><input id="tracking-code" value={code} onChange={e=>setCode(e.target.value)} required maxLength={36} placeholder="Enter your tracking code" style={{minWidth:0,flex:1,padding:10}}/><button disabled={busy}>{busy?'Checking…':'Check Status'}</button></div></form>{error&&<p role="alert">{error}</p>}{result&&<div role="status"><h3>{result.reference} · {result.status_label}</h3><p>Scheduled release / sending: {result.scheduled_release_date?`${result.scheduled_release_date} at ${result.scheduled_release_time} (Philippine time)`:'Not yet scheduled'}</p><p>Actual release: {result.released_at?new Date(result.released_at).toLocaleString('en-PH',{timeZone:'Asia/Manila'}):'Not yet released'}</p><p>SMS: {result.sms_status}</p></div>}</section>;
+}

@@ -4,6 +4,7 @@ import {API_BASE_URL} from './api/config';
 import {getCsrfToken} from './auth/session';
 import './AdministrationLogin.css';
 import "./EntryTheme.css";
+import './PasswordRecovery.css';
 import EntryBrand from './EntryBrand';
 export default function PasswordReset() {
   const {uid, token} = useParams();
@@ -17,7 +18,7 @@ export default function PasswordReset() {
     event.preventDefault(); if(submitLock.current) return; setError('');
     const next = {};
     for (const name of reset ? ['password','confirm_password'] : ['username','email']) {
-      if (!values[name].trim()) next[name] = 'This question is required.';
+      if (!values[name].trim()) next[name] = 'This field is required.';
     }
     if (!reset && values.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) next.email = 'Enter a valid email address.';
     setFields(next);
@@ -33,13 +34,14 @@ export default function PasswordReset() {
     } catch(e) {setError(e.message);} finally {submitLock.current=false;setBusy(false);}
   }
   return <div className="admin-login-page entry-page recovery-page"><main className="admin-login-main"><section className="admin-login-card entry-card">
-    <EntryBrand/><h1 className="entry-banner">{reset?'Change Password':'Forgot Password?'}</h1>
-    {!reset && <p>Enter your username and registered email. We will send a one-hour reset link to that email.</p>}
+    <aside className="recovery-branding"><EntryBrand/><div className="recovery-brand-copy"><span>ACCOUNT RECOVERY</span><h2>Let’s get you<br/>back in.</h2><p>Secure access to your school account.</p></div></aside>
+    <div className="recovery-content"><span className="recovery-eyebrow">STAFF PORTAL</span><h1>{reset?'Set a new password':'Forgot your password?'}</h1>
+    <p className="recovery-intro">{reset?'Choose a strong password for your account.':'Enter your username and registered email to receive a reset link.'}</p>
     {error && <p role="alert">{error}</p>}{message ? <p role="status">{message}</p> : <form className="admin-login-form" noValidate onSubmit={submit}>
-      {(reset ? [['password','New Password','password'],['confirm_password','Confirm New Password','password']] : [['username','Username','text'],['email','Registered Email','email']]).map(([name,label,type]) => <div className="admin-field" key={name}><i className={reset?'fa-solid fa-lock':name==='email'?'fa-regular fa-envelope':'fa-regular fa-user'} aria-hidden="true"/><label htmlFor={name}>{label}</label><input id={name} name={name} type={type} placeholder={reset ? "Enter your new password" : name === "email" ? "Enter your registered email" : "Enter your username"} required aria-invalid={Boolean(fields[name])} aria-describedby={fields[name]?name+'-error':undefined} maxLength={name.includes('password')?256:name==='username'?150:254} autoComplete={reset?'new-password':name==='email'?'email':'username'} value={values[name]} onChange={change}/>{fields[name] && <small id={name+'-error'} role="alert" style={{color:'#b42318'}}>{fields[name]}</small>}</div>)}
+      {(reset ? [['password','New Password','password'],['confirm_password','Confirm New Password','password']] : [['username','Username','text'],['email','Registered Email','email']]).map(([name,label,type]) => <div className="admin-field" key={name}><i className={reset?'fa-solid fa-lock':name==='email'?'fa-regular fa-envelope':'fa-regular fa-user'} aria-hidden="true"/><label htmlFor={name}>{label}</label><input id={name} name={name} type={type} placeholder={reset ? (name === "confirm_password" ? "Re-enter your new password" : "Enter your new password") : name === "email" ? "Enter your registered email" : "Enter your username"} required aria-invalid={Boolean(fields[name])} aria-describedby={fields[name]?name+'-error':undefined} maxLength={name.includes('password')?256:name==='username'?150:254} autoComplete={reset?'new-password':name==='email'?'email':'username'} value={values[name]} onChange={change}/>{fields[name] && <small id={name+'-error'} role="alert" style={{color:'#b42318'}}>{fields[name]}</small>}</div>)}
       {reset && <p>Use at least 10 characters. Avoid common, numeric-only passwords and personal information.</p>}
-      <button className="admin-login-button" disabled={busy}>{busy?'Submitting…':reset?'Change Password':'Send reset link'}</button></form>}
-    <Link className="admin-forgot-link" to="/" style={{display:'inline-block',marginTop:16}}>← Back to Role Selection</Link>
-    <p className="entry-footer"><i className="fa-solid fa-shield-halved" aria-hidden="true"/> Secure account recovery</p>
+      <button className="admin-login-button" disabled={busy}><i className="fa-solid fa-arrow-right" aria-hidden="true"/> {busy?'Submitting…':reset?'Change Password':'Send reset link'}</button></form>}
+    <Link className="recovery-back" to="/login/school"><i className="fa-solid fa-arrow-left" aria-hidden="true"/> Back to staff sign in</Link>
+    <p className="entry-footer"><i className="fa-solid fa-shield-halved" aria-hidden="true"/> {reset?'Secure account recovery':'Reset link expires in 1 hour'}</p></div>
   </section></main></div>;
 }

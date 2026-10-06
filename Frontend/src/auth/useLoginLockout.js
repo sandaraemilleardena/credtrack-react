@@ -27,7 +27,7 @@ export default function useLoginLockout(username) {
     blocked: limit.locked || seconds > 0,
     seconds,
     recordFailure,
-    message: limit.locked ? 'Your account is locked. Contact ICT Personnel to unlock it.' : seconds > 0 ? 'Too many failed attempts. Try again in ' + seconds + ' seconds.' : '',
+    message: limit.locked ? 'Your account is locked. Contact the Principal to unlock it.' : seconds > 0 ? 'Too many failed attempts. Try again in ' + seconds + ' seconds.' : '',
     buttonText: limit.locked ? 'Account locked' : seconds > 0 ? 'Try again in ' + seconds + 's' : 'Login',
   };
 }

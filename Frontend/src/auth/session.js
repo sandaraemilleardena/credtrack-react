@@ -1,12 +1,13 @@
 import { API_BASE_URL } from '../api/config.js';
-import { createIdleSession } from './idleSession.js';
+import { createIdleSession, IDLE_TIMEOUT_MS } from './idleSession.js';
 
 const listeners = new Set();
 let state = { status: 'checking', user: null, routeKey: null, error: '' };
 let sequence = 0;
 let signingOut = false;
 // UI entry policy only: Django remains the authority for every protected API.
-// A fresh document (typed URL, reload, or new tab) must pass the login form.
+// Fresh documents restore access only after Django validates the session cookie.
+let entryRequiresLogin = false;
 let staffEntryRole = null;
 export const hasFreshStaffLogin = role => staffEntryRole === role;
 let installed = false;
@@ -37,6 +38,7 @@ export function enterLoginScreen() {
   // Visiting a login page ends this document's staff entry permission.
   // Invalidate pending checks so history navigation cannot restore that permission.
   staffEntryRole = null;
+  entryRequiresLogin = true;
   sequence++;
   clearLegacySession();
   publish({status:'anonymous', user:null, routeKey:null, validatedRouteKey:null, error:''});
@@ -74,7 +76,7 @@ export async function getCsrfToken() {
 }
 export async function getCurrentSession() {
   const data = await authRequest('session/');
-  return { authenticated: data.authenticated === true && Boolean(data.user?.role), user: data.user || null };
+  return { authenticated: data.authenticated === true && Boolean(data.user?.role), user: data.user || null, remaining: data.idle_remaining_seconds };
 }
 export async function verifySession(routeKey = state.routeKey) {
   if (signingOut) return;
@@ -84,6 +86,11 @@ export async function verifySession(routeKey = state.routeKey) {
     const result = await getCurrentSession();
     if (current !== sequence) return;
     if (!result.authenticated) { staffEntryRole = null; idle.stop(); }
+    else if (!entryRequiresLogin && staffEntryRole !== result.user.role) {
+      staffEntryRole = result.user.role;
+      const remaining = Number.isFinite(result.remaining) ? Math.max(0, Math.min(IDLE_TIMEOUT_MS, result.remaining * 1000)) : IDLE_TIMEOUT_MS;
+      idle.start(Date.now() - (IDLE_TIMEOUT_MS - remaining), false);
+    }
     publish({ status: result.authenticated ? 'authenticated' : 'anonymous', user: result.user, routeKey, validatedRouteKey: routeKey, error: '' });
   } catch (error) {
     if (current === sequence) publish({ status: 'error', user: null, routeKey, error: error.message });
@@ -101,7 +108,7 @@ export function installSessionProtection() {
   idleTimer.unref?.();
   window.addEventListener('pagehide', lock);
   window.addEventListener('pageshow', event => {
-    if (event.persisted) enterLoginScreen();
+    lock();
     verifySession();
   });
   window.addEventListener('popstate', lock);
@@ -112,7 +119,7 @@ export function installSessionProtection() {
   });
   window.addEventListener('storage', event => {
     if (event.key === ACTIVITY_EVENT) { idle.activity(Number(event.newValue), true); idle.check(); }
-    if (event.key === SESSION_EVENT) { enterLoginScreen(); verifySession(); }
+    if (event.key === SESSION_EVENT) { lock(); verifySession(); }
   });
 }
 export async function loginUser(username, password, role) {
@@ -125,6 +132,7 @@ export async function loginUser(username, password, role) {
     enterLoginScreen();
     throw new Error('This account is not authorized for the selected role.');
   }
+  entryRequiresLogin = false;
   staffEntryRole = role;
   idle.start();
   clearLegacySession();
@@ -135,6 +143,7 @@ export async function loginUser(username, password, role) {
 export async function logoutUser() {
   idle.stop();
   staffEntryRole = null;
+  entryRequiresLogin = true;
   signingOut = true;
   lock();
   publish({ ...state, user: null, validatedRouteKey: null });

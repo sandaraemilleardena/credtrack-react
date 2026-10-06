@@ -9,6 +9,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(max_length=80, error_messages={"required": "This question is required.", "blank": "This question is required."})
     middle_name = serializers.CharField(max_length=80, error_messages={"required": "This is a required question", "blank": "This is a required question"})
     last_name = serializers.CharField(max_length=80, error_messages={"required": "This question is required.", "blank": "This question is required."})
+    identity_documents = serializers.ListField(child=serializers.FileField(), min_length=1, max_length=3, required=False, write_only=True)
     verification_document = serializers.FileField(required=False)
     psa_document = serializers.FileField(required=False)
     id_document = serializers.FileField(required=False)
@@ -18,7 +19,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CredentialRequest
-        fields = ["submission_key", "requester_type", "first_name", "middle_name", "last_name", "verification_document", "psa_document", "id_document", "delivery_method", "receiving_school", "other_purpose", "lrn", "grade_level", "section", "graduation_year", "credential", "purpose", "phone", "email", "additional_details"]
+        fields = ["identity_documents", "submission_key", "requester_type", "first_name", "middle_name", "last_name", "verification_document", "psa_document", "id_document", "delivery_method", "receiving_school", "other_purpose", "lrn", "grade_level", "section", "graduation_year", "credential", "purpose", "phone", "email", "additional_details"]
 
     def validate_lrn(self, value):
         if not re.fullmatch(r"[0-9]{12}", value):
@@ -36,6 +37,12 @@ class SubmissionSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, data):
+        documents = data.pop("identity_documents", None)
+        if documents is not None:
+            if any(data.get(key) for key in ["verification_document", "psa_document", "id_document"]):
+                raise serializers.ValidationError("Use one identity verification upload area.")
+            for key, file in zip(["verification_document", "psa_document", "id_document"], documents):
+                data[key] = file
         required = ["grade_level", "section"] if data["requester_type"] == "Student" else ["graduation_year"]
         errors = {key: "This field is required." for key in required if not data.get(key)}
         year = data.get("graduation_year", "")
@@ -56,7 +63,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
             if not data.get("receiving_school", "").strip(): errors["receiving_school"] = "This question is required."
         else: data["receiving_school"] = ""
         if not any(data.get(key) for key in ["verification_document", "psa_document", "id_document"]):
-            errors["psa_document"] = "Upload at least one PSA document or valid ID."
+            errors["psa_document"] = "Upload 1–3 identity/supporting documents."
         for kind in ["verification", "psa", "id"]:
             if data.get(f"{kind}_document"):
                 try: data[f"{kind}_sha256"] = validate_document(data[f"{kind}_document"])
@@ -69,16 +76,17 @@ class SubmissionSerializer(serializers.ModelSerializer):
 
 class EventSerializer(serializers.ModelSerializer):
     actor = serializers.CharField(source="actor.username", default="Requester", read_only=True)
+    actor_role = serializers.CharField(source="actor.userprofile.role", default="", read_only=True)
 
     class Meta:
         model = RequestEvent
-        fields = ["action", "from_status", "to_status", "note", "actor", "created_at"]
+        fields = ["action", "from_status", "to_status", "note", "actor", "actor_role", "created_at"]
 
 
 class SmsSerializer(serializers.ModelSerializer):
     class Meta:
         model = SmsNotification
-        fields = ["status", "provider_status", "last_error", "attempts", "updated_at"]
+        fields = ["status", "provider", "provider_status", "last_error", "attempts", "created_at", "updated_at", "sent_at", "accepted_at"]
 
 
 class RequestSerializer(serializers.ModelSerializer):
@@ -108,7 +116,7 @@ class RequestSerializer(serializers.ModelSerializer):
 
 
 class ActionSerializer(serializers.Serializer):
-    action = serializers.ChoiceField(choices=["prepare", "unavailable", "submit_review", "approve", "ready", "collect"])
+    action = serializers.ChoiceField(choices=["approve", "ready", "collect"])
     release_date = serializers.DateField(required=False)
     release_time = serializers.TimeField(required=False, input_formats=["%H:%M"])
     version = serializers.IntegerField(min_value=0)

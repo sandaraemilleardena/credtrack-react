@@ -47,3 +47,29 @@ class StudentCredential(models.Model):
     document = models.FileField(storage=private_storage, upload_to=document_path)
     is_sample = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+
+class StaffNotification(models.Model):
+    recipient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="staff_notifications")
+    request = models.ForeignKey("credentials.CredentialRequest", null=True, blank=True, on_delete=models.SET_NULL)
+    title = models.CharField(max_length=160)
+    message = models.CharField(max_length=2000)
+    created_at = models.DateTimeField(auto_now_add=True)
+    read_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+
+
+class IssueReport(models.Model):
+    from credentials.documents import private_storage, document_path
+    submitted_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL)
+    problem_type = models.CharField(max_length=80)
+    subject = models.CharField(max_length=160)
+    message = models.TextField(max_length=10000)
+    evidence = models.FileField(storage=private_storage, upload_to=document_path, blank=True)
+    evidence_name = models.CharField(max_length=255, blank=True)
+    evidence_sha256 = models.CharField(max_length=64, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]

@@ -57,7 +57,8 @@ function AdministrationReports() {
   const [dateTo, setDateTo] = useState(localDay(new Date()));
   const [credentialFilter, setCredentialFilter] =
     useState("All Credentials");
-  const items=system.data.requests.filter(r=>(!dateFrom||localDay(r.created_at)>=dateFrom)&&(!dateTo||localDay(r.created_at)<=dateTo)&&(credentialFilter==='All Credentials'||r.credential.toLowerCase().includes(credentialFilter.toLowerCase()))).filter(r=>reportType==='Released Credentials Report'?r.status==='COLLECTED':reportType==='Credential Completion Report'?Boolean(r.approved_at):true);
+  const items=system.data.requests.filter(r=>(!dateFrom||localDay(r.created_at)>=dateFrom)&&(!dateTo||localDay(r.created_at)<=dateTo)&&(credentialFilter==='All Credentials'||r.credential.toLowerCase().includes(credentialFilter.toLowerCase()))).filter(r=>reportType==='Released Credentials Report'?r.status==='RELEASED':reportType==='Credential Completion Report'?Boolean(r.approved_at):true);
+  const openStatistic=(category)=>{const params=new URLSearchParams({category});if(dateFrom)params.set('date_from',dateFrom);if(dateTo)params.set('date_to',dateTo);if(credentialFilter!=='All Credentials')params.set('credential',credentialFilter);navigate('/admin-credential-management?'+params);};
   const totals=metrics(items), monthly=monthlyCounts(items);
   const popular=Object.entries(items.reduce((all,r)=>({...all,[r.credential]:(all[r.credential]||0)+1}),{})).sort((a,b)=>b[1]-a[1])[0]||['None yet',0];
   const [reportPage,setReportPage]=useState(1),pages=Math.max(1,Math.ceil(items.length/10)),currentPage=Math.min(reportPage,pages);
@@ -180,16 +181,10 @@ function AdministrationReports() {
   return (
     <div className="reports-page">
       {/* Shared dashboard sidebar */}
-      <button type="button" className={`sidebar-overlay ${sidebarOpen ? "show" : ""}`} aria-label="Close navigation" onClick={closeSidebar} />
-      <aside className={`sidebar ${sidebarOpen ? "open" : ""}`} aria-label="Administrator navigation">
-        <div className="brand"><div className="brand-logo"><img src="/logo.png" alt="PMRMIS-South logo" /></div><div className="brand-copy"><h2>CredTrack</h2><span>PMRMIS–SOUTH</span></div><button type="button" className="close-sidebar" onClick={closeSidebar}><i className="fas fa-xmark" /></button></div>
-        <nav className="sidebar-navigation"><ul className="menu">{navigationItems.map((item) => <li className={`menu-item ${isActiveRoute(item.path) ? "active" : ""}`} key={item.path}><button type="button" className="menu-link" onClick={() => { navigate(item.path); closeSidebar(); }}><span className="menu-icon"><i className={`fas ${item.icon}`} /></span><span className="menu-text">{item.label}</span>{isActiveRoute(item.path) && <span className="active-indicator"><i className="fas fa-chevron-right" /></span>}</button></li>)}</ul></nav>
-      </aside>
+
+
       <div className="shell">
-        <header className="topbar">
-          <div className="top-left"><button type="button" className="menu-btn" onClick={() => setSidebarOpen(true)}><i className="fas fa-bars" /></button><img className="school-seal" src="/logo.png" alt="PMRMIS-South school seal" /><div className="school"><strong>President Manuel Roxas Memorial Integrated School – South</strong><span>Digital Credentials Management System</span></div></div>
-          <div className="top-right"><button type="button" className="bell" onClick={() => notify(`${system.data.requests.filter(r=>r.status==='PRINCIPAL_APPROVED').length} requests await final release confirmation.`)}><i className="far fa-bell" /><b>{system.data.requests.filter(r=>r.status==='PRINCIPAL_APPROVED').length}</b></button><div className="admin-menu-wrap"><button type="button" className="profile" aria-expanded={adminMenuOpen} onClick={() => setAdminMenuOpen((open) => !open)}><img src="/logo.png" alt="Administrator" /><div><strong>ADMINISTRATOR</strong></div><i className="fas fa-chevron-down" /></button>{adminMenuOpen && <div className="admin-dropdown"><button type="button" className="admin-logout" onClick={handleLogout}><i className="fas fa-right-from-bracket" />Log out</button></div>}</div></div>
-        </header>
+
         {/* Content */}
         <main className="content">
           {/* Page Header */}
@@ -232,7 +227,7 @@ function AdministrationReports() {
               <span>Track request activity, release performance, and document processing from one reporting workspace.</span>
             </div>
             <div className="overview-metrics">
-              <div><b>{totals.total}</b><span>Requests in period</span></div>
+              <button onClick={()=>openStatistic("total")}><b>{totals.total}</b><span>Requests in period</span></button>
               <div><b>{totals.total?Math.round(totals.released/totals.total*100):0}%</b><span>Completion rate</span></div>
               <div><b>{totals.average}d</b><span>Average processing</span></div>
             </div>
@@ -612,4 +607,4 @@ function AdministrationReports() {
   );
 }
 
-export default AdministrationReports; 
+export default AdministrationReports;

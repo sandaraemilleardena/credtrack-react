@@ -1,0 +1,21 @@
+const paths={
+ 'fa-arrow-rotate-right':'M21 3v6h-6 M21 9a9 9 0 1 0 0 7',
+ 'fa-right-from-bracket':'M9 4H4v16h5 M10 12h11 M17 8l4 4-4 4',
+ 'fa-xmark':'M6 6l12 12 M18 6L6 18',
+ 'fa-circle-check':'M8 12l3 3 5-6 M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0',
+ 'fa-hourglass-half':'M6 3h12 M6 21h12 M7 3v4l10 10v4 M17 3v4L7 17v4',
+ 'fa-file-circle-check':'M5 3h9l4 4v5 M5 3v18h7 M14 3v5h4 M15 18l2 2 4-5',
+ 'fa-comment-dots':'M3 4h18v13H9l-6 4V4 M7 10h.01 M12 10h.01 M17 10h.01',
+ 'fa-table-columns':'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z',
+ 'fa-folder-open':'M3 7V5h6l2 2h10v4 M3 7v13h16l3-9H8l-3 9',
+ 'fa-user-graduate':'M3 7l9-4 9 4-9 4-9-4 M7 9v4c0 4 10 4 10 0V9 M4 21c0-6 16-6 16 0',
+ 'fa-chart-line':'M4 3v17h17 M7 14l4-4 4 2 5-7',
+ 'fa-clock-rotate-left':'M3 6v5h5 M3 11a9 9 0 1 1 3 8 M12 7v6l4 2',
+ 'fa-circle-exclamation':'M12 7v6 M12 17h.01 M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0',
+ 'fa-gear':'M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8 M10 3h4l1 3 3 1 3 2v5l-3 1-1 3-3 3h-4l-1-3-3-1-3-2V9l3-1 1-3z',
+ 'fa-users-gear':'M9 4a3 3 0 1 1 0 6 3 3 0 0 1 0-6 M2 20v-3c0-6 14-6 14 0v3 M17 5a3 3 0 0 1 0 6 M18 14c3 0 4 2 4 5',
+ 'fa-bell':'M18 8a6 6 0 0 0-12 0v7l-2 3h16l-2-3V8 M10 21h4',
+ 'fa-bars':'M4 6h16 M4 12h16 M4 18h16',
+ 'fa-chevron-down':'M5 9l7 7 7-7',
+};
+export default function StaffIcon({name}){return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name]||paths['fa-circle-exclamation']}/></svg>;}

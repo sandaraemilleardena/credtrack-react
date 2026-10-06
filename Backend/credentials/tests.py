@@ -54,12 +54,10 @@ class WorkflowTests(TestCase):
         self.client.force_authenticate(self.admin)
         download = self.client.get(url)
         self.assertEqual(download.status_code, 200)
-        download.close()
+        close_test_response(download)
         data = self.client.get("/api/credentials/").data["requests"][0]
         self.assertTrue(data["has_psa_document"] and data["has_id_document"])
         self.assertNotIn("psa_document", data)
-        item = self.move(item, self.admin, "prepare")
-        self.move(item, self.admin, "submit_review")
 
     def test_any_file_type_submission_and_middle_name_required(self):
         for field in ["psa_document", "id_document"]:
@@ -75,7 +73,7 @@ class WorkflowTests(TestCase):
         item = self.submit()
         url = f"/api/credentials/{item.pk}/verification/?preview=1"
         self.assertIn(self.client.get(url).status_code, [401, 403])
-        self.client.force_authenticate(self.principal)
+        self.client.force_authenticate(self.ict)
         self.assertEqual(self.client.get(url).status_code, 403)
         self.client.force_authenticate(self.admin)
         response = self.client.get(url)
@@ -83,7 +81,7 @@ class WorkflowTests(TestCase):
         self.assertEqual(response["Content-Type"], "image/png")
         self.assertEqual(response["Content-Disposition"], "inline")
         self.assertIn("no-store", response["Cache-Control"])
-        response.close()
+        close_test_response(response)
 
     def test_document_size_limit(self):
         from .documents import validate_document
@@ -107,7 +105,7 @@ class WorkflowTests(TestCase):
                 self.assertEqual(response["Content-Type"], mime)
                 self.assertEqual(b"".join(response.streaming_content), content)
                 self.assertIn("sandbox", response["Content-Security-Policy"])
-                response.close()
+                close_test_response(response)
 
     def staff(self, name, role):
         user = User.objects.create_user(name, password="unit-test-only")
@@ -126,13 +124,11 @@ class WorkflowTests(TestCase):
         return CredentialRequest.objects.get(pk=response.data["id"])
 
     def move(self, item, actor, action, note="Verified in test"):
-        return transition(item.pk, actor, action, item.version, note)
+        return transition(item.pk, actor, action, item.version, note, **({"release_date": __import__("datetime").date(2026, 10, 20), "release_time": __import__("datetime").time(9, 0)} if action == "ready" else {}))
 
     def approved(self):
         item = self.submit()
-        item = self.move(item, self.admin, "prepare")
-        item = self.move(item, self.admin, "submit_review")
-        return self.move(item, self.principal, "approve")
+        return self.move(item, self.admin, "approve")
 
     def test_complete_workflow_queues_only_after_final_admin_confirmation(self):
         item = self.approved()
@@ -144,8 +140,8 @@ class WorkflowTests(TestCase):
         self.assertEqual(sms.attempts, 0)
         self.assertIn("No SMS has been sent", sms.last_error)
         item = self.move(item, self.admin, "collect", "Collected by requester; ID checked")
-        self.assertEqual(item.status, "COLLECTED")
-        self.assertEqual(item.events.count(), 6)
+        self.assertEqual(item.status, "RELEASED")
+        self.assertEqual(item.events.count(), 4)
         sms.refresh_from_db()
         self.assertEqual(sms.status, "CANCELLED")
 
@@ -169,32 +165,25 @@ class WorkflowTests(TestCase):
         self.client.force_authenticate(self.ict)
         self.assertEqual(self.client.get("/api/credentials/").status_code, 403)
 
-    def test_principal_sees_only_prepared_requests(self):
+    def test_principal_monitors_all_requests(self):
         item = self.submit()
         self.client.force_authenticate(self.principal)
-        self.assertEqual(self.client.get("/api/credentials/").data["requests"], [])
-        item = self.move(item, self.admin, "prepare")
-        self.move(item, self.admin, "submit_review")
-        self.assertEqual(len(self.client.get("/api/credentials/").data["requests"]), 1)
+        self.assertEqual(self.client.get("/api/credentials/").data["requests"][0]["id"], str(item.pk))
 
     def test_roles_cannot_skip_stages(self):
         item = self.submit()
-        for user, action, expected in [(self.admin, "approve", 403), (self.principal, "ready", 403), (self.admin, "ready", 409), (self.principal, "approve", 409), (self.ict, "prepare", 403)]:
+        for user, action, expected in [(self.principal,"approve",403),(self.principal,"ready",403),(self.admin,"ready",409),(self.admin,"collect",409),(self.ict,"approve",403)]:
             self.client.force_authenticate(user)
-            response = self.client.post(f"/api/credentials/{item.pk}/action/", {"action": action, "version": 0, **({"release_date":"2026-10-20","release_time":"09:00"} if action=="ready" else {})}, format="json")
-            self.assertEqual(response.status_code, expected, response.data)
+            response = self.client.post(f"/api/credentials/{item.pk}/action/", {"action":action,"version":0, **({"release_date":"2026-10-20","release_time":"09:00"} if action=="ready" else {})}, format="json")
+            self.assertEqual(response.status_code,expected,response.data)
         self.assertFalse(SmsNotification.objects.exists())
 
     def test_actions_work_without_notes_and_keep_history(self):
         item = self.submit()
-        self.client.force_authenticate(self.admin)
-        response = self.client.post(f"/api/credentials/{item.pk}/action/", {"action": "unavailable", "version": 0}, format="json")
-        self.assertEqual(response.status_code, 200)
-        item.refresh_from_db()
-        item = self.move(item, self.admin, "prepare")
-        item = self.move(item, self.admin, "submit_review", "")
-        item = self.move(item, self.principal, "approve", "")
-        self.assertEqual(item.status, "PRINCIPAL_APPROVED")
+        item = self.move(item,self.admin,"approve","")
+        self.assertEqual(item.status,"APPROVED")
+        self.assertEqual(item.approved_by,self.admin)
+        self.assertIsNotNone(item.confirmed_at)
         self.assertFalse(SmsNotification.objects.exists())
 
     def test_stale_double_release_has_only_one_notification(self):
@@ -213,7 +202,7 @@ class WorkflowTests(TestCase):
         response = client.post(f"/api/credentials/{item.pk}/action/", {"action": "prepare", "version": 0}, format="json")
         self.assertEqual(response.status_code, 403)
 
-    @override_settings(SMS_ENABLED=True, SEMAPHORE_API_KEY="test-key-not-real")
+    @override_settings(SMS_PROVIDER="SEMAPHORE", SMS_ENABLED=True, SEMAPHORE_API_KEY="test-key-not-real")
     @patch("credentials.sms.urlopen")
     def test_sms_acceptance_and_duplicate_protection(self, urlopen):
         item = self.approved()
@@ -227,7 +216,7 @@ class WorkflowTests(TestCase):
         self.assertEqual(sms.provider_status, "Queued")
         self.assertEqual(urlopen.call_count, 1)
 
-    @override_settings(SMS_ENABLED=True, SEMAPHORE_API_KEY="test-key-not-real")
+    @override_settings(SMS_PROVIDER="SEMAPHORE", SMS_ENABLED=True, SEMAPHORE_API_KEY="test-key-not-real")
     @patch("credentials.sms.urlopen", side_effect=TimeoutError)
     def test_uncertain_sms_is_not_blindly_retried(self, urlopen):
         item = self.approved()
@@ -272,22 +261,22 @@ class WorkflowTests(TestCase):
     def test_private_document_requires_authorized_role_and_verified_stage(self):
         item=self.submit();url=f"/api/credentials/{item.pk}/verification/"
         self.assertEqual(self.client.get(url).status_code,403)
-        for actor in [self.ict,self.principal]:
+        for actor in [self.ict]:
             self.client.force_authenticate(actor);self.assertEqual(self.client.get(url).status_code,403)
         self.client.force_authenticate(self.admin)
         response=self.client.get(url);self.assertEqual(response.status_code,200)
-        self.assertIn("attachment",response["Content-Disposition"]);self.assertIn("no-store",response["Cache-Control"]);response.close()
+        self.assertIn("attachment",response["Content-Disposition"]);self.assertIn("no-store",response["Cache-Control"]);close_test_response(response)
         queue=self.client.get("/api/credentials/").data["requests"][0]
         self.assertNotIn("verification_document",queue);self.assertNotIn("verification_sha256",queue)
         self.assertTrue(queue["has_verification_document"])
-        self.move(item,self.admin,"submit_review")
+        self.move(item,self.admin,"approve")
         self.client.force_authenticate(self.principal)
-        response=self.client.get(url);self.assertEqual(response.status_code,200);response.close()
+        response=self.client.get(url);self.assertEqual(response.status_code,200);close_test_response(response)
         self.assertEqual(self.client.get(f"/api/credentials/{uuid.uuid4()}/verification/").status_code,404)
 
-    def test_snapshot_does_not_leak_unconfirmed_requests_to_principal(self):
-        self.submit();self.client.force_authenticate(self.principal)
-        self.assertEqual(self.client.get("/api/operations/snapshot/").data["requests"],[])
+    def test_snapshot_shows_pending_requests_to_principal(self):
+        item=self.submit();self.client.force_authenticate(self.principal)
+        self.assertEqual(self.client.get("/api/operations/snapshot/").data["requests"][0]["id"],str(item.pk))
 
     def test_upload_rejects_missing_empty_and_oversize(self):
         self.assertEqual(self.client.post("/api/credentials/submit/",self.payload,format="multipart").status_code,400)
@@ -299,7 +288,7 @@ class WorkflowTests(TestCase):
     def test_backend_refuses_confirmation_without_identity_document(self):
         item=self.submit();item.verification_document="";item.save()
         self.client.force_authenticate(self.admin)
-        response=self.client.post(f"/api/credentials/{item.pk}/action/",{"action":"submit_review","version":0,"note":"checked"},format="json")
+        response=self.client.post(f"/api/credentials/{item.pk}/action/",{"action":"approve","version":0,"note":"checked"},format="json")
         self.assertEqual(response.status_code,400)
 
     def test_public_options_only_exposes_grade_section_mapping(self):
@@ -322,39 +311,34 @@ class WorkflowTests(TestCase):
         self.client.force_authenticate(self.admin);self.assertEqual(upload(99).status_code,409)
         self.assertEqual(upload(0).status_code,200)
         item.refresh_from_db();self.assertEqual(item.version,1)
-        self.move(item,self.admin,"submit_review")
+        self.move(item,self.admin,"approve")
         self.assertEqual(upload(2).status_code,409)
 
-    def test_principal_only_has_approval_action(self):
-        item=self.submit();item=self.move(item,self.admin,"submit_review")
-        self.client.force_authenticate(self.principal)
-        for action in ("reject", "return", "ready", "prepare", "collect"):
-            response=self.client.post(f"/api/credentials/{item.pk}/action/",{"action":action,"version":item.version},format="json")
-            self.assertIn(response.status_code,(400,403))
-        item.refresh_from_db();self.assertEqual(item.status,"PRINCIPAL_REVIEW")
-        self.client.force_authenticate(self.admin)
-        response=self.client.post(f"/api/credentials/{item.pk}/action/",{"action":"ready","version":item.version,"release_date":"2026-10-20","release_time":"09:00"},format="json")
-        self.assertEqual(response.status_code,409)
+    def test_principal_has_no_workflow_mutations(self):
+        item=self.approved();self.client.force_authenticate(self.principal)
+        for action in ("approve","ready","collect"):
+            response=self.client.post(f"/api/credentials/{item.pk}/action/",{"action":action,"version":item.version,"release_date":"2026-10-20","release_time":"09:00"} if action=="ready" else {"action":action,"version":item.version},format="json")
+            self.assertEqual(response.status_code,403)
+        item.refresh_from_db();self.assertEqual(item.status,"APPROVED")
 
 
     def test_workflow_state_survives_new_authenticated_clients_at_every_stage(self):
-        item = self.submit()
-        for actor, action, expected in [(self.admin,"submit_review","PRINCIPAL_REVIEW"),(self.principal,"approve","PRINCIPAL_APPROVED"),(self.admin,"ready","READY"),(self.admin,"collect","COLLECTED")]:
-            client=APIClient();client.force_login(actor)
-            response=client.post(f"/api/credentials/{item.pk}/action/",{"action":action,"version":item.version,"note":"Verified for persistence test",**({"release_date":"2026-10-20","release_time":"09:00"} if action=="ready" else {})},format="json")
+        item=self.submit()
+        for action,expected in [("approve","APPROVED"),("ready","APPROVED"),("collect","RELEASED")]:
+            client=APIClient();client.force_login(self.admin)
+            body={"action":action,"version":item.version,**({"release_date":"2026-10-20","release_time":"09:00"} if action=="ready" else {})}
+            response=client.post(f"/api/credentials/{item.pk}/action/",body,format="json")
             self.assertEqual(response.status_code,200,response.data)
             item.refresh_from_db();self.assertEqual(item.status,expected)
-            fresh=APIClient();fresh.force_login(actor)
+            fresh=APIClient();fresh.force_login(self.principal)
             row=next(r for r in fresh.get("/api/credentials/").data["requests"] if r["id"]==str(item.pk))
             self.assertEqual(row["status"],expected)
-            self.assertEqual(row["reference"],item.reference)
-            self.assertIsNotNone(row["confirmed_at"])
-            if action != "submit_review": self.assertIsNotNone(row["approved_at"])
+            self.assertIsNotNone(row["approved_at"])
 
     def test_client_cannot_supply_confirmation_approval_or_release_on_submission(self):
-        self.payload.update(status="COLLECTED",confirmed_at="2026-01-01T00:00:00Z",approved_at="2026-01-01T00:00:00Z",approved_by=self.principal.pk,role="PRINCIPAL",version=100)
+        self.payload.update(status="RELEASED",confirmed_at="2026-01-01T00:00:00Z",approved_at="2026-01-01T00:00:00Z",approved_by=self.principal.pk,role="PRINCIPAL",version=100)
         item=self.submit()
-        self.assertEqual(item.status,"SUBMITTED");self.assertEqual(item.version,0)
+        self.assertEqual(item.status,"PENDING");self.assertEqual(item.version,0)
         self.assertIsNone(item.confirmed_at);self.assertIsNone(item.approved_at);self.assertIsNone(item.approved_by)
 
     def test_student_alumni_and_forged_role_headers_cannot_read_or_mutate_credentials(self):
@@ -366,27 +350,20 @@ class WorkflowTests(TestCase):
             self.assertEqual(client.get("/api/credentials/",**headers).status_code,403)
             for identifier in [item.pk,uuid.uuid4()]:
                 self.assertEqual(client.get(f"/api/credentials/{identifier}/verification/",**headers).status_code,403)
-                response=client.post(f"/api/credentials/{identifier}/action/",{"action":"submit_review","version":0,"role":"ADMIN","note":"forged"},format="json",**headers)
+                response=client.post(f"/api/credentials/{identifier}/action/",{"action":"approve","version":0,"role":"ADMIN","note":"forged"},format="json",**headers)
                 self.assertEqual(response.status_code,403)
-        item.refresh_from_db();self.assertEqual(item.status,"SUBMITTED")
+        item.refresh_from_db();self.assertEqual(item.status,"PENDING")
 
     def test_wrong_action_role_does_not_disclose_record_existence(self):
-        item=self.submit()
-        for user,action in [(self.admin,"approve"),(self.principal,"ready")]:
-            self.client.force_authenticate(user)
-            for identifier in [item.pk,uuid.uuid4()]:
-                response=self.client.post(f"/api/credentials/{identifier}/action/",{"action":action,"version":0,**({"release_date":"2026-10-20","release_time":"09:00"} if action=="ready" else {})},format="json")
-                self.assertEqual(response.status_code,403)
+        item=self.submit();self.client.force_authenticate(self.principal)
+        for identifier in [item.pk,uuid.uuid4()]:
+            response=self.client.post(f"/api/credentials/{identifier}/action/",{"action":"approve","version":0},format="json")
+            self.assertEqual(response.status_code,403)
 
-    def test_legacy_unconfirmed_request_requires_admin_reconfirmation_for_document_access(self):
-        item=self.submit();item=self.move(item,self.admin,"submit_review")
-        item.status="RETURNED";item.confirmed_at=None;item.save(update_fields=["status","confirmed_at"])
-        item.refresh_from_db();self.assertIsNone(item.confirmed_at)
-        self.client.force_authenticate(self.principal)
-        self.assertEqual(self.client.get(f"/api/credentials/{item.pk}/verification/").status_code,403)
-        item=self.move(item,self.admin,"submit_review","Rechecked original records and identity")
+    def test_principal_can_monitor_pending_identity_documents(self):
+        item=self.submit();self.client.force_authenticate(self.principal)
         response=self.client.get(f"/api/credentials/{item.pk}/verification/")
-        self.assertEqual(response.status_code,200);response.close()
+        self.assertEqual(response.status_code,200);close_test_response(response)
 
 
 class ReleaseScheduleTests(TestCase):
@@ -396,7 +373,7 @@ class ReleaseScheduleTests(TestCase):
     submit = WorkflowTests.submit
     move = WorkflowTests.move
     approved = WorkflowTests.approved
-    @override_settings(SMS_ENABLED=False, SEMAPHORE_API_KEY="")
+    @override_settings(SMS_PROVIDER="SEMAPHORE", SMS_ENABLED=False, SEMAPHORE_API_KEY="")
     def test_release_requires_manual_schedule_and_saves_standard_message(self):
         item = self.approved()
         self.client.force_authenticate(self.admin)
@@ -408,9 +385,33 @@ class ReleaseScheduleTests(TestCase):
             response = self.client.post(endpoint, {**base, "release_date": "2026-10-20", "release_time": "09:30"}, format="json")
         self.assertEqual(response.status_code, 200, response.data)
         sms = SmsNotification.objects.get(request=item)
-        self.assertEqual(sms.message, f"CredTrack PMRMIS-South: Request {item.reference} is ready for release on 2026-10-20 at 09:30 (Philippine time). Please collect your credential at the school records office. Bring a valid ID.")
+        self.assertEqual(sms.message, f"CredTrack: {item.reference} ready for pickup on Oct 20, 2026 at 9:30 AM. Visit PMRMIS-SOUTH admin office. Bring a valid ID.")
         self.assertEqual(sms.status, "QUEUED")
         self.assertEqual(sms.attempts, 0)
         self.assertIn("2026-10-20 at 09:30", item.events.get(action="ready").note)
         self.assertEqual(self.client.post(endpoint, {**base, "release_date": "2026-10-20", "release_time": "09:30"}, format="json").status_code, 409)
         self.assertEqual(SmsNotification.objects.filter(request=item).count(), 1)
+
+    def test_school_sending_template_is_one_standard_sms(self):
+        from datetime import date, time
+        item = self.approved()
+        item.delivery_method = "SCHOOL_TO_SCHOOL"
+        item.receiving_school = "Destination School"
+        item.save()
+        transition(item.pk, self.admin, "ready", item.version, release_date=date(2026,9,30), release_time=time(23,59))
+        sms = SmsNotification.objects.get(request=item)
+        self.assertEqual(sms.message, f"CredTrack: {item.reference} scheduled for school-to-school sending on Sep 30, 2026 at 11:59 PM. Contact PMRMIS-SOUTH admin office for details.")
+        self.assertLessEqual(len(sms.message),160)
+        self.assertTrue(sms.message.isascii())
+
+
+def close_test_response(response):
+    # Streaming responses are closed inside TestCase's outer transaction. Simulate the
+    # test client's streaming wrapper so request_finished cannot close that transaction.
+    from django.core.signals import request_finished
+    from django.db import close_old_connections
+    request_finished.disconnect(close_old_connections)
+    try:
+        response.close()
+    finally:
+        request_finished.connect(close_old_connections)

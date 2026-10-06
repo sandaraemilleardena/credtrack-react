@@ -5,25 +5,20 @@ export function QueueNotice({queue, loginPath}) {
   if(queue.error) return <div className="request-workflow-notice request-workflow-error" role="alert">{queue.error} <a href={loginPath}>Sign in</a> <button onClick={queue.refresh}>Retry</button></div>;
   return null;
 }
+const stamp = value => value ? new Date(value).toLocaleString('en-PH',{timeZone:'Asia/Manila',month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}) : '—';
+function Fields({items}){return <dl>{items.filter(([,value])=>value!==null&&value!==undefined&&value!=='').map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>;}
 export default function RequestWorkflowDetails({request:r}) {
-  const groups = [
-    ['Request information', [['Reference Number',r.reference],['Date Requested',new Date(r.created_at).toLocaleString()],['Credential',r.credential],['Purpose',r.purpose],['Other Purpose/Document',r.other_purpose],['Delivery Method',r.delivery_method==='SCHOOL_TO_SCHOOL'?'School-to-School':'Claimed On Site'],['Receiving School',r.receiving_school],['Request Status',r.status_label]]],
-    ['Student information', [['Requester',r.full_name],['First Name',r.first_name],['Middle Name',r.middle_name],['Last Name',r.last_name],['LRN',r.lrn],['Grade Level',r.grade_level],['Section',r.section],['Graduation Year',r.graduation_year]]],
-    ['Contact information', [['Phone',r.phone],['Email',r.email]]],
-  ];
-  return <section className="request-workflow-details">
-    {groups.map(([title,fields]) => <section key={title}><h3>{title}</h3><dl>{fields.map(([label,value]) => <div key={label}><dt>{label}</dt><dd>{value || '—'}</dd></div>)}</dl></section>)}
-    <section><h3>Verification</h3>
-      {r.has_psa_document && <DocumentPreview id={r.id} kind="psa" label="PSA"/>}
-      {r.has_id_document && <DocumentPreview id={r.id} kind="id" label="Valid ID"/>}
-      {r.has_verification_document && <DocumentPreview id={r.id} kind="verification" label="PSA / Valid ID"/>}
-      {!r.has_psa_document && !r.has_id_document && !r.has_verification_document && <p>No verification document uploaded.</p>}
-      <p className={r.confirmed_at?'verification-confirmed':'verification-pending'}>{r.confirmed_at?'STUDENT INFORMATION CONFIRMED':'Pending Administration Verification'}</p>
-      <p>Verified by: {r.prepared_by || 'Pending'}</p>
-      <p>Student record inventory: {r.record_availability?.matched ? (r.record_availability.available_credentials.join(', ') || 'No available credentials recorded') : 'No matching student record. Check school records.'}</p></section>
-    <section><h3>Approval and release</h3><p className={r.approved_at?'verification-confirmed':''}>{r.status==='REJECTED'?'Request Rejected':r.approved_at?'STUDENT INFORMATION APPROVED':r.status==='RETURNED'?'Returned for Administration correction':r.confirmed_at?'Pending Principal Approval':'Awaiting Administration confirmation'}</p><p>Principal: {r.approved_by || 'Pending'}</p><p>{r.status==='REJECTED'?'Release not permitted':r.collected_at?'Released':r.ready_at?'Ready for Release':'Awaiting release'}</p></section>
-    {r.additional_details && <p>Additional details: {r.additional_details}</p>}
-    {r.sms && <div className="request-workflow-notice"><strong>SMS: {r.sms.status}</strong><p>{r.sms.last_error || `Provider status: ${r.sms.provider_status || 'Awaiting dispatch'}. Provider acceptance does not confirm handset delivery.`}</p></div>}
-    <h3>Workflow history</h3><ol>{(r.events || []).map((event,index) => <li key={index}><strong>{event.to_status.replaceAll('_',' ')} · {event.actor || 'Requester'}</strong><small>{new Date(event.created_at).toLocaleString()}</small>{event.note && <p>{event.note}</p>}</li>)}</ol>
-  </section>;
+ const schedule=r.scheduled_release_date?stamp(`${r.scheduled_release_date}T${r.scheduled_release_time||'00:00:00'}+08:00`):'Not scheduled';
+ return <section className="request-workflow-details compact-request-details">
+  <section><h3>Requester</h3><Fields items={[["Name",r.full_name],["LRN",r.lrn],["Grade / Section",[r.grade_level,r.section].filter(Boolean).join(' / ')],["Graduation year",r.graduation_year],["Phone",r.phone],["Email",r.email]]}/></section>
+  <section><h3>Request</h3><Fields items={[["Credential",r.credential],["Submitted",stamp(r.created_at)],["Purpose",r.purpose],["Other details",r.other_purpose],["Delivery",r.delivery_method==='SCHOOL_TO_SCHOOL'?'School-to-school':'School pickup'],["Receiving school",r.receiving_school]]}/>{r.additional_details&&<p>{r.additional_details}</p>}</section>
+  <section className="request-documents-card"><h3>Supporting documents</h3><div className="request-document-grid">
+   {r.has_verification_document&&<DocumentPreview id={r.id} kind="verification" label="Identity / Request form"/>}
+   {r.has_psa_document&&<DocumentPreview id={r.id} kind="psa" label="Supporting document 2"/>}
+   {r.has_id_document&&<DocumentPreview id={r.id} kind="id" label="Supporting document 3"/>}
+  </div>{!r.has_verification_document&&!r.has_psa_document&&!r.has_id_document&&<p>No documents uploaded.</p>}<Fields items={[["Verification",r.confirmed_at?'Verified':'Pending verification'],["Verified by",r.prepared_by||'—'],["School records",r.record_availability?.matched?(r.record_availability.available_credentials.join(', ')||'No credentials recorded'):'No matching record']]}/></section>
+  <section><h3>Approval & release</h3><Fields items={[["Approved by Administration",r.approved_by||'Pending'],["Approved",r.approved_at?stamp(r.approved_at):'Pending'],["Scheduled release / sending",schedule],["Actual Released / Sent",r.collected_at?stamp(r.collected_at):'Not yet released']]}/></section>
+  {r.sms&&<section className="request-sms-card"><h3>SMS <span className="request-sms-state">{r.sms.provider_status||r.sms.status}</span></h3><Fields items={[["Queued",stamp(r.sms.created_at)],["Accepted",r.sms.accepted_at?stamp(r.sms.accepted_at):null],["Sent / confirmed",r.sms.sent_at?stamp(r.sms.sent_at):null]]}/>{r.sms.last_error&&<p className="request-workflow-error">{r.sms.last_error}</p>}</section>}
+  <section className="request-history-card"><details><summary>Activity history <span>{(r.events||[]).length} events</span></summary><ol>{(r.events||[]).map((event,index)=><li key={index}><strong>{event.to_status.replaceAll('_',' ')} · {event.actor||'Requester'}</strong><small>{stamp(event.created_at)}</small>{event.note&&<p>{event.note}</p>}</li>)}</ol></details></section>
+ </section>;
 }

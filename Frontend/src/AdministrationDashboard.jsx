@@ -71,11 +71,11 @@ function AdministrationDashboard() {
   const smsQueued = smsRecords.filter(r => r.sms.status === 'QUEUED').length;
   const smsNotifications = smsRecords.map(r => {
     const delivered = r.sms.status === 'ACCEPTED' && r.sms.provider_status?.toLowerCase() === 'sent';
-    const labels = { QUEUED: 'SMS queued', SENDING: 'SMS sending', ACCEPTED: delivered ? 'SMS sent' : 'SMS accepted by Semaphore', FAILED: 'SMS failed', UNKNOWN: 'SMS status unconfirmed', CANCELLED: 'SMS cancelled' };
-    return { id: `sms:${r.id}`, icon: 'fa-comment-dots', color: r.sms.status === 'FAILED' ? 'red' : 'blue', title: labels[r.sms.status] || 'SMS update', description: `${r.reference} · ${r.full_name} — ${r.sms.status === 'QUEUED' && !system.data.sms_enabled ? 'Waiting for Semaphore approval. No SMS sent yet.' : r.sms.provider_status || labels[r.sms.status] || r.sms.status}`, created_at: r.sms.updated_at, time: new Date(r.sms.updated_at).toLocaleString() };
+    const labels = { QUEUED: 'SMS queued', SENDING: 'SMS sending', ACCEPTED: delivered ? 'SMS sent' : 'SMS accepted by SMS provider', FAILED: 'SMS failed', UNKNOWN: 'SMS status unconfirmed', CANCELLED: 'SMS cancelled' };
+    return { id: `sms:${r.id}`, icon: 'fa-comment-dots', color: r.sms.status === 'FAILED' ? 'red' : 'blue', title: labels[r.sms.status] || 'SMS update', description: `${r.reference} · ${r.full_name} — ${r.sms.status === 'QUEUED' && !system.data.sms_enabled ? 'Waiting for SMS provider approval. No SMS sent yet.' : r.sms.provider_status || labels[r.sms.status] || r.sms.status}`, created_at: r.sms.updated_at, time: new Date(r.sms.updated_at).toLocaleString() };
   }).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
   const notifications = [...auditRows(system.data).slice(0,5).map(e=>({...e,icon:'fa-clock',color:'blue',title:e.action,description:e.description,time:new Date(e.created_at).toLocaleString()})), ...smsNotifications.slice(0,5)].sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
-  const statistics=[{title:'Total Requests',value:totals.total,period:'All saved requests',description:'Student and alumni requests',icon:'fa-folder-open',className:'total'},{title:'Pending',value:totals.pending,period:'Current',description:'Preparation or Principal review',icon:'fa-clock',className:'pending'},{title:'Approved',value:totals.approved,period:'All saved requests',description:totals.ready+' ready for pickup',icon:'fa-circle-check',className:'approved'},{title:'Released',value:totals.released,period:'Completed',description:'Collection acknowledged',icon:'fa-box-open',className:'released'}];
+  const statistics=[{title:'Total Requests',value:totals.total,period:'All saved requests',description:'Student and alumni requests',icon:'fa-folder-open',className:'total'},{title:'Pending',value:totals.pending,period:'Current',description:'Needs Administration verification',icon:'fa-clock',className:'pending'},{title:'Approved',value:totals.approved,period:'All saved requests',description:totals.ready+' ready for pickup',icon:'fa-circle-check',className:'approved'},{title:'Released',value:totals.released,period:'Completed',description:'Collection acknowledged',icon:'fa-box-open',className:'released'}];
 
   const quickActions = useMemo(
     () => [
@@ -121,7 +121,7 @@ function AdministrationDashboard() {
 
   const navigationGroups = useMemo(
     () => [
-  
+
 
           {
             label: "Dashboard",
@@ -493,143 +493,20 @@ function AdministrationDashboard() {
 
   return (
     <div className="administration-dashboard">
-      {releasePicker && <div className="release-picker-backdrop" onClick={()=>setReleasePicker(false)}><section className="release-picker" role="dialog" aria-modal="true" aria-label="Choose a request for release notification" onClick={e=>e.stopPropagation()}><header><h2>Notify requester</h2><button onClick={()=>setReleasePicker(false)}>Close</button></header><p>Select a Principal-approved request, then enter its release date and time.</p>{system.data.requests.filter(r=>r.status==='PRINCIPAL_APPROVED').map(r=><button className="release-picker-request" key={r.id} onClick={()=>{setReleasePicker(false);setReviewId(r.id);}}><strong>{r.reference} · {r.full_name}</strong><span>{r.credential} → Schedule release SMS</span></button>)}{!system.data.requests.some(r=>r.status==='PRINCIPAL_APPROVED') && <p>No approved requests are waiting for release.</p>}</section></div>}
+      {releasePicker && <div className="release-picker-backdrop" onClick={()=>setReleasePicker(false)}><section className="release-picker" role="dialog" aria-modal="true" aria-label="Choose a request for release notification" onClick={e=>e.stopPropagation()}><header><h2>Notify requester</h2><button onClick={()=>setReleasePicker(false)}>Close</button></header><p>Select a Administration-approved request, then enter its release date and time.</p>{system.data.requests.filter(r=>r.status==='APPROVED'&&!r.ready_at).map(r=><button className="release-picker-request" key={r.id} onClick={()=>{setReleasePicker(false);setReviewId(r.id);}}><strong>{r.reference} · {r.full_name}</strong><span>{r.credential} → Schedule release SMS</span></button>)}{!system.data.requests.some(r=>r.status==='APPROVED'&&!r.ready_at) && <p>No approved requests are waiting for release.</p>}</section></div>}
       {reviewRequest && <RequestReviewModal key={reviewRequest.id} request={reviewRequest} role="ADMIN" onClose={()=>setReviewId(null)} onUpdated={system.refresh} smsEnabled={system.data.sms_enabled}/>}
 
       {/* =====================================================
           SIDEBAR OVERLAY
       ===================================================== */}
 
-      <button
-        type="button"
-        className={`sidebar-overlay ${
-          sidebarOpen ? "show" : ""
-        }`}
-        aria-label="Close navigation menu"
-        onClick={() => setSidebarOpen(false)}
-      />
+
 
       {/* =====================================================
           SIDEBAR
       ===================================================== */}
 
-      <aside
-        className={`sidebar ${
-          sidebarOpen ? "open" : ""
-        }`}
-        aria-label="Administrator navigation"
-      >
 
-        <div className="sidebar-glow"></div>
-
-        {/* BRAND */}
-
-        <div className="brand">
-
-          <div className="brand-logo">
-            <img
-              src="/logo.png"
-              alt="PMRMIS-South logo"
-            />
-          </div>
-
-          <div className="brand-copy">
-            <h2>CredTrack</h2>
-
-            <span>
-              PMRMIS–SOUTH
-            </span>
-          </div>
-
-          <button
-            type="button"
-            className="close-sidebar"
-            aria-label="Close sidebar"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <i className="fas fa-xmark"></i>
-          </button>
-
-        </div>
-
-        {/* SCHOOL IDENTITY */}
-
-        {/* NAVIGATION */}
-
-        <nav
-          className="sidebar-navigation"
-          aria-label="Administrator navigation"
-        >
-
-          <ul className="menu">
-
-            {navigationGroups.map((item) => (
-              <li
-                className={`menu-item ${
-                  isActiveRoute(item.path)
-                    ? "active"
-                    : ""
-                }`}
-                key={item.label}
-              >
-
-                <button
-                  type="button"
-                  className="menu-link"
-                  disabled={item.disabled}
-                  title={
-                    item.disabled
-                      ? "User Management is currently unavailable"
-                      : undefined
-                  }
-                  onClick={() => {
-                    if (
-                      item.disabled ||
-                      !item.path
-                    ) {
-                      return;
-                    }
-
-                    goTo(item.path);
-                  }}
-                >
-
-                  <span className="menu-icon">
-                    <i
-                      className={`fas ${item.icon}`}
-                    ></i>
-                  </span>
-
-                  <span className="menu-text">
-                    {item.label}
-                  </span>
-
-                  {isActiveRoute(
-                    item.path
-                  ) && (
-                    <span className="active-indicator">
-                      <i className="fas fa-chevron-right"></i>
-                    </span>
-                  )}
-
-                  {item.disabled && (
-                    <span className="coming-soon">
-                      Soon
-                    </span>
-                  )}
-
-                </button>
-
-              </li>
-            ))}
-
-          </ul>
-
-        </nav>
-
-        {/* SIDEBAR PROFILE */}
-
-      </aside>
 
       {/* =====================================================
           MAIN AREA
@@ -641,265 +518,7 @@ function AdministrationDashboard() {
             TOPBAR
         =================================================== */}
 
-        <header className="topbar">
 
-          <div className="topbar-left">
-
-            <button
-              type="button"
-              className="menu-button"
-              aria-label="Open sidebar"
-              aria-expanded={sidebarOpen}
-              onClick={() =>
-                setSidebarOpen(true)
-              }
-            >
-              <i className="fas fa-bars"></i>
-            </button>
-
-            <div className="school-seal">
-
-              <img
-                src="/logo.png"
-                alt="PMRMIS-South school logo"
-              />
-
-            </div>
-
-            <div className="school-name">
-
-              <div className="school-name-title">
-                President Manuel Roxas Memorial Integrated School – South
-              </div>
-
-              <div className="school-name-subtitle">
-                Digital Credentials Management System
-              </div>
-
-            </div>
-
-          </div>
-
-          <div className="topbar-right">
-
-            <div className="sms-credit-box" role="status" aria-label="Semaphore SMS credits">
-              <i className="fas fa-comment-dots" aria-hidden="true"></i>
-              <div><span>SMS CREDITS</span><strong>— <small>{system.data.sms_enabled ? 'Balance unavailable' : 'Pending approval'}</small></strong></div>
-            </div>
-
-            {/* NOTIFICATIONS */}
-
-            <div className="notification-wrapper">
-
-              <button
-                type="button"
-                className={`notification ${
-                  notificationOpen
-                    ? "active"
-                    : ""
-                }`}
-                aria-label="Open notifications"
-                aria-expanded={
-                  notificationOpen
-                }
-                onClick={(event) => {
-                  event.stopPropagation();
-
-                  setNotificationOpen(
-                    (previous) => !previous
-                  );
-
-                  setAdminMenuOpen(false);
-                }}
-              >
-
-                <i className="far fa-bell"></i>
-
-                <span className="notification-badge">
-                  {notifications.length}
-                </span>
-
-              </button>
-
-              {notificationOpen && (
-                <div
-                  className="notification-panel show"
-                  role="dialog"
-                  aria-label="Notifications"
-                  onClick={(event) =>
-                    event.stopPropagation()
-                  }
-                >
-
-                  <div className="notification-header">
-
-                    <div>
-
-                      <span>
-                        RECENT ACTIVITY
-                      </span>
-
-                      <h3>
-                        Notifications
-                      </h3>
-
-                    </div>
-
-                    <span className="notification-count">
-                      {notifications.length} recent
-                    </span>
-
-                  </div>
-
-                  <div className="sms-notification-summary">
-                    <strong>SMS activity</strong>
-                    <span>{smsAccepted} accepted by Semaphore · {smsQueued} queued</span>
-                    {!system.data.sms_enabled && <small>Approval pending. SMS sending is disabled.</small>}
-                    {smsRecords.length === 0 && <small>No SMS messages sent yet. Updates will appear here.</small>}
-                  </div>
-                  <div className="notification-list">
-
-                    {notifications.map(
-                      (notification) => (
-                        <div
-                          className="mini-notification"
-                          key={notification.id}
-                        >
-
-                          <div
-                            className={`notification-icon ${notification.color}`}
-                          >
-                            <i
-                              className={`fas ${notification.icon}`}
-                            ></i>
-                          </div>
-
-                          <div className="notification-copy">
-
-                            <strong>
-                              {notification.title}
-                            </strong>
-
-                            <span>
-                              {notification.description}
-                            </span>
-
-                            <small>
-                              {notification.time}
-                            </small>
-
-                          </div>
-
-                        </div>
-                      )
-                    )}
-
-                  </div>
-
-                  <button
-                    type="button"
-                    className="view-notifications"
-                    onClick={() =>
-                      goTo(
-                        "/admin-activity-logs"
-                      )
-                    }
-                  >
-                    View activity logs
-
-                    <i className="fas fa-arrow-right"></i>
-                  </button>
-
-                </div>
-              )}
-
-            </div>
-
-            {/* ADMIN MENU */}
-
-            <div className="admin-menu-wrapper">
-
-              <button
-                type="button"
-                className={`admin-menu ${
-                  adminMenuOpen
-                    ? "active"
-                    : ""
-                }`}
-                aria-haspopup="menu"
-                aria-expanded={
-                  adminMenuOpen
-                }
-                onClick={(event) => {
-                  event.stopPropagation();
-
-                  setAdminMenuOpen(
-                    (previous) => !previous
-                  );
-
-                  setNotificationOpen(false);
-                }}
-              >
-
-                <div className="admin-avatar">
-                  <img
-                src="/logo.png"
-                alt="PMRMIS-South school logo"
-              />
-                </div>
-
-                <div className="admin-menu-info">
-
-                  <strong>
-                    ADMINISTRATOR
-                  </strong>
-
-                </div>
-
-                <i className="fas fa-chevron-down admin-chevron"></i>
-
-              </button>
-
-              {adminMenuOpen && (
-                <div
-                  className="admin-dropdown show"
-                  role="menu"
-                  aria-label="Administrator account menu"
-                  onClick={(event) =>
-                    event.stopPropagation()
-                  }
-                >
-
-
-
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={handleLogout}
-                  >
-
-                    <i className="fas fa-right-from-bracket"></i>
-
-                    <span>
-
-                      <strong>
-                        Logout
-                      </strong>
-
-   
-
-                    </span>
-
-                  </button>
-
-                </div>
-              )}
-
-            </div>
-
-          </div>
-
-        </header>
 
         {/* ===================================================
             PAGE HEADER / HERO
@@ -959,7 +578,7 @@ function AdministrationDashboard() {
 
             {statistics.map((stat) => (
               <article
-                className={`stat-card ${stat.className}`}
+                role="button" tabIndex={0} onClick={()=>navigate(`/admin-credential-management?category=${stat.className}`)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();navigate(`/admin-credential-management?category=${stat.className}`);}}} className={`stat-card ${stat.className}`}
                 key={stat.title}
               >
 
@@ -2027,8 +1646,8 @@ function AdministrationDashboard() {
                           Principal
                         </option>
 
-                        <option value="ICT Personnel">
-                          ICT Personnel
+                        <option value="Principal">
+                          Principal
                         </option>
 
                       </select>

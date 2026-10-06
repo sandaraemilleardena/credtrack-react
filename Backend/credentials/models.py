@@ -7,15 +7,9 @@ from .documents import private_storage, document_path
 
 class CredentialRequest(models.Model):
     class Status(models.TextChoices):
-        SUBMITTED = "SUBMITTED", "Pending Administration Verification"
-        PREPARING = "PREPARING", "Preparing"
-        UNAVAILABLE = "UNAVAILABLE", "Unavailable / needs information"
-        PRINCIPAL_REVIEW = "PRINCIPAL_REVIEW", "Awaiting principal approval"
-        RETURNED = "RETURNED", "Returned for correction"
-        PRINCIPAL_APPROVED = "PRINCIPAL_APPROVED", "Student Information Approved"
-        READY = "READY", "Ready for release"
-        COLLECTED = "COLLECTED", "Released"
-        REJECTED = "REJECTED", "Rejected"
+        PENDING = "PENDING", "Pending"
+        APPROVED = "APPROVED", "Approved"
+        RELEASED = "RELEASED", "Released"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     submission_key = models.UUIDField(unique=True)
@@ -44,12 +38,14 @@ class CredentialRequest(models.Model):
     phone = models.CharField(max_length=13)
     email = models.EmailField(blank=True)
     additional_details = models.CharField(max_length=4000, blank=True)
-    status = models.CharField(max_length=24, choices=Status.choices, default=Status.SUBMITTED, db_index=True)
+    status = models.CharField(max_length=24, choices=Status.choices, default=Status.PENDING, db_index=True)
     version = models.PositiveIntegerField(default=0)
     prepared_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="prepared_credentials")
     approved_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="approved_credentials")
     approved_at = models.DateTimeField(null=True, blank=True)
     release_confirmed_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="release_confirmed_credentials")
+    scheduled_release_date = models.DateField(null=True, blank=True)
+    scheduled_release_time = models.TimeField(null=True, blank=True)
     ready_at = models.DateTimeField(null=True, blank=True)
     collected_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -78,9 +74,12 @@ class SmsNotification(models.Model):
     phone = models.CharField(max_length=13)
     message = models.CharField(max_length=480)
     status = models.CharField(max_length=24, default="QUEUED")
+    provider = models.CharField(max_length=16, default="SEMAPHORE")
     provider_id = models.CharField(max_length=80, blank=True)
     provider_status = models.CharField(max_length=40, blank=True)
     last_error = models.CharField(max_length=240, blank=True)
+    sent_at = models.DateTimeField(null=True, blank=True)
+    accepted_at = models.DateTimeField(null=True, blank=True)
     attempts = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -46,10 +46,10 @@ def request_reset(request):
             '<p style="margin:28px 0"><a href="{}" style="background:#990e23;color:white;padding:14px 24px;border-radius:8px;text-decoration:none;font-weight:bold">Reset Password</a></p>'
             '<p>This link expires in <strong>one hour</strong> and can be used once.</p>'
             '<p>If you did not request this reset, ignore this email. Your password will remain unchanged.</p>'
-            '<p>Accounts locked by the security policy still require ICT Personnel to unlock them.</p>'
+            '<p>Accounts locked by the security policy still require the Principal to unlock them.</p>'
             '<p>If the button does not work, open this link:</p><a href="{}">{}</a></div></div>', link, link, link)
         try:
-            send_mail("CredTrack Password Reset", f"A password reset was requested for your CredTrack account.\n\nOpen this link to change your password:\n{link}\n\nThis link expires in one hour and can be used once. If you did not request this, ignore this email. Permanent account locks require ICT assistance.", settings.DEFAULT_FROM_EMAIL, [user.email], html_message=html)
+            send_mail("CredTrack Password Reset", f"A password reset was requested for your CredTrack account.\n\nOpen this link to change your password:\n{link}\n\nThis link expires in one hour and can be used once. If you did not request this, ignore this email. Permanent account locks require Principal assistance.", settings.DEFAULT_FROM_EMAIL, [user.email], html_message=html)
         except Exception:
             # Keep response identical and do not log the mail body/token or SMTP secrets.
             audit(None, "Password reset email delivery failed")

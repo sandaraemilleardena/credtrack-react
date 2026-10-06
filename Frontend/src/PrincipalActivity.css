@@ -1895,3 +1895,18 @@ to { opacity: 1; transform: none; }
  .principal-activity-page :is(.principal-main,.principal-shell,.activity-shell) { margin: 0; }
  .principal-activity-page :is(.principal-content,.principal-reports-content,.activity-content) { width: 100%; padding: 0; }
 }
+
+/* Readable school activity table without technical request identifiers. */
+.principal-activity-page .table-wrap .school-activity-table{width:100%;min-width:960px;table-layout:fixed;font-family:inherit}
+.principal-activity-page .school-activity-table th{font-size:12px;font-weight:700;letter-spacing:.35px;color:#505d72;line-height:1.5;padding:16px}
+.principal-activity-page .school-activity-table td{font-size:14px;font-weight:500;line-height:1.6;color:#263047;padding:18px 16px;white-space:normal;overflow-wrap:anywhere;vertical-align:middle}
+.principal-activity-page .school-activity-table th:nth-child(1){width:17%}
+.principal-activity-page .school-activity-table th:nth-child(2){width:27%}
+.principal-activity-page .school-activity-table th:nth-child(3){width:23%}
+.principal-activity-page .school-activity-table th:nth-child(4){width:11%}
+.principal-activity-page .school-activity-table th:nth-child(5){width:14%}
+.principal-activity-page .school-activity-table th:nth-child(6){width:8%}
+.principal-activity-page .school-activity-table .activity-cell strong{font-size:14px;font-weight:700;line-height:1.5}
+.principal-activity-page .school-activity-table .activity-cell small{font-size:12px;font-weight:500;color:#606b7d;line-height:1.6}
+.principal-activity-page .school-activity-table .result-badge{font-size:12px;font-weight:600;padding:5px 10px}
+.principal-activity-page .school-activity-table .details-button{font-size:13px;font-weight:600}

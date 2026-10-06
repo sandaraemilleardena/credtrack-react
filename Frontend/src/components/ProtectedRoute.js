@@ -7,8 +7,7 @@ export default function ProtectedRoute({ children, allowedRoles }) {
   const routeKey = location.key + location.pathname + location.search;
   const session = useSyncExternalStore(subscribeSession, getSessionState);
   useEffect(() => { verifySession(routeKey); }, [routeKey]);
-  const login = '/' + ({ ADMIN: 'admin', PRINCIPAL: 'principal', ICT: 'ict' }[allowedRoles?.[0]] || 'ict') + '-login';
-  if (!hasFreshStaffLogin(allowedRoles?.[0])) return createElement(Navigate, { to: login, replace: true });
+  const login = '/' + ({ ADMIN: 'admin', PRINCIPAL: 'principal' }[allowedRoles?.[0]] || 'admin') + '-login';
   const checking = session.routeKey !== routeKey || session.status === 'checking';
   const roleAllowed = session.user && (!allowedRoles || allowedRoles.includes(session.user.role));
   if (checking || (session.status === 'authenticated' && roleAllowed)) {
@@ -25,7 +24,7 @@ export default function ProtectedRoute({ children, allowedRoles }) {
       createElement(Link, { to: login, replace: true }, 'Sign in'),
       createElement('button', { onClick: () => { logoutUser().catch(() => {}); } }, 'Retry sign-out'));
   }
-  if (session.status !== 'authenticated' || (allowedRoles && !allowedRoles.includes(session.user?.role))) {
+  if (!hasFreshStaffLogin(allowedRoles?.[0]) || session.status !== 'authenticated' || (allowedRoles && !allowedRoles.includes(session.user?.role))) {
     return createElement(Navigate, { to: login, replace: true });
   }
   return createElement('div', { className: 'protected-portal' }, children);

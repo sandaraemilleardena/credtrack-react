@@ -23,6 +23,8 @@ class IdleSessionMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
+        if request.user.is_authenticated and getattr(getattr(request.user, "userprofile", None), "role", None) == "ICT":
+            logout(request)
         if request.user.is_authenticated:
             now = timezone.now().timestamp()
             last = request.session.get("last_user_activity")

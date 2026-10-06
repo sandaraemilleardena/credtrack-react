@@ -35,11 +35,12 @@ function PrincipalReports() {
 
   const now=new Date(system.data.updatedAt),start=new Date(now.getFullYear(),period==='year'?0:period==='quarter'?Math.floor(now.getMonth()/3)*3:now.getMonth(),1);
   const filtered=system.data.requests.filter(r=>new Date(r.created_at)>=start&&(gradeLevel==='all'||r.grade_level===gradeLevel)&&(credentialType==='all'||r.credential.toLowerCase().includes(credentialType.toLowerCase())));
+  const openStatistic=(category)=>{const params=new URLSearchParams({category,date_from:start.toLocaleDateString('en-CA'),date_to:now.toLocaleDateString('en-CA')});if(gradeLevel!=='all')params.set('grade',gradeLevel);if(credentialType!=='all')params.set('credential',credentialType);navigate('/principal-requests?'+params);};
   const totals=metrics(filtered);
   const months=Array.from({length:7},(_,i)=>{const d=new Date(now.getFullYear(),now.getMonth()-6+i,1);return d.toLocaleDateString(undefined,{month:'short'});});
   const activeReport={requests:totals.total,approved:totals.approved,released:totals.released,average:totals.average+' days',trend:Array.from({length:7},(_,i)=>{const d=new Date(now.getFullYear(),now.getMonth()-6+i,1);const group=filtered.filter(r=>new Date(r.created_at).getFullYear()===d.getFullYear()&&new Date(r.created_at).getMonth()===d.getMonth());return [group.length,group.filter(r=>r.approved_at).length];})};
-  const pct=(needle,completed=false)=>{const group=filtered.filter(r=>r.credential.toLowerCase().includes(needle.toLowerCase()));return completed?(group.length?Math.round(group.filter(r=>r.status==='COLLECTED').length/group.length*100):0):(filtered.length?Math.round(group.length/filtered.length*100):0);};
-  const gradePct=grade=>{const group=filtered.filter(r=>r.grade_level===grade);return group.length?Math.round(group.filter(r=>r.status==='COLLECTED').length/group.length*100):0;};
+  const pct=(needle,completed=false)=>{const group=filtered.filter(r=>r.credential.toLowerCase().includes(needle.toLowerCase()));return completed?(group.length?Math.round(group.filter(r=>r.status==='RELEASED').length/group.length*100):0):(filtered.length?Math.round(group.length/filtered.length*100):0);};
+  const gradePct=grade=>{const group=filtered.filter(r=>r.grade_level===grade);return group.length?Math.round(group.filter(r=>r.status==='RELEASED').length/group.length*100):0;};
 
   const [toast, setToast] = useState("");
 
@@ -151,7 +152,7 @@ function PrincipalReports() {
       [],
       ["Metric", "Value"],
       ["Total Requests", activeReport.requests],
-      ["Principal Approved", activeReport.approved],
+      ["Administration Approved", activeReport.approved],
       ["Released", activeReport.released],
       ["Average Processing", activeReport.average],
     ];
@@ -216,149 +217,14 @@ function PrincipalReports() {
           MOBILE SIDEBAR OVERLAY
           =================================================== */}
 
-      <div
-        className={`principal-sidebar-screen ${
-          sidebarOpen ? "show" : ""
-        }`}
-        onClick={closeSidebar}
-      />
+
 
       {/* ===================================================
           SIDEBAR
           EXACT SAME STRUCTURE AS APPROVALS
           =================================================== */}
 
-      <aside
-        className={`principal-sidebar ${
-          sidebarOpen ? "show" : ""
-        }`}
-      >
 
-        {/* BRAND */}
-        <div className="principal-brand">
-
-          <img
-            src="/logo.png"
-            alt="PMRMIS-South school seal"
-          />
-
-          <div className="principal-brand-text">
-
-            <h2>
-              CredTrack
-            </h2>
-
-            <span>
-              PMRMIS–SOUTH
-            </span>
-
-          </div>
-
-          <button
-            type="button"
-            className="principal-mobile-close"
-            onClick={closeSidebar}
-            aria-label="Close navigation"
-          >
-            <i className="fas fa-xmark" />
-          </button>
-
-        </div>
-
-        {/* NAVIGATION */}
-        <ul className="principal-nav">
-
-          {/* DASHBOARD */}
-          <li>
-
-            <button
-              type="button"
-              onClick={() =>
-                handleNavigation(
-                  "/principal-dashboard"
-                )
-              }
-            >
-              <i className="fas fa-table-columns" />
-
-              <span>
-                Dashboard
-              </span>
-            </button>
-
-          </li>
-
-          {/* APPROVALS */}
-          <li>
-
-            <button
-              type="button"
-              onClick={() =>
-                handleNavigation(
-                  "/principal-approvals"
-                )
-              }
-            >
-              <i className="fas fa-file-signature" />
-
-              <span>
-                Credential Approvals
-              </span>
-
-              <b>
-                7
-              </b>
-            </button>
-
-          </li>
-
-          {/* REPORTS */}
-          <li className="active">
-
-            <button
-              type="button"
-              onClick={() =>
-                handleNavigation(
-                  "/principal-reports"
-                )
-              }
-            >
-              <i className="fas fa-chart-line" />
-
-              <span>
-                School Reports
-              </span>
-
-            </button>
-
-          </li>
-
-          {/* ACTIVITY */}
-          <li>
-
-            <button
-              type="button"
-              onClick={() =>
-                handleNavigation(
-                  "/principal-activity"
-                )
-              }
-            >
-              <i className="fas fa-clock-rotate-left" />
-
-              <span>
-                Approval History
-              </span>
-
-            </button>
-
-          </li>
-
-
-        </ul>
-
-
-      </aside>
 
       {/* ===================================================
           MAIN SHELL
@@ -372,233 +238,7 @@ function PrincipalReports() {
             SAME STRUCTURE AS APPROVALS
             ================================================= */}
 
-        <header className="principal-topbar">
 
-          <div className="principal-top-left">
-
-            <button
-              type="button"
-              className="principal-menu-button"
-              onClick={() => setSidebarOpen(true)}
-              aria-label="Open navigation"
-            >
-              <i className="fas fa-bars" />
-            </button>
-
-            <img
-              className="principal-school-seal"
-              src="/logo.png"
-              alt="PMRMIS-South school seal"
-            />
-
-            <div className="principal-school">
-
-              <strong>
-                President Manuel Roxas Memorial Integrated School – South
-              </strong>
-
-              <span>
-                Digital Credentials Management System
-              </span>
-
-            </div>
-
-          </div>
-
-          <div className="principal-top-right">
-
-            {/* =================================================
-                NOTIFICATION
-                SAME CLASS STRUCTURE AS APPROVALS
-                ================================================= */}
-
-            <div className="principal-notification-wrapper">
-
-              <button
-                type="button"
-                className="principal-bell"
-                onClick={() => {
-                  setNotificationOpen(
-                    (value) => !value
-                  );
-
-                  setProfileOpen(false);
-                }}
-                aria-label="Notifications"
-              >
-
-                <i className="far fa-bell" />
-
-                <b>
-                  3
-                </b>
-
-              </button>
-
-              {notificationOpen && (
-                <div className="principal-notification-dropdown">
-
-                  <div className="principal-dropdown-header">
-
-                    <div>
-
-                      <strong>
-                        Notifications
-                      </strong>
-
-                      <span>
-                        3 new
-                      </span>
-
-                    </div>
-
-                    <span className="principal-unread-count">
-                      3
-                    </span>
-
-                  </div>
-
-                  <div className="principal-notification-item">
-
-                    <div className="notification-icon approval">
-
-                      <i className="fas fa-file-signature" />
-
-                    </div>
-
-                    <div>
-
-                      <strong>
-                        7 requests awaiting approval
-                      </strong>
-
-                      <span>
-                        Credential approvals need review.
-                      </span>
-
-                      <small>
-                        Today
-                      </small>
-
-                    </div>
-
-                  </div>
-
-                  <div className="principal-notification-item">
-
-                    <div className="notification-icon approval">
-
-                      <i className="fas fa-chart-line" />
-
-                    </div>
-
-                    <div>
-
-                      <strong>
-                        Monthly report ready
-                      </strong>
-
-                      <span>
-                        Your current report has been updated.
-                      </span>
-
-                      <small>
-                        Today
-                      </small>
-
-                    </div>
-
-                  </div>
-
-                  <div className="principal-notification-item">
-
-                    <div className="notification-icon success">
-
-                      <i className="fas fa-circle-check" />
-
-                    </div>
-
-                    <div>
-
-                      <strong>
-                        System status normal
-                      </strong>
-
-                      <span>
-                        CredTrack services are operating normally.
-                      </span>
-
-                      <small>
-                        Yesterday
-                      </small>
-
-                    </div>
-
-                  </div>
-
-                </div>
-              )}
-
-            </div>
-
-            {/* =================================================
-                PROFILE
-                SAME CLASS STRUCTURE AS APPROVALS
-                ================================================= */}
-
-            <div className="principal-profile-wrapper">
-
-              <button
-                type="button"
-                className="principal-profile"
-                onClick={() => {
-                  setProfileOpen(
-                    (value) => !value
-                  );
-
-                  setNotificationOpen(false);
-                }}
-              >
-
-                <img
-                  src="/logo.png"
-                  alt="Principal profile"
-                />
-
-                <div>
-
-                  <strong>
-                   Principal
-                  </strong>
-
-                </div>
-
-                <i className="fas fa-chevron-down" />
-
-              </button>
-
-              {profileOpen && (
-                <div className="principal-profile-dropdown">
-
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                  >
-
-                    <i className="fas fa-right-from-bracket" />
-
-                    Logout
-
-                  </button>
-
-                </div>
-              )}
-
-            </div>
-
-          </div>
-
-        </header>
 
         {/* =================================================
             CONTENT
@@ -801,7 +441,7 @@ function PrincipalReports() {
 
           <section className="principal-summary-grid">
 
-            <article className="principal-summary-card requests">
+            <article role="button" tabIndex={0} onClick={()=>openStatistic("total")} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openStatistic("total");}}} className="principal-summary-card requests">
 
               <div className="principal-summary-icon">
 
@@ -827,7 +467,7 @@ function PrincipalReports() {
 
             </article>
 
-            <article className="principal-summary-card approved">
+            <article role="button" tabIndex={0} onClick={()=>openStatistic("approved")} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openStatistic("approved");}}} className="principal-summary-card approved">
 
               <div className="principal-summary-icon">
 
@@ -838,7 +478,7 @@ function PrincipalReports() {
               <div>
 
                 <span>
-                  Principal Approved
+                  Administration Approved
                 </span>
 
                 <strong>
@@ -853,7 +493,7 @@ function PrincipalReports() {
 
             </article>
 
-            <article className="principal-summary-card released">
+            <article role="button" tabIndex={0} onClick={()=>openStatistic("released")} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openStatistic("released");}}} className="principal-summary-card released">
 
               <div className="principal-summary-icon">
 
@@ -872,7 +512,7 @@ function PrincipalReports() {
                 </strong>
 
                 <small>
-                  {totals.approved?Math.round(totals.released/totals.approved*100):0}% of approved requests
+                  {(totals.approved+totals.released)?Math.round(totals.released/(totals.approved+totals.released)*100):0}% of approved requests
                 </small>
 
               </div>
@@ -1290,17 +930,17 @@ function PrincipalReports() {
 
                   <tbody>{['Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12'].map(grade=>{const m=metrics(filtered.filter(r=>r.grade_level===grade));return <tr key={grade}><td>{grade}</td><td>{m.total}</td><td>{m.approved}</td><td>{m.released}</td><td className="principal-rate">{gradePct(grade)}%</td></tr>;})}
 
-                    
 
-                    
 
-                    
 
-                    
 
-                    
 
-                    
+
+
+
+
+
+
 
                   </tbody>
 
@@ -1322,7 +962,7 @@ function PrincipalReports() {
               Figures summarize workflow activity recorded in
               CredTrack. The Principal may review and export
               reports, while source-record corrections remain the
-              responsibility of authorized records and ICT
+              responsibility of authorized records personnel and developers
               personnel.
             </span>
 
