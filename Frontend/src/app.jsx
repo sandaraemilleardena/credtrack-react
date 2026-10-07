@@ -46,7 +46,7 @@ function UnknownRoute() {
   const path = pathname.toLowerCase();
   const login = /^\/(admin|administration)(?:[-/]|$)/.test(path) ? '/admin-login'
     : /^\/principal(?:[-/]|$)/.test(path) ? '/principal-login'
-    : /^\/teacher(?:[-/]|$)/.test(path) ? '/teacher-login'
+    : /^\/teacher(?:[-/]|$)/.test(path) ? '/teacher-student-records'
     : '/';
   return <Navigate to={login} replace />;
 }

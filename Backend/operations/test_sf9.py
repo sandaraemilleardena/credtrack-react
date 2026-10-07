@@ -24,6 +24,9 @@ class Sf9PermissionTests(TestCase):
         TeacherAssignment.objects.create(teacher=self.users['TEACHER'],grade_level=self.g6,section=self.a,subject=self.math)
         self.rec=self.records[0]
     def as_role(self,role):self.client.force_authenticate(self.users[role])
+    def complete_term(self,term):
+        for subject in Subject.objects.all():
+            Sf9Grade.objects.get_or_create(record=self.rec,subject=subject,term=GradingTerm.objects.get(number=term),defaults={'value':80})
     def detail(self,record=None):return f'/api/operations/sf9/records/{(record or self.rec).pk}/'
     def save(self,subject=None,record=None,term=1,value='85',**extra):
         r=record or self.rec;r.refresh_from_db()
@@ -36,10 +39,12 @@ class Sf9PermissionTests(TestCase):
         self.assertEqual(Decimal(m['terms'][0]['value']),85);self.assertEqual(m['terms'][0]['updated_by'],'teacher')
     def test_terms_separately_saved_and_read_after_refresh(self):
         self.as_role('TEACHER')
-        for n,v in [(1,'85'),(2,'88'),(3,'90')]:self.assertEqual(self.save(term=n,value=v).status_code,200)
+        for n,v in [(1,'85'),(2,'88'),(3,'90')]:
+            self.assertEqual(self.save(term=n,value=v).status_code,200)
+            self.complete_term(n)
         r=self.client.get(self.detail()).data;m=next(s for s in r['subjects'] if s['id']==self.math.pk)
         self.assertEqual([Decimal(g['value']) for g in m['terms']],[85,88,90]);self.assertEqual(m['status'],'Complete')
-        self.assertEqual(Sf9Grade.objects.filter(record=self.rec).count(),3);self.assertIsNone(r['general_average'])
+        self.assertEqual(Sf9Grade.objects.filter(record=self.rec,subject=self.math).count(),3);self.assertIsNone(r['general_average'])
     def test_teacher_cannot_change_other_subject_even_with_forged_assignment(self):
         self.as_role('TEACHER');self.assertEqual(self.save(subject=self.english).status_code,403)
         self.assertEqual(self.save(assignment={'subject':self.english.pk}).status_code,400)
@@ -119,10 +124,10 @@ class Sf9PermissionTests(TestCase):
         self.as_role('ADMIN');r=self.client.post('/api/operations/accounts/',{'action':'deactivate','values':{'id':self.users['TEACHER'].pk}},format='json');self.assertEqual(r.status_code,200,r.data)
         self.as_role('TEACHER');self.assertEqual(self.save().status_code,404)
     def test_subject_grade_clear_is_persisted_and_terms_preserved(self):
-        self.as_role('TEACHER');self.assertEqual(self.save(term=1,value=88).status_code,200);self.assertEqual(self.save(term=2,value=90).status_code,200)
+        self.as_role('TEACHER');self.assertEqual(self.save(term=1,value=88).status_code,200)
         self.assertEqual(self.save(term=1,value='').status_code,200)
         r=self.client.get(self.detail()).data;m=next(s for s in r['subjects'] if s['id']==self.math.pk)
-        self.assertIsNone(m['terms'][0]);self.assertEqual(Decimal(m['terms'][1]['value']),90)
+        self.assertIsNone(m['terms'][0]);self.assertIsNone(m['terms'][1])
 
     def test_admin_updates_teacher_identity_and_credentials(self):
         self.as_role('ADMIN');values={'id':self.users['TEACHER'].pk,'name':'Updated Teacher','username':'updated-teacher','email':'updated@example.test','role':'Teacher','assignment':{'grade_level':self.g6.pk,'section':self.a.pk,'subject':self.math.pk}}
@@ -168,3 +173,64 @@ class Sf9PermissionTests(TestCase):
             result=self.client.get('/api/operations/'+endpoint)
             self.assertEqual(result.status_code,200,result.data)
             self.assertEqual([r['last_name'] for r in result.data['records']],['alvarez','Learner0','Zulu'])
+
+    def test_whole_numbers_inc_and_all_subject_term_gates(self):
+        self.as_role('TEACHER')
+        for value in ['85.5','85.01',True,'INCx']:
+            self.assertEqual(self.save(value=value).status_code,400)
+        self.assertEqual(self.save(value='inc').status_code,200)
+        self.assertEqual(self.client.get(self.detail()).data['subjects'][0]['terms'].__len__(),3)
+        self.assertEqual(self.save(term=2).status_code,400)
+        self.complete_term(1)
+        self.assertEqual(self.save(term=2,value=0).status_code,200)
+        self.assertEqual(self.save(term=3).status_code,400)
+        self.complete_term(2)
+        self.assertEqual(self.save(term=3,value='INC').status_code,200)
+        self.assertEqual(self.save(term=2,value=99).status_code,403)
+        self.assertEqual(self.save(term=1,value=91).status_code,200)
+        self.assertEqual(self.save(term=1,value=92).status_code,403)
+        self.assertEqual(self.save(term=1,value='').status_code,403)
+
+    def test_both_writers_enforce_locks_and_persistent_started_term(self):
+        self.as_role('TEACHER');self.complete_term(1)
+        self.assertEqual(self.save(term=2,value='INC').status_code,200)
+        self.assertEqual(self.save(term=2,value='').status_code,200)
+        self.rec.refresh_from_db();self.assertEqual(self.rec.started_term,2)
+        self.assertEqual(self.save(term=1,value=99).status_code,403)
+        self.rec.refresh_from_db()
+        r=self.client.post(self.detail()+'card/',{'version':self.rec.version,'grades':[{'subject':self.math.pk,'term':1,'value':'INC'}]},format='json')
+        self.assertEqual(r.status_code,403)
+        self.assertEqual(Sf9Grade.objects.get(record=self.rec,subject=self.math,term__number=1).value,80)
+
+    def test_card_writer_cannot_bypass_term_gate_and_inc_resolution(self):
+        self.as_role('TEACHER')
+        def post(term,value):
+            self.rec.refresh_from_db()
+            return self.client.post(self.detail()+'card/',{'version':self.rec.version,'grades':[{'subject':self.math.pk,'term':term,'value':value}]},format='json')
+        self.assertEqual(post(2,80).status_code,400)
+        self.assertEqual(post(1,'INC').status_code,200)
+        self.complete_term(1)
+        self.assertEqual(post(2,80).status_code,200)
+        self.assertEqual(post(1,'').status_code,403)
+        self.assertEqual(post(1,90).status_code,200)
+        self.assertEqual(post(1,91).status_code,403)
+        self.assertEqual(post(2,85.5).status_code,400)
+
+    def test_legacy_decimal_is_preserved_and_unchanged_submission_allowed(self):
+        self.as_role('TEACHER')
+        saved=Sf9Grade.objects.create(record=self.rec,subject=self.math,term=GradingTerm.objects.get(number=1),value=Decimal('85.25'))
+        self.assertEqual(self.save(value='85.25').status_code,200)
+        saved.refresh_from_db();self.assertEqual(saved.value,Decimal('85.25'))
+        self.assertEqual(self.save(value='86.25').status_code,400)
+        self.complete_term(1);self.assertEqual(self.save(term=2).status_code,200)
+        self.assertEqual(self.save(value=86).status_code,403)
+        saved.refresh_from_db();self.assertEqual(saved.value,Decimal('85.25'))
+
+    def test_whole_number_display_in_records_and_report_card(self):
+        self.as_role('TEACHER')
+        for value,expected in [('96','96'),('0','0'),('100','100'),('INC','INC')]:
+            self.assertEqual(self.save(value=value).status_code,200)
+            for endpoint in [self.detail(),self.detail()+'card/']:
+                response=self.client.get(endpoint)
+                subject=next(s for s in response.data['subjects'] if s['id']==self.math.pk)
+                self.assertEqual(subject['terms'][0]['value'],expected)

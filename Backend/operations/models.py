@@ -123,6 +123,7 @@ class Sf9Record(models.Model):
     section = models.ForeignKey(ClassSection, on_delete=models.PROTECT)
     general_average = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     version = models.PositiveIntegerField(default=0)
+    started_term = models.PositiveSmallIntegerField(default=1)
     updated_at = models.DateTimeField(auto_now=True)
     class Meta:
         constraints = [models.UniqueConstraint(fields=['student','school_year'], name='unique_student_sf9_year')]
@@ -132,11 +133,12 @@ class Sf9Grade(models.Model):
     record = models.ForeignKey(Sf9Record, on_delete=models.CASCADE, related_name='grades')
     subject = models.ForeignKey(Subject, on_delete=models.PROTECT)
     term = models.ForeignKey(GradingTerm, on_delete=models.PROTECT)
-    value = models.DecimalField(max_digits=5, decimal_places=2)
+    value = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    is_incomplete = models.BooleanField(default=False)
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL)
     updated_at = models.DateTimeField(auto_now=True)
     class Meta:
-        constraints = [models.UniqueConstraint(fields=['record','subject','term'], name='unique_sf9_subject_term'), models.CheckConstraint(condition=models.Q(value__gte=0,value__lte=100),name='valid_sf9_grade')]
+        constraints = [models.UniqueConstraint(fields=['record','subject','term'], name='unique_sf9_subject_term'), models.CheckConstraint(condition=(models.Q(is_incomplete=True,value__isnull=True) | models.Q(is_incomplete=False,value__isnull=False,value__gte=0,value__lte=100)),name='valid_sf9_grade')]
 
 
 class Sf9FinalGrade(models.Model):

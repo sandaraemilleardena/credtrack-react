@@ -81,11 +81,19 @@ def record_json(record, user, role, subjects=None, assignment=None):
     result=brief(record); a=(assignment or TeacherAssignment.objects.filter(teacher=user).first()) if role=='TEACHER' else None
     grades={(g.subject_id,g.term.number):g for g in record.grades.all()}
     finals={g.subject_id:g for g in record.final_grades.all()}
+    subjects=list(subjects if subjects is not None else Subject.objects.all())
+    complete={n:bool(subjects) and all((s.pk,n) in grades for s in subjects) for n in [1,2,3]}
+    started=max(record.started_term,max((n for _,n in grades),default=1))
+    result['started_term']=started
+    result['term_unlocked']=[True,complete[1],complete[1] and complete[2]]
     def value(g):
-        return None if not g else {'value':str(g.value),'updated_by':(g.updated_by.get_full_name() or g.updated_by.username) if g.updated_by else 'Former personnel','updated_at':g.updated_at.isoformat()}
+        if not g: return None
+        display='INC' if getattr(g,'is_incomplete',False) else str(int(g.value)) if g.value==g.value.to_integral_value() else str(g.value)
+        return {'value':display,'updated_by':(g.updated_by.get_full_name() or g.updated_by.username) if g.updated_by else 'Former personnel','updated_at':g.updated_at.isoformat()}
     result['subjects']=[{'id':s.pk,'name':s.name,'editable':bool(role=='TEACHER' and a and a.subject_id==s.pk),
         'terms':[value(grades.get((s.pk,n))) for n in [1,2,3]],'final':value(finals.get(s.pk)),
-        'status':'Complete' if all((s.pk,n) in grades for n in [1,2,3]) else 'Incomplete'} for s in (subjects if subjects is not None else Subject.objects.all())]
+        'term_editable':[bool(role=='TEACHER' and a and a.subject_id==s.pk and ((result['term_unlocked'][n-1] and n>=started) or (n<started and getattr(grades.get((s.pk,n)),'is_incomplete',False)))) for n in [1,2,3]],
+        'status':'Complete' if all((s.pk,n) in grades and not grades[(s.pk,n)].is_incomplete for n in [1,2,3]) else 'Incomplete'} for s in subjects]
     result['general_average']=str(record.general_average) if record.general_average is not None else None
     result['final_mode']='School-confirmed final grades; no automatic formula configured.'
     return result
@@ -140,6 +148,53 @@ def numeric(value):
     return n
 
 
+def write_grades(record, rows, assignment, user):
+    """Caller holds the record lock; validate the entire batch before persisting it."""
+    if not isinstance(rows,list) or len(rows)>3:
+        raise ValidationError('Only your three assigned subject grades may be changed.')
+    saved={(g.subject_id,g.term.number):g for g in record.grades.all()}
+    subjects=set(Subject.objects.values_list('pk',flat=True))
+    state={key:('INC' if g.is_incomplete else g.value) for key,g in saved.items()}
+    started=max(record.started_term,max((n for _,n in state),default=1))
+    changes={}
+    for row in rows:
+        if not isinstance(row,dict) or set(row)-{'subject','term','value'}: raise ValidationError('Invalid grade entry.')
+        sid,term=row.get('subject'),row.get('term')
+        if type(sid) is not int or type(term) is not int or term not in [1,2,3]: raise ValidationError('Choose a subject and Term 1, 2 or 3.')
+        if not assignment or sid!=assignment.subject_id: raise PermissionDenied('You may edit only your assigned subject.')
+        if (sid,term) in changes: raise ValidationError('Duplicate subject/term entry.')
+        raw=row.get('value')
+        value='INC' if isinstance(raw,str) and raw.strip().upper()=='INC' else numeric(raw)
+        old=state.get((sid,term))
+        if value!=old:
+            if value is not None and value!='INC' and value!=value.to_integral_value():
+                raise ValidationError('Enter a whole-number grade from 0 to 100 or INC.')
+            if term<started and (old!='INC' or value in [None,'INC']):
+                raise PermissionDenied('Previous numeric grades are locked. Only INC may be replaced with a number.')
+        changes[(sid,term)]=value
+    # Sort so request ordering cannot change the policy. Pending entries are included.
+    for (sid,term),value in sorted(changes.items(),key=lambda item:item[0][1]):
+        if value==state.get((sid,term)): continue
+        resolving_previous_inc=term<started and state.get((sid,term))=='INC'
+        if value is not None and not resolving_previous_inc and any(not subjects or any((subject,n) not in state for subject in subjects) for n in range(1,term)):
+            raise ValidationError('Complete every subject in the previous terms with a number or INC first.')
+        if value is None: state.pop((sid,term),None)
+        else: state[(sid,term)]=value; started=max(started,term)
+    # Starting a term in this batch also freezes earlier numeric entries.
+    for (sid,term),value in changes.items():
+        old=saved.get((sid,term))
+        old_value=('INC' if old.is_incomplete else old.value) if old else None
+        if term<started and old_value is not None and old_value!='INC' and value!=old_value:
+            raise PermissionDenied('Previous numeric grades are locked.')
+    for (sid,term),value in changes.items():
+        old=saved.get((sid,term))
+        if old and value==('INC' if old.is_incomplete else old.value): continue
+        lookup={'record':record,'subject_id':sid,'term':GradingTerm.objects.get(number=term)}
+        if value is None: Sf9Grade.objects.filter(**lookup).delete()
+        else: Sf9Grade.objects.update_or_create(**lookup,defaults={'value':None if value=='INC' else value,'is_incomplete':value=='INC','updated_by':user})
+    record.started_term=started
+
+
 @api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 @transaction.atomic
@@ -157,20 +212,7 @@ def record_detail(request,record_id):
     if set(body)-{'version','grades','finals'}: raise ValidationError('Student information and assignments cannot be modified here.')
     if role=='TEACHER' and ('finals' in body or 'general_average' in body): raise PermissionDenied('Only Administration can confirm final grades.')
     if type(body.get('version')) is not int or body['version']!=record.version: raise Conflict('SF9 changed. Refresh before saving your grades.')
-    rows=body.get('grades',[])
-    if not isinstance(rows,list) or len(rows)>300: raise ValidationError('Invalid grade entries.')
-    seen=set()
-    for row in rows:
-        if not isinstance(row,dict) or set(row)-{'subject','term','value'}: raise ValidationError('Invalid grade entry.')
-        sid,term=row.get('subject'),row.get('term')
-        if type(sid) is not int or type(term) is not int or term not in [1,2,3]: raise ValidationError('Choose a subject and Term 1, 2 or 3.')
-        if (sid,term) in seen: raise ValidationError('Duplicate subject/term entry.')
-        seen.add((sid,term))
-        if role=='TEACHER' and (not a or sid!=a.subject_id): raise PermissionDenied('You may edit only your assigned subject.')
-        subject=get_object_or_404(Subject,pk=sid);t=get_object_or_404(GradingTerm,number=term);n=numeric(row.get('value'))
-        lookup={'record':record,'subject':subject,'term':t}
-        if n is None: Sf9Grade.objects.filter(**lookup).delete()
-        else: Sf9Grade.objects.update_or_create(**lookup,defaults={'value':n,'updated_by':request.user})
+    write_grades(record, body.get('grades',[]), a, request.user)
     if role=='ADMIN':
         finals=body.get('finals',[])
         if not isinstance(finals,list) or len(finals)>100: raise ValidationError('Invalid final grades.')

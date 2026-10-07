@@ -17,6 +17,7 @@ class ReportCardTests(Sf9PermissionTests):
         self.assertFalse(r['card_editable'])
     def test_only_adviser_encodes_shared_fields_and_persistence(self):
         self.as_role('TEACHER');self.assertEqual(self.post_card(card={'school_head':'Head'}).status_code,403)
+        self.complete_term(1)
         self.adviser();r=self.post_card(card={'attendance':{'Jun':{'class_days':20,'present':19}},'term_comments':{'1':'Good progress.'}},grades=[{'subject':self.math.pk,'term':2,'value':'88'}])
         self.assertEqual(r.status_code,200,r.data)
         self.as_role('ADMIN');saved=self.client.get(self.url()).data

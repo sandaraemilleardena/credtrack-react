@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError,PermissionDenied
 from rest_framework.response import Response
 from .models import Sf9ReportCard,TeacherAssignment,Subject,GradingTerm,Sf9Grade,TeacherComment
-from .sf9 import allowed_records,record_json,numeric,Conflict
+from .sf9 import allowed_records,record_json,write_grades,Conflict
 from .views import staff,audit
 MONTHS=['Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr']
 TEXT_FIELDS={'school_head','adviser','admitted_grade','eligible_grade','approved','admitted_in','admission_date','parent_term_1','parent_term_2','parent_term_3'}
@@ -56,19 +56,7 @@ def report_card(request,record_id):
         if row.get('class_days') is not None and row.get('present') is not None and row['present']>row['class_days']:raise ValidationError('Days present cannot exceed class days.')
     comments=data.get('term_comments',{})
     if not isinstance(comments,dict) or set(comments)-{'1','2','3'} or any(not isinstance(v,str) or len(v)>2000 for v in comments.values()):raise ValidationError('Enter valid Term 1-3 comments of at most 2,000 characters.')
-    rows=body.get('grades',[])
-    if not isinstance(rows,list) or len(rows)>3:raise ValidationError('Only your three assigned subject grades may be changed.')
-    seen=set()
-    for row in rows:
-        if not isinstance(row,dict) or set(row)-{'subject','term','value'}:raise ValidationError('Invalid grade entry.')
-        sid,term=row.get('subject'),row.get('term')
-        if type(sid) is not int or type(term) is not int or term not in [1,2,3]:raise ValidationError('Select valid subject and term.')
-        if not assignment or sid!=assignment.subject_id:raise PermissionDenied('You may edit only your assigned subject.')
-        if term in seen:raise ValidationError('Duplicate term grade.')
-        seen.add(term)
-        value=numeric(row.get('value'));lookup={'record':record,'subject_id':sid,'term':GradingTerm.objects.get(number=term)}
-        if value is None:Sf9Grade.objects.filter(**lookup).delete()
-        else:Sf9Grade.objects.update_or_create(**lookup,defaults={'value':value,'updated_by':request.user})
+    write_grades(record, body.get('grades',[]), assignment, request.user)
     card,_=Sf9ReportCard.objects.get_or_create(record=record)
     card.data={**card.data,**data};card.updated_by=request.user;card.save()
     record.version+=1;record.save();record._prefetched_objects_cache={}

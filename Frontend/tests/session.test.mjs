@@ -115,3 +115,16 @@ test('session lifecycle blocks stale history and trusts only the server', async 
     assert.equal(result.allowed,false);
   });
 });
+
+
+test('teacher navigation to Student Records retains a validated teacher session', async () => {
+  const teacher={authenticated:true,user:{id:2,role:'TEACHER'}};
+  globalThis.fetch=url=>ok(url.endsWith('csrf/')?{csrfToken:'test-token'}:teacher);
+  await auth.loginUser('teacher','password','TEACHER');
+  for (const route of ['/teacher-gradebook','/teacher-student-records','/teacher-digital-sf9']) {
+    await auth.verifySession(route);
+    assert.equal(auth.hasFreshStaffLogin('TEACHER'),true);
+    assert.equal(auth.getSessionState().status,'authenticated');
+    assert.equal(auth.getSessionState().validatedRouteKey,route);
+  }
+});
