@@ -1,0 +1,17 @@
+import {useEffect,useState} from 'react';
+import {operation} from './api/operations';
+import {usePortal} from './hooks/PortalContext';
+import './components/Sf9.css';
+export default function TeacherComments({role}){
+ const {data}=usePortal(),[rows,setRows]=useState([]),[catalog,setCatalog]=useState(null),[year,setYear]=useState(''),[search,setSearch]=useState(''),[error,setError]=useState('');
+ function refresh(){operation(`sf9/comments/${year?'?year='+year:''}`).then(r=>{setRows(r.records);setError('');}).catch(e=>setError(e.message));}
+ useEffect(()=>{operation('sf9/catalog/').then(setCatalog).catch(e=>setError(e.message));},[]);
+ useEffect(()=>{refresh();},[year]);
+ return <section className="staff-panel"><header className="sf9-heading"><div><span>STUDENT DEVELOPMENT</span><h1>Teacher’s Comments</h1><p>Term 1, Term 2 and Term 3 · Saved by school year</p></div></header><div className="staff-filters"><input aria-label="Search students" placeholder="Search student name" value={search} onChange={e=>setSearch(e.target.value)}/><label className="sf9-filter-label">School year<select aria-label="Comments school year" value={year} onChange={e=>setYear(e.target.value)}><option value="">All school years</option>{catalog?.school_years.map(y=><option value={y.id} key={y.id}>{y.name}</option>)}</select></label><button className="sf9-refresh-button" onClick={refresh}>Refresh</button></div>{error&&<p role="alert">{error}</p>}<div className="staff-table-wrap"><table className="sf9-table sf9-comments-table"><thead><tr><th>Learner / School year</th>{[1,2,3].map(n=><th key={n}>Term {n}</th>)}</tr></thead><tbody>{rows.filter(r=>r.name.toLowerCase().includes(search.toLowerCase())).map(r=><tr key={r.id}><th scope="row">{r.name}<small>{r.grade} / {r.section}<br/>SY {r.school_year}</small></th>{[1,2,3].map(term=><td key={term}>{role==='TEACHER'&&<CommentCell key={`${r.id}-${term}`} record={r} term={term} userId={data.user.id} onSaved={refresh}/>} {r.comments.filter(c=>c.term===term&&(role!=='TEACHER'||String(c.teacher_id)!==String(data.user.id))).map(c=><div className="sf9-comment-readonly" key={c.teacher_id}><p>{c.message||'—'}</p><small>{c.teacher} · {c.subject}<br/>{new Date(c.updated_at).toLocaleString()}</small></div>)}</td>)}</tr>)}</tbody></table></div>{rows.length===0&&<p>No applicable student records.</p>}</section>;
+}
+function CommentCell({record,term,userId,onSaved}){
+ const saved=record.comments.find(c=>c.term===term&&String(c.teacher_id)===String(userId)),[value,setValue]=useState(saved?.message||''),[busy,setBusy]=useState(false),[error,setError]=useState(''),[success,setSuccess]=useState('');
+ useEffect(()=>{setValue(saved?.message||'');},[saved?.message]);
+ async function save(){setBusy(true);setError('');setSuccess('');try{await operation('sf9/comments/',{record:record.id,term,message:value});setSuccess('Saved');onSaved();}catch(e){setError(e.message);}finally{setBusy(false);}}
+ return <div className="sf9-comment-cell"><textarea aria-label={`${record.name} Term ${term} comment`} placeholder="Enter your comment" maxLength={2000} value={value} disabled={busy} onChange={e=>{setValue(e.target.value);setSuccess('');}}/><button type="button" disabled={busy||value===(saved?.message||'')} onClick={save}>{busy?'Saving…':'Save comment'}</button>{success&&<small role="status">{success}</small>}{error&&<small role="alert">{error}</small>}{saved&&<small>Updated {new Date(saved.updated_at).toLocaleString()}</small>}</div>;
+}

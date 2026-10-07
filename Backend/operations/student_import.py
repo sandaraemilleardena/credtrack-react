@@ -56,10 +56,10 @@ def parse_students(file):
             if not any(text(v) for v in values): continue
             row = {FIELDS[h]: text(values[i]) if i < len(values) else "" for i,h in enumerate(headers) if h in FIELDS}
             lrn = row.get("lrn", "")
-            if len(lrn) != 12 or not lrn.isascii() or not lrn.isdigit(): raise ValidationError(f"Row {number}: LRN must be exactly 12 digits. Format the Excel LRN column as Text to preserve leading zeros.")
+            if lrn and (len(lrn) != 12 or not lrn.isascii() or not lrn.isdigit()): raise ValidationError(f"Row {number}: LRN must be exactly 12 digits. Format the Excel LRN column as Text to preserve leading zeros.")
             if not row.get("firstName") or not row.get("lastName"): raise ValidationError(f"Row {number}: first and last names are required.")
-            if lrn in seen: raise ValidationError(f"Row {number}: duplicate LRN {lrn} in this file.")
-            seen.add(lrn)
+            if lrn and lrn in seen: raise ValidationError(f"Row {number}: duplicate LRN {lrn} in this file.")
+            if lrn: seen.add(lrn)
             row["availableCredentials"] = [v.strip() for v in row.get("availableCredentials", "").split(";") if v.strip()]
             row["status"] = row.get("status") or "Active"
             if row["status"] not in {"Active", "Graduated", "Archived", "Transferred"}: raise ValidationError(f"Row {number}: invalid status.")

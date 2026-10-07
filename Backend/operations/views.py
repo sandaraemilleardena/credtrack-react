@@ -24,7 +24,7 @@ from credentials.serializers import RequestSerializer
 from credentials.services import user_role, Conflict
 from .models import StudentRecord, WorkItem, Preference, AuditEvent
 
-ROLE_LABELS = {"ADMIN": "Administrator", "PRINCIPAL": "Principal"}
+ROLE_LABELS = {"ADMIN": "Administrator", "PRINCIPAL": "Principal", "TEACHER": "Teacher"}
 SCHOOL_DEFAULTS = {
     "schoolName": "President Manuel Roxas Memorial Integrated School – South",
     "schoolId": "301905", "division": "", "schoolEmail": "", "schoolPhone": "", "address": "",
@@ -59,7 +59,8 @@ def work_json(item):
 def account_json(user):
     profile = getattr(user, "userprofile", None)
     lock_status = "Permanently Locked" if profile and profile.account_locked else "Temporarily Locked" if profile and profile.temporary_locked_until and profile.temporary_locked_until > timezone.now() else "Active"
-    return {"lock_status": lock_status, "id": str(user.pk), "username": user.username, "name": user.get_full_name() or user.username,
+    from .sf9 import assignment_json
+    return {"assignment": assignment_json(user), "lock_status": lock_status, "id": str(user.pk), "username": user.username, "name": user.get_full_name() or user.username,
             "email": user.email, "role": {**ROLE_LABELS, "STUDENTS": "Student", "ALUMNI": "Alumni"}.get(user_role(user), "Unassigned"),
             "status": lock_status if user.is_active else "Inactive",
             "lastSignIn": user.last_login.isoformat() if user.last_login else "Not yet signed in",
@@ -83,6 +84,9 @@ def diagnostics():
 def snapshot(request):
     role = staff(request, ROLE_LABELS)
     school, _ = Preference.objects.get_or_create(key="school", defaults={"data": SCHOOL_DEFAULTS})
+    if role == "TEACHER":
+        from .sf9 import assignment_json
+        return Response({"role":role,"user":account_json(request.user),"settings":{**SCHOOL_DEFAULTS,**school.data},"assignment":assignment_json(request.user),"notifications":[],"requests":[],"students":[],"audit":[]})
     events = AuditEvent.objects.select_related("actor")
 
     logs = [{"id": f"AUD-{event.pk}", "actor": event.actor.username if event.actor else "System",
@@ -99,6 +103,8 @@ def snapshot(request):
             data["students"] = [{**record.data, "id": record.pk, "lrn": record.lrn, "version": record.version, "credentialFiles": [{"id": file.pk, "title": file.title, "isSample": file.is_sample} for file in record.credential_files.all()]} for record in StudentRecord.objects.prefetch_related("credential_files").order_by("lrn")]
     if role == "ADMIN":
         data["tickets"] = [work_json(item) for item in WorkItem.objects.filter(kind="ticket").order_by("-created_at")]
+    if role == "ADMIN":
+        data["teacher_accounts"] = [account_json(user) for user in User.objects.filter(userprofile__role="TEACHER").select_related("userprofile")]
     if role == "PRINCIPAL":
         data["accounts"] = [account_json(user) for user in User.objects.filter(userprofile__role__in=ROLE_LABELS).select_related("userprofile")]
     from .notifications import notification_rows, statistics
@@ -143,8 +149,8 @@ def student_action(request):
     for row in rows:
         if not isinstance(row, dict): raise ValidationError("Invalid student row.")
         if row.get("id") and not isinstance(row["id"], int): raise ValidationError("Invalid student identifier.")
-        lrn = text(row, "lrn", True, 12)
-        if not re.fullmatch(r"\d{12}", lrn):
+        lrn = text(row, "lrn", False, 12) or None
+        if lrn and not re.fullmatch(r"\d{12}", lrn):
             raise ValidationError("LRN must contain 12 digits.")
         cleaned = {key: text(row, key, key in {"firstName", "lastName"}) for key in fields}
         cleaned["status"] = cleaned["status"] or "Active"
@@ -158,15 +164,17 @@ def student_action(request):
             record = get_object_or_404(StudentRecord.objects.select_for_update(), pk=row["id"])
             if row.get("version") != record.version:
                 raise Conflict("Student record changed. Refresh before editing.")
-            if StudentRecord.objects.filter(lrn=lrn).exclude(pk=record.pk).exists():
+            if lrn and StudentRecord.objects.filter(lrn=lrn).exclude(pk=record.pk).exists():
                 raise ValidationError("A record with this LRN already exists.")
             record.lrn, record.data = lrn, cleaned
             record.version += 1
             record.save()
         else:
-            if StudentRecord.objects.filter(lrn=lrn).exists():
+            if lrn and StudentRecord.objects.filter(lrn=lrn).exists():
                 raise ValidationError(f"LRN {lrn} already exists; edit it instead.")
             record = StudentRecord.objects.create(lrn=lrn, data=cleaned)
+        from .sf9 import sync_student
+        sync_student(record)
         audit(request, "Student Records", "Saved student record", record.pk)
     return Response({"message": "Student records saved."})
 
@@ -223,12 +231,19 @@ def work_action(request):
 @permission_classes([IsAuthenticated])
 @transaction.atomic
 def account_action(request):
-    staff(request, {"PRINCIPAL"})
+    actor_role = staff(request, {"PRINCIPAL", "ADMIN"})
     action, values = request.data.get("action"), request.data.get("values", {})
     if not isinstance(values, dict): raise ValidationError("Invalid account details.")
     role = {value: key for key, value in ROLE_LABELS.items()}.get(values.get("role"), values.get("role"))
+    if actor_role == "ADMIN":
+        if action == "create" and role != "TEACHER": raise PermissionDenied("Administration can manage teacher accounts only.")
+        if action != "create":
+            if not str(values.get("id", "")).isdigit(): raise ValidationError("Invalid account identifier.")
+            target = get_object_or_404(User, pk=values.get("id"))
+            if user_role(target) != "TEACHER" or (action == "edit" and role != "TEACHER"):
+                raise PermissionDenied("Administration can manage teacher accounts only.")
     if action == "unlock":
-        staff(request, {"PRINCIPAL"})
+        staff(request, {"PRINCIPAL", "ADMIN"})
         if not str(values.get("id", "")).isdigit(): raise ValidationError("Invalid account identifier.")
         profile = get_object_or_404(UserProfile.objects.select_for_update(), user_id=values["id"])
         if profile.role not in ROLE_LABELS or profile.user.is_superuser:
@@ -265,12 +280,21 @@ def account_action(request):
         if user.pk == request.user.pk: raise ValidationError("Use your own profile settings; you cannot change your own staff access here.")
         existing_role = user_role(user)
         if existing_role not in ROLE_LABELS: raise PermissionDenied("Only assigned staff accounts can be managed here.")
-        if action in {"deactivate", "delete", "edit"} and (action != "edit" or role != existing_role):
+        if existing_role in {"ADMIN", "PRINCIPAL"} and action in {"deactivate", "delete", "edit"} and (action != "edit" or role != existing_role):
             if not User.objects.filter(is_active=True, userprofile__role=existing_role).exclude(pk=user.pk).exists():
                 raise ValidationError("The last active account for this staff role cannot be removed.")
         if action == "edit":
             if role not in ROLE_LABELS: raise ValidationError("Select a valid staff role.")
             user.first_name = text(values, "name", True, 150)
+            if role == "TEACHER":
+                username = text(values,"username",False,150) or user.username
+                if not re.fullmatch(r"[\w.@+-]+",username) or User.objects.filter(username__iexact=username).exclude(pk=user.pk).exists(): raise ValidationError("Choose a valid unused username.")
+                user.username = username
+                if "email" in values:
+                    email=text(values,"email",True,254)
+                    try: validate_email(email)
+                    except DjangoValidationError as exc: raise ValidationError(exc.messages)
+                    user.email=email
             UserProfile.objects.filter(user=user).update(role=role)
         elif action == "reset":
             password = values.get("password", "")
@@ -283,6 +307,17 @@ def account_action(request):
         user.save()
     else:
         raise ValidationError("Choose create, edit, activate, deactivate or reset. Invitations are not configured.")
+    if action in {"create", "edit"}:
+        from .sf9 import save_assignment
+        from .models import TeacherAssignment
+        # Lock assignments in the same transaction as account role/assignment updates.
+        list(TeacherAssignment.objects.select_for_update().filter(teacher=user))
+        if role == "TEACHER": save_assignment(user,values,allow_adviser=actor_role=="PRINCIPAL")
+        else: TeacherAssignment.objects.filter(teacher=user).delete()
+        if role == "TEACHER":
+            if values.get("status", "Active") not in {"Active", "Inactive", "Temporarily Locked", "Permanently Locked"}: raise ValidationError("Invalid account status.")
+            user.is_active = values.get("status", "Active") != "Inactive"
+            user.save(update_fields=['is_active'])
     audit(request, "User Access", f"Account {action}", user.pk, "Staff access updated; existing transaction history preserved.")
     return Response({"message": "Staff account saved.", "account": account_json(user)})
 

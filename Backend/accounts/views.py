@@ -102,7 +102,7 @@ def login_view(request):
     # Check requested role if React sends one
     # --------------------------------------------------------
 
-    if role not in {"ADMIN", "PRINCIPAL", "STUDENTS", "ALUMNI"}:
+    if role not in {"ADMIN", "PRINCIPAL", "TEACHER", "STUDENTS", "ALUMNI"}:
         return Response({"error": "This role no longer has system access."}, status=403)
 
     if requested_role:
@@ -189,7 +189,7 @@ def current_user(request):
         )
 
     user = request.user
-    if getattr(getattr(user, "userprofile", None), "role", None) not in {"ADMIN", "PRINCIPAL", "STUDENTS", "ALUMNI"}:
+    if getattr(getattr(user, "userprofile", None), "role", None) not in {"ADMIN", "PRINCIPAL", "TEACHER", "STUDENTS", "ALUMNI"}:
         logout(request)
         return Response({"authenticated": False, "user": None}, status=200)
 

@@ -3,20 +3,7 @@ from django.contrib.auth.models import User
 
 
 class UserProfile(models.Model):
-
-    ROLE_CHOICES = (
-
-        ("ADMIN", "Admin"),
-
-        ("PRINCIPAL", "Principal"),
-
-
-
-        ("STUDENTS", "Students"),
-
-        ("ALUMNI", "Alumni"),
-
-    )
+    ROLE_CHOICES = [('ADMIN','Admin'),('PRINCIPAL','Principal'),('TEACHER','Teacher'),('STUDENTS','Students'),('ALUMNI','Alumni')]
 
     user = models.OneToOneField(
         User,

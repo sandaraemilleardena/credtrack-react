@@ -1,5 +1,5 @@
+import StudentSf9Card from './components/StudentSf9Card';
 import DocumentPreview from './components/DocumentPreview';
-import Sf10Preview from './components/Sf10Preview';
 import {API_BASE_URL} from './api/config';
 import './components/RequestWorkflowDetails.css';
 import {fetchRequestOptions} from './api/credentials';
@@ -117,7 +117,7 @@ function AdministrationStudRecord() {
 
       const matchesSearch =
         !query ||
-        student.lrn.toLowerCase().includes(query) ||
+        String(student.lrn||'').toLowerCase().includes(query) ||
         fullName.includes(query);
 
       const matchesGrade =
@@ -371,7 +371,7 @@ function AdministrationStudRecord() {
 
             <div className="page-title">
 
-              <h1>Student Records</h1>
+              <h1>Student Records</h1><button type="button" className="staff-primary-button" onClick={()=>navigate("/admin-sf9")}>Open SF9 Gradebook</button>
 
               <p>
                 Manage student information, search
@@ -625,7 +625,7 @@ function AdministrationStudRecord() {
 
                         <td>
                           <strong className="lrn-text">
-                            {student.lrn}
+                            {student.lrn||'Not yet assigned'}
                           </strong>
                         </td>
 
@@ -939,21 +939,21 @@ function AdministrationStudRecord() {
 
               <p>
                 LRN:{" "}
-                <span>{currentStudent.lrn}</span>
+                <span>{currentStudent.lrn||'Not yet assigned'}</span>
               </p>
 
             </div>
 
             <section className="student-credential-list">
-              <h3>Available credentials</h3>
-              <Sf10Preview student={currentStudent} school={system.data.settings}/>
-              {(currentStudent.credentialFiles || []).filter(file => !/sf\s*10/i.test(file.title)).map(file => <div key={file.id}>
+              <h3>Student forms and credentials</h3>
+              <StudentSf9Card student={currentStudent}/>
+              {(currentStudent.credentialFiles || []).filter(file => !/sf\s*10/i.test(file.title)&&!/^SF9.*(?:Front|Back)/i.test(file.title)).map(file => <div key={file.id}>
                 <DocumentPreview label={file.title} previewUrl={`${API_BASE_URL}/api/operations/students/${currentStudent.id}/credentials/${file.id}/preview/`}/>
               </div>)}
               {(currentStudent.availableCredentials || []).filter(title => !(currentStudent.credentialFiles || []).some(file => file.title === title)).map(title => <p key={title}><strong>{title}</strong> — Recorded as available; no digital file attached yet.</p>)}
               {!(currentStudent.availableCredentials || []).length && !(currentStudent.credentialFiles || []).length && <p>No available credentials recorded.</p>}
             </section>
-            <p><strong>Principal authorizations:</strong> {system.data.requests.filter(r=>r.lrn===currentStudent.lrn&&r.approved_at).map(r=>r.credential+" — "+r.status_label).join("; ")||"None yet"}</p><div className="profile-grid">
+            <p><strong>Credential activity:</strong> {system.data.requests.filter(r=>r.lrn===currentStudent.lrn&&r.approved_at).map(r=>r.credential+" — "+r.status_label).join("; ")||"None yet"}</p><div className="profile-grid">
 
               <div>
                 <label>Grade</label>
@@ -1479,12 +1479,11 @@ function StudentForm({
           type="text"
           id={`${prefix}LRN`}
           name="lrn"
-          value={form.lrn}
+          value={form.lrn||''}
           onChange={onChange}
           maxLength="12"
           pattern="[0-9]{12}"
-          placeholder="12-digit Learner Reference Number"
-          required
+          placeholder="12-digit LRN (optional for now)"
         />
       </div>
 

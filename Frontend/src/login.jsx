@@ -60,6 +60,9 @@ function Login({ audience = "public" }) {
 
   const handleRole = (role) => {
     switch (role) {
+      case "TEACHER":
+        navigate("/teacher-login");
+        break;
       case "PRINCIPAL":
         navigate("/principal-login");
         break;
@@ -289,7 +292,7 @@ function Login({ audience = "public" }) {
             ROLE MENU
             ================================================= */}
 
-        {audience === "school" && <button className="role-selection-back" type="button" onClick={() => navigate("/")}>← Back to role selection</button>}
+        <button className="role-selection-back" type="button" onClick={() => navigate("/")}>← Back to role selection</button>
         <p className="role-selection-caption">{audience === "school" ? "Choose your workspace" : "Need a school document? Choose below to get started."}</p>
         <section className="role-menu" aria-label={audience === "school" ? "School staff roles" : "Credential requester type"}>
           {audience === "school" ? <>
@@ -305,7 +308,8 @@ function Login({ audience = "public" }) {
               <span className="school-access-description">Monitor school activity, view reports, and manage personnel.</span>
               <span className="school-access-continue">Continue to login <span aria-hidden="true">→</span></span>
             </button>
-</> : <>
+<button type="button" className="school-access-card" onClick={()=>handleRole("TEACHER")}><span className="school-access-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 4h18v13H3z M7 21h10 M12 17v4 M7 8h10 M7 12h6"/></svg></span><span className="school-access-label">GRADE ENTRY</span><strong>Teacher</strong><span className="school-access-description">Enter SF9 grades for your assigned class and subject.</span><span className="school-access-action">Continue <span aria-hidden="true">→</span></span></button>
+          </> : <>
           <button type="button" className="public-access-card" onClick={()=>openRequestModal("Student")}>
            <span className="public-access-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2 8l10-5 10 5-10 5-10-5 M6 10v7c4 4 8 4 12 0v-7 M22 8v8"/></svg></span>
            <strong>Student</strong><span className="public-access-description">I am currently studying at PMRMIS-SOUTH.</span>
@@ -338,7 +342,6 @@ function Login({ audience = "public" }) {
         </div>
 
         {audience === "public" && <p className="public-access-help">Fill out the form and upload your supporting documents. We will text you when your document is ready.</p>}
-        {audience === "public" && <button className="role-selection-back" type="button" onClick={() => navigate("/")}>← Back to role selection</button>}
       </main>
 
       {/* ===================================================

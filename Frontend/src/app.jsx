@@ -1,3 +1,7 @@
+import TeacherStudentRecords from './TeacherStudentRecords';
+import TeacherReportCard from './TeacherReportCard';
+import TeacherDigitalSf9 from './TeacherDigitalSf9';
+import TeacherComments from './TeacherComments';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoginEntry from './components/LoginEntry';
 import DeveloperCredit from './components/DeveloperCredit';
@@ -16,6 +20,8 @@ import PrincipalLogin from "./PrincipalLogin";
 import AdministrationDashboard from "./AdministrationDashboard";
 import AdministrationCredManagement from "./AdministrationCredManagement";
 import RequestQueue from "./components/RequestQueue";
+import TeacherLogin from './TeacherLogin';
+import Sf9Workspace from './Sf9Workspace';
 import PrincipalUserAccess from "./PrincipalUserAccess";
 import WorkflowSupport from "./components/WorkflowSupport";
 import AdministrationStudRecord from "./AdministrationStudRecord";
@@ -40,6 +46,7 @@ function UnknownRoute() {
   const path = pathname.toLowerCase();
   const login = /^\/(admin|administration)(?:[-/]|$)/.test(path) ? '/admin-login'
     : /^\/principal(?:[-/]|$)/.test(path) ? '/principal-login'
+    : /^\/teacher(?:[-/]|$)/.test(path) ? '/teacher-login'
     : '/';
   return <Navigate to={login} replace />;
 }
@@ -59,6 +66,13 @@ function App() {
         <Route path="/admin-login" element={<SchoolEntry><LoginEntry><AdministrationLogin /></LoginEntry></SchoolEntry>} />
         <Route path="/principal-login" element={<SchoolEntry><LoginEntry><PrincipalLogin /></LoginEntry></SchoolEntry>} />
 
+        <Route path="/teacher-login" element={<SchoolEntry><LoginEntry><TeacherLogin/></LoginEntry></SchoolEntry>}/>
+        <Route path="/teacher-digital-sf9" element={<StaffPortal role="TEACHER" component={TeacherDigitalSf9}/>}/>
+        <Route path="/teacher-comments" element={<StaffPortal role="TEACHER" component={TeacherComments}/>}/>
+        <Route path="/teacher-student-records" element={<StaffPortal role="TEACHER" component={TeacherStudentRecords}/>}/>
+        <Route path="/teacher-gradebook" element={<StaffPortal role="TEACHER" component={Sf9Workspace}/>}/>
+        <Route path="/teacher-sf9-report" element={<StaffPortal role="TEACHER" component={TeacherReportCard}/>}/>
+        <Route path="/admin-sf9" element={<StaffPortal role="ADMIN" component={Sf9Workspace}/>}/>
         {/* ADMINISTRATION */}
         <Route
           path="/admin-dashboard"

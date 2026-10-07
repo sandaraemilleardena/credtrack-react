@@ -7,7 +7,7 @@ export default function ProtectedRoute({ children, allowedRoles }) {
   const routeKey = location.key + location.pathname + location.search;
   const session = useSyncExternalStore(subscribeSession, getSessionState);
   useEffect(() => { verifySession(routeKey); }, [routeKey]);
-  const login = '/' + ({ ADMIN: 'admin', PRINCIPAL: 'principal' }[allowedRoles?.[0]] || 'admin') + '-login';
+  const login = '/' + ({ ADMIN: 'admin', PRINCIPAL: 'principal', TEACHER: 'teacher' }[allowedRoles?.[0]] || 'admin') + '-login';
   const checking = session.routeKey !== routeKey || session.status === 'checking';
   const roleAllowed = session.user && (!allowedRoles || allowedRoles.includes(session.user.role));
   if (checking || (session.status === 'authenticated' && roleAllowed)) {

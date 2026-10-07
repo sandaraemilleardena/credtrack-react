@@ -1,0 +1,6 @@
+import {renderToStaticMarkup} from 'react-dom/server';
+import {CardPages} from '../src/components/Sf9ReportCard';
+const subjects=['Filipino','English','Mathematics','Science','GMRC','Araling Panlipunan','EPP','MAPEH','Music and Arts','PE and Health','Journalism'];
+export const record={id:1,name:'ROBIE DANIEL CONTILLO ALDEGUER',last_name:'ALDEGUER',first_name:'ROBIE DANIEL',middle_name:'CONTILLO',birthday:'2015-04-25',sex:'Male',grade:'Grade 6',section:'SPJ',school_year:'2026-2027',lrn:null,card_editable:true,teacher_comments:[],subjects:subjects.map((name,i)=>({id:i+1,name,editable:i===0,terms:[null,null,null],final:null})),general_average:null};
+export function html(mode){return renderToStaticMarkup(<CardPages record={record} card={{school_head:'JOCELYN E. HEDRIANA',adviser:'Assigned Teacher',attendance:{},term_comments:{}}} printMode={mode}/>);}
+export function smoke(){const full=html('both');if(!full.includes('ALDEGUER, ROBIE DANIEL CONTILLO')||!full.includes('ATTENDANCE RECORD')||full.includes('501335200128'))throw Error('Card identity mismatch');if((html('front').match(/<article/g)||[]).length!==1||(html('back').match(/<article/g)||[]).length!==1||(full.match(/<article/g)||[]).length!==2)throw Error('Print page selection failed');return ['SF9 report: student identity, blank grades and front/back print pages passed'];}

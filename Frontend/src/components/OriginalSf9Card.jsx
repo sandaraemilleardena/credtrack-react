@@ -1,0 +1,11 @@
+import {useEffect,useRef,useState} from 'react';
+import {API_BASE_URL} from '../api/config';
+import StaffIcon from './StaffIcon';
+import './StudentSf9Card.css';
+export default function OriginalSf9Card({student}){
+ const [open,setOpen]=useState(false),[images,setImages]=useState([]),[error,setError]=useState(''),dialog=useRef(null);
+ const files=(student.credentialFiles||[]).filter(f=>/^SF9.*(?:Front|Back)/i.test(f.title)).sort((a,b)=>/Front/i.test(a.title)?-1:/Front/i.test(b.title)?1:0);
+ useEffect(()=>{if(!open)return;const controller=new AbortController(),urls=[];dialog.current.showModal();setImages([]);setError('');Promise.all(files.map(async file=>{const response=await fetch(`${API_BASE_URL}/api/operations/students/${student.id}/credentials/${file.id}/preview/`,{credentials:'include',cache:'no-store',signal:controller.signal});if(!response.ok)throw Error('Unable to load the SF9 card. Please retry.');const url=URL.createObjectURL(await response.blob());urls.push(url);return {url,title:file.title};})).then(rows=>{if(!controller.signal.aborted)setImages(rows);}).catch(e=>{if(!controller.signal.aborted)setError(e.message);});return()=>{controller.abort();urls.forEach(URL.revokeObjectURL);};},[open,student.id]);
+ function close(){dialog.current.close();setOpen(false);}
+ return <><button type="button" className="staff-primary-button" onClick={()=>setOpen(true)}>View original SF9</button><dialog ref={dialog} className="student-sf9-card-dialog" aria-label="Learner’s Performance Report" onCancel={e=>{e.preventDefault();e.stopPropagation();close();}}><header><div><h2>LEARNER’S PERFORMANCE REPORT</h2><p>{[student.lastName,[student.firstName,student.middleName].filter(Boolean).join(' ')].filter(Boolean).join(', ')}</p></div><button type="button" aria-label="Close SF9 card" onClick={close}><StaffIcon name="fa-xmark"/></button></header>{error?<p role="alert">{error}</p>:files.length===0?<p className="student-sf9-empty">No SF9 card attached to this student yet.</p>:images.length===0?<p role="status">Loading SF9 card…</p>:<div className="student-sf9-card-pages">{images.map(image=><figure key={image.title}><img src={image.url} alt={image.title}/></figure>)}</div>}</dialog></>;
+}
