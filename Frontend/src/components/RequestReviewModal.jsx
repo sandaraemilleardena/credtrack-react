@@ -1,3 +1,5 @@
+import {usePortal} from '../hooks/PortalContext';
+import OriginalSf9Card from './OriginalSf9Card';
 
 import {useEffect, useRef, useState} from 'react';
 import {actOnCredential,refreshSmsStatus} from '../api/credentials';
@@ -7,6 +9,8 @@ import './RequestReviewModal.css';
 const actions = { ADMIN: {PENDING:[['approve','Verify & Approve']],APPROVED:[['ready','Schedule Release / Queue SMS'],['collect','Mark as Released']]}, PRINCIPAL: {} };
 const actionsFor = (role, request) => (actions[role]?.[request.status] || []).filter(([action])=>action==='ready'?!request.ready_at:action==='collect'?Boolean(request.ready_at):true);
 export default function RequestReviewModal({request: incoming,role,onClose,onUpdated,smsEnabled=false}) {
+ const portal=usePortal();
+ const sf10Student=role==='ADMIN'&&/^SF10\b/i.test(incoming.credential)&&incoming.lrn ? portal?.data?.students?.find(student=>student.lrn===incoming.lrn) : null;
  const [saved,setSaved]=useState(null);
  // Only server responses can advance the visible state; a late poll cannot roll it back.
  const request = saved && saved.id === incoming.id && saved.version > incoming.version ? saved : incoming;
@@ -32,7 +36,7 @@ export default function RequestReviewModal({request: incoming,role,onClose,onUpd
  return <dialog ref={dialog} className="request-review-modal" onCancel={event=>{event.preventDefault();if(!busy)onClose();}} aria-labelledby="request-review-title">
    <header className="request-review-header"><div><span className="request-review-eyebrow">CREDENTIAL REQUEST</span><h2 id="request-review-title">{request.reference}</h2><span className={`request-review-status staff-status staff-status-${request.status}`}>{request.status_label}</span></div><button type="button" disabled={busy} onClick={onClose} aria-label="Close request details"><span aria-hidden="true">×</span></button></header>
    <div className="request-review-body">
-   <RequestWorkflowDetails request={request}/>{role==="ADMIN"&&request.sms&&<button type="button" disabled={busy} onClick={checkSms} className="request-sms-refresh">Refresh SMS Status</button>}
+   <RequestWorkflowDetails request={request}/>{sf10Student&&(sf10Student.credentialFiles||[]).some(file=>/^SF10.*(?:Front|Back)/i.test(file.title))&&<section><h3>Requested SF10</h3><OriginalSf9Card student={sf10Student} documentType="SF10"/></section>}{role==="ADMIN"&&request.sms&&<button type="button" disabled={busy} onClick={checkSms} className="request-sms-refresh">Refresh SMS Status</button>}
 
    {releaseOpen && request.status === "APPROVED" && <ReleaseSmsForm request={request} schedule={schedule} onChange={setSchedule} disabled={busy} smsEnabled={smsEnabled}/>}
    {success && <p role="status" className="verification-confirmed">{success}</p>}
