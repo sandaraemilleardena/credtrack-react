@@ -293,7 +293,13 @@ function Login({ audience = "public" }) {
             ================================================= */}
 
         <button className="role-selection-back" type="button" onClick={() => navigate("/")}>← Back to role selection</button>
-        <p className="role-selection-caption">{audience === "school" ? "Choose your workspace" : "Need a school document? Choose below to get started."}</p>
+        {audience === "public" && <header className="public-school-header">
+          <div className="public-school-brand"><img src="/logo.png" alt="PMRMIS South school seal"/><div><p>President Manuel Roxas Memorial Integrated School <span>– South</span></p><small>CredTrack · School Records</small></div></div>
+          <span className="public-portal-label">STUDENT & ALUMNI SERVICES</span>
+          <h1>Your school documents,<br/><span>one request away.</span></h1>
+          <p className="public-school-intro">Choose the option that describes you to start your credential request.</p>
+        </header>}
+        {audience === "school" && <p className="role-selection-caption">Choose your workspace</p>}
         <section className="role-menu" aria-label={audience === "school" ? "School staff roles" : "Credential requester type"}>
           {audience === "school" ? <>
             <button type="button" className="school-access-card" onClick={()=>handleRole("ADMIN")}>
@@ -312,12 +318,12 @@ function Login({ audience = "public" }) {
           </> : <>
           <button type="button" className="public-access-card" onClick={()=>openRequestModal("Student")}>
            <span className="public-access-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2 8l10-5 10 5-10 5-10-5 M6 10v7c4 4 8 4 12 0v-7 M22 8v8"/></svg></span>
-           <strong>Student</strong><span className="public-access-description">I am currently studying at PMRMIS-SOUTH.</span>
+           <span className="public-card-label">CURRENT LEARNERS</span><strong>Student</strong><span className="public-access-description">Currently enrolled at PMRMIS–South? Start your school document request here.</span>
            <span className="public-access-action">Request a document <span aria-hidden="true">→</span></span>
           </button>
           <button type="button" className="public-access-card" onClick={()=>openRequestModal("Alumni")}>
            <span className="public-access-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 3a4 4 0 1 1 0 8 4 4 0 0 1 0-8 M2 21v-3c0-7 14-7 14 0v3 M18 5a3 3 0 0 1 0 6 M19 14c3 0 3 4 3 7"/></svg></span>
-           <strong>Alumni</strong><span className="public-access-description">I graduated or studied at PMRMIS-SOUTH before.</span>
+           <span className="public-card-label">FORMER LEARNERS</span><strong>Alumni</strong><span className="public-access-description">Graduated or previously studied at PMRMIS–South? Request your records here.</span>
            <span className="public-access-action">Request a document <span aria-hidden="true">→</span></span>
           </button>
          </>}
