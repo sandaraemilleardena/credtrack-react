@@ -1,3 +1,4 @@
+import OriginalSf9Card from './components/OriginalSf9Card';
 import StudentSf9Card from './components/StudentSf9Card';
 import DocumentPreview from './components/DocumentPreview';
 import {API_BASE_URL} from './api/config';
@@ -965,7 +966,8 @@ function AdministrationStudRecord() {
             <section className="student-credential-list">
               <h3>Student forms and credentials</h3>
               {currentStudent.status !== 'Graduated' && <StudentSf9Card student={currentStudent}/>}
-              {(currentStudent.credentialFiles || []).filter(file => !/^SF9.*(?:Front|Back)/i.test(file.title)).map(file => <div key={file.id}>
+              {(currentStudent.credentialFiles || []).some(file => /^SF10.*(?:Front|Back)/i.test(file.title)) && <OriginalSf9Card student={currentStudent} documentType="SF10"/>}
+              {(currentStudent.credentialFiles || []).filter(file => !/^SF(?:9|10).*(?:Front|Back)/i.test(file.title)).map(file => <div key={file.id}>
                 <DocumentPreview label={file.title} previewUrl={`${API_BASE_URL}/api/operations/students/${currentStudent.id}/credentials/${file.id}/preview/`}/>
               </div>)}
               {(currentStudent.availableCredentials || []).filter(title => !(currentStudent.credentialFiles || []).some(file => file.title === title || file.title.startsWith(title+' - '))).map(title => <p key={title}><strong>{title}</strong> — Recorded as available; no digital file attached yet.</p>)}
