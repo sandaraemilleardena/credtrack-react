@@ -1444,7 +1444,7 @@
 
 .student-records-page .search-panel {
   display: grid;
-  grid-template-columns: minmax(240px, 1fr) repeat(3, minmax(130px, 170px));
+  grid-template-columns: minmax(240px, 1fr) repeat(4, minmax(130px, 170px));
   gap: 12px;
   margin-bottom: 22px;
   padding: 16px;

@@ -56,6 +56,11 @@ function AdministrationStudRecord() {
   const [gradeFilter, setGradeFilter] = useState("");
   const [sectionFilter, setSectionFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [schoolYearFilter, setSchoolYearFilter] = useState("");
+  const schoolYears = [...new Set([
+    ...Array.from({length:11}, (_,i)=>`${2016+i}-${2017+i}`),
+    ...students.map(student=>student.schoolYear?.replace(/–/g,'-')).filter(Boolean),
+  ])].sort();
 
   const [selectedIds, setSelectedIds] = useState([]);
 
@@ -128,15 +133,18 @@ function AdministrationStudRecord() {
 
       const matchesStatus =
         !statusFilter || student.status === statusFilter;
+      const matchesSchoolYear =
+        !schoolYearFilter || student.schoolYear?.replace(/–/g,'-') === schoolYearFilter;
 
       return (
         matchesSearch &&
         matchesGrade &&
         matchesSection &&
-        matchesStatus
+        matchesStatus &&
+        matchesSchoolYear
       );
     });
-  }, [students, search, gradeFilter, sectionFilter, statusFilter]);
+  }, [students, search, gradeFilter, sectionFilter, statusFilter, schoolYearFilter]);
 
   const totalPages = Math.max(
     1,
@@ -196,6 +204,7 @@ function AdministrationStudRecord() {
     setGradeFilter("");
     setSectionFilter("");
     setStatusFilter("");
+    setSchoolYearFilter("");
     setPage(1);
   };
 
@@ -508,6 +517,15 @@ function AdministrationStudRecord() {
                 Transferred
               </option>
               <option value="Archived">Archived</option>
+            </select>
+
+            <select
+              aria-label="School year"
+              value={schoolYearFilter}
+              onChange={handleFilter(setSchoolYearFilter)}
+            >
+              <option value="">All School Years</option>
+              {schoolYears.map(year=><option key={year} value={year}>{year}</option>)}
             </select>
 
           </section>
@@ -946,11 +964,11 @@ function AdministrationStudRecord() {
 
             <section className="student-credential-list">
               <h3>Student forms and credentials</h3>
-              <StudentSf9Card student={currentStudent}/>
-              {(currentStudent.credentialFiles || []).filter(file => !/sf\s*10/i.test(file.title)&&!/^SF9.*(?:Front|Back)/i.test(file.title)).map(file => <div key={file.id}>
+              {currentStudent.status !== 'Graduated' && <StudentSf9Card student={currentStudent}/>}
+              {(currentStudent.credentialFiles || []).filter(file => !/^SF9.*(?:Front|Back)/i.test(file.title)).map(file => <div key={file.id}>
                 <DocumentPreview label={file.title} previewUrl={`${API_BASE_URL}/api/operations/students/${currentStudent.id}/credentials/${file.id}/preview/`}/>
               </div>)}
-              {(currentStudent.availableCredentials || []).filter(title => !(currentStudent.credentialFiles || []).some(file => file.title === title)).map(title => <p key={title}><strong>{title}</strong> — Recorded as available; no digital file attached yet.</p>)}
+              {(currentStudent.availableCredentials || []).filter(title => !(currentStudent.credentialFiles || []).some(file => file.title === title || file.title.startsWith(title+' - '))).map(title => <p key={title}><strong>{title}</strong> — Recorded as available; no digital file attached yet.</p>)}
               {!(currentStudent.availableCredentials || []).length && !(currentStudent.credentialFiles || []).length && <p>No available credentials recorded.</p>}
             </section>
             <p><strong>Credential activity:</strong> {system.data.requests.filter(r=>r.lrn===currentStudent.lrn&&r.approved_at).map(r=>r.credential+" — "+r.status_label).join("; ")||"None yet"}</p><div className="profile-grid">
