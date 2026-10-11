@@ -13,10 +13,17 @@ export default function FirstPage() {
   }, [showPin]);
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
-  function submitPin(event) {
+  const [busy, setBusy] = useState(false);
+  const submitting = useRef(false);
+  async function submitPin(event) {
     event.preventDefault();
-    if (!unlockSchoolEntry(pin)) { setError("Incorrect PIN. Enter the four-digit school PIN."); return; }
-    navigate("/login/school");
+    if (submitting.current) return;
+    submitting.current = true;
+    setBusy(true); setError("");
+    try {
+      if (await unlockSchoolEntry(pin)) navigate("/login/school");
+    } catch (error) { setError(error.message); }
+    finally { submitting.current = false; setBusy(false); }
   }
   return <main className="first-page">
     <section className="first-card" aria-labelledby="first-title">
@@ -36,14 +43,14 @@ export default function FirstPage() {
       </div>
       <p className="first-footer">Access · Manage · Serve</p>
     </section>
-    <dialog ref={pinDialog} className="first-pin-dialog" aria-labelledby="pin-dialog-title" aria-describedby="pin-dialog-description" onCancel={() => { setShowPin(false); setPin(""); setError(""); }}>
+    <dialog ref={pinDialog} className="first-pin-dialog" aria-labelledby="pin-dialog-title" aria-describedby="pin-dialog-description" onCancel={() => { clearSchoolEntry(); setShowPin(false); setPin(""); setError(""); }}>
       <form className="first-pin-form" onSubmit={submitPin}>
         <h2 id="pin-dialog-title">School access</h2><p id="pin-dialog-description">Enter your four-digit PIN to continue.</p>
         <label htmlFor="school-pin">Enter a PIN</label>
         <input id="school-pin" type="password" inputMode="numeric" pattern="[0-9]{4}" maxLength={4} minLength={4} autoComplete="off" autoFocus required value={pin} onChange={event => { setPin(event.target.value.replace(/\D/g, "").slice(0, 4)); setError(""); }} aria-invalid={!!error} aria-describedby={error ? "pin-error" : undefined} />
         {error && <p id="pin-error" className="first-error" role="alert">{error}</p>}
-        <button className="first-submit" type="submit">Continue to school login →</button>
-        <button className="first-back" type="button" onClick={() => { setShowPin(false); setPin(""); setError(""); }}>← Back to role selection</button>
+        <button className="first-submit" type="submit" disabled={busy}>{busy ? "Checking PIN…" : "Continue to school login →"}</button>
+        <button className="first-back" type="button" onClick={() => { clearSchoolEntry(); setShowPin(false); setPin(""); setError(""); }}>← Back to role selection</button>
       </form>
     </dialog>
   </main>;

@@ -272,35 +272,9 @@ function AdministrationSettings() {
                 Security
               </button>
 
-              <button
-                type="button"
-                className={`tab ${
-                  activeTab === "backup"
-                    ? "active"
-                    : ""
-                }`}
-                onClick={() =>
-                  setActiveTab("backup")
-                }
-              >
-                <i className="fas fa-database" />
-                Backup & Retention
-              </button>
 
-              <button
-                type="button"
-                className={`tab ${
-                  activeTab === "maintenance"
-                    ? "active"
-                    : ""
-                }`}
-                onClick={() =>
-                  setActiveTab("maintenance")
-                }
-              >
-                <i className="fas fa-screwdriver-wrench" />
-                Maintenance
-              </button>
+
+
 
             </nav>
 

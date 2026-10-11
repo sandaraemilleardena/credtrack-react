@@ -381,7 +381,7 @@ function AdministrationStudRecord() {
 
             <div className="page-title">
 
-              <h1>Student Records</h1><button type="button" className="staff-primary-button" onClick={()=>navigate("/admin-sf9")}>Open SF9 Gradebook</button>
+              <h1>Student Records</h1>
 
               <p>
                 Manage student information, search
@@ -392,17 +392,6 @@ function AdministrationStudRecord() {
             </div>
 
             <div className="page-actions">
-
-              <button
-                type="button"
-                className="btn-import"
-                onClick={() =>
-                  setShowExcelModal(true)
-                }
-              >
-                <i className="fas fa-file-excel" />
-                Import from Excel
-              </button>
 
               <button
                 type="button"
@@ -817,16 +806,6 @@ function AdministrationStudRecord() {
 
         {/* FOOTER */}
 
-        <footer className="footer">
-
-          <div>
-            © 2026 CredTrack · ARDEÑA S.E | President Manuel
-            Roxas Memorial Integrated School - South
-          </div>
-
-          <div>Version 1.0.0</div>
-
-        </footer>
 
       </div>
 

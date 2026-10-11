@@ -1,5 +1,14 @@
-// Temporary UI PIN gate; account/API authorization remains server-side.
+import {operation} from '../api/operations';
+// Account/API authorization remains independent of the school entry gate.
 let unlocked = false;
-export function unlockSchoolEntry(pin) { unlocked = /^\d{4}$/.test(pin) && pin === '1905'; return unlocked; }
+let attempt = 0;
+export async function unlockSchoolEntry(pin) {
+  const currentAttempt = ++attempt;
+  unlocked = false;
+  const result = await operation('school-pin/verify/', {pin});
+  if (currentAttempt !== attempt) return false;
+  unlocked = result.verified === true;
+  return unlocked;
+}
 export function hasSchoolEntry() { return unlocked; }
-export function clearSchoolEntry() { unlocked = false; }
+export function clearSchoolEntry() { attempt++; unlocked = false; }

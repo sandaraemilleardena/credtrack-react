@@ -302,19 +302,19 @@ function Login({ audience = "public" }) {
         {audience === "school" && <p className="role-selection-caption">Choose your workspace</p>}
         <section className="role-menu" aria-label={audience === "school" ? "School staff roles" : "Credential requester type"}>
           {audience === "school" ? <>
-            <button type="button" className="school-access-card" onClick={()=>handleRole("ADMIN")}>
-              <span className="school-access-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z M8 8h8 M8 12h8 M8 16h5"/></svg></span>
-              <span className="school-access-label">OPERATIONS</span><strong>Administration</strong>
-              <span className="school-access-description">Verify requests, manage records, and release credentials.</span>
-              <span className="school-access-continue">Continue to login <span aria-hidden="true">→</span></span>
-            </button>
-            <button type="button" className="school-access-card" onClick={()=>handleRole("PRINCIPAL")}>
-              <span className="school-access-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 9l9-6 9 6 M4 10h16 M6 10v10 M12 10v10 M18 10v10 M3 21h18"/></svg></span>
-              <span className="school-access-label">MONITORING & MANAGEMENT</span><strong>Principal</strong>
-              <span className="school-access-description">Monitor school activity, view reports, and manage personnel.</span>
-              <span className="school-access-continue">Continue to login <span aria-hidden="true">→</span></span>
-            </button>
-<button type="button" className="school-access-card" onClick={()=>handleRole("TEACHER")}><span className="school-access-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 4h18v13H3z M7 21h10 M12 17v4 M7 8h10 M7 12h6"/></svg></span><span className="school-access-label">GRADE ENTRY</span><strong>Teacher</strong><span className="school-access-description">Enter SF9 grades for your assigned class and subject.</span><span className="school-access-action">Continue <span aria-hidden="true">→</span></span></button>
+            {[
+              {role: "ADMIN", label: "OPERATIONS", title: "Administration", description: "Verify requests, manage records, and release credentials.", icon: "M4 4h16v16H4z M8 8h8 M8 12h8 M8 16h5"},
+              {role: "PRINCIPAL", label: "MONITORING & MANAGEMENT", title: "Principal", description: "Monitor school activity, view reports, and manage personnel.", icon: "M3 9l9-6 9 6 M4 10h16 M6 10v10 M12 10v10 M18 10v10 M3 21h18"},
+              {role: "TEACHER", label: "GRADE ENTRY", title: "Teacher", description: "Enter SF9 grades for your assigned class and subject.", icon: "M3 4h18v13H3z M7 21h10 M12 17v4 M7 8h10 M7 12h6"},
+            ].map(({role, label, title, description, icon}) => (
+              <button key={role} type="button" className="school-access-card" onClick={()=>handleRole(role)}>
+                <span className="school-access-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d={icon}/></svg></span>
+                <span className="school-access-label">{label}</span>
+                <strong>{title}</strong>
+                <span className="school-access-description">{description}</span>
+                <span className="school-access-continue">Continue to login <span aria-hidden="true">→</span></span>
+              </button>
+            ))}
           </> : <>
           <button type="button" className="public-access-card" onClick={()=>openRequestModal("Student")}>
            <span className="public-access-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2 8l10-5 10 5-10 5-10-5 M6 10v7c4 4 8 4 12 0v-7 M22 8v8"/></svg></span>

@@ -1030,55 +1030,6 @@ function AdministrationDashboard() {
             FOOTER
         =================================================== */}
 
-        <footer className="footer">
-
-          <div className="footer-brand">
-
-            <span className="footer-logo">
-              CT
-            </span>
-
-            <span>
-              © 2026 CredTrack · ARDEÑA S.E
-            </span>
-
-            <span className="footer-separator">
-              ·
-            </span>
-
-            <span>
-              President Manuel Roxas Memorial
-              Integrated School — South
-            </span>
-
-          </div>
-
-          <div className="footer-meta">
-
-            <span>
-              Records Management Office
-            </span>
-
-            <span className="footer-separator">
-              ·
-            </span>
-
-            <span>
-              Version 1.0.0
-            </span>
-
-            <span className="footer-separator">
-              ·
-            </span>
-
-            <span className="footer-secure">
-              <i className="fas fa-lock"></i>
-              Secure
-            </span>
-
-          </div>
-
-        </footer>
 
       </div>
 

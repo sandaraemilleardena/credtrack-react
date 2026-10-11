@@ -37,6 +37,44 @@ class Sf9PermissionTests(TestCase):
         self.assertEqual(len(r['subjects']),11);self.assertFalse(any(s['editable'] for s in r['subjects']))
         m=next(s for s in r['subjects'] if s['id']==self.math.pk)
         self.assertEqual(Decimal(m['terms'][0]['value']),85);self.assertEqual(m['terms'][0]['updated_by'],'teacher')
+
+    def test_class_curriculum_opens_term_two_without_unrelated_subjects(self):
+        from .models import Preference
+        Preference.objects.create(key=f'sf9-subjects:{self.a.pk}',data={'subject_ids':[self.math.pk]})
+        self.as_role('TEACHER')
+        self.assertEqual(self.save(term=1,value='91').status_code,200)
+        response=self.client.get(self.detail()).data
+        self.assertEqual([s['id'] for s in response['subjects']],[self.math.pk])
+        self.assertEqual(response['term_unlocked'],[True,True,False])
+        self.assertEqual(self.save(term=2,value='92').status_code,200)
+        self.assertEqual(self.save(term=1,value='90').status_code,403)
+        self.as_role('ADMIN')
+        self.assertEqual(len(self.client.get(self.detail(self.records[1])).data['subjects']),11)
+
+    def test_class_curriculum_rejects_excluded_assigned_subject(self):
+        from .models import Preference
+        Preference.objects.create(key=f'sf9-subjects:{self.a.pk}',data={'subject_ids':[self.english.pk]})
+        self.as_role('TEACHER')
+        self.assertEqual(self.save().status_code,400)
+        self.assertFalse(Sf9Grade.objects.filter(record=self.rec).exists())
+
+    def test_report_card_comments_visible_on_comments_page_with_class_permissions(self):
+        from .models import Sf9ReportCard
+        Sf9ReportCard.objects.create(record=self.rec,data={'adviser':'Class adviser name','term_comments':{'1':'Exact Term 1 feedback.'}})
+        Sf9ReportCard.objects.create(record=self.records[1],data={'term_comments':{'1':'Other class feedback.'}})
+        for role in ['ADMIN','PRINCIPAL','TEACHER']:
+            self.as_role(role)
+            response=self.client.get('/api/operations/sf9/comments/')
+            self.assertEqual(response.status_code,200)
+            record=next(r for r in response.data['records'] if r['id']==self.rec.pk)
+            self.assertEqual(len(record['comments']),1)
+            comment=record['comments'][0]
+            self.assertEqual(comment['message'],'Exact Term 1 feedback.')
+            self.assertEqual(comment['teacher'],'Class adviser name')
+            self.assertEqual(comment['term'],1)
+            self.assertFalse(comment['editable'])
+            if role=='TEACHER':
+                self.assertNotIn(self.records[1].pk,[r['id'] for r in response.data['records']])
     def test_terms_separately_saved_and_read_after_refresh(self):
         self.as_role('TEACHER')
         for n,v in [(1,'85'),(2,'88'),(3,'90')]:

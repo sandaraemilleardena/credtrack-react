@@ -5,7 +5,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.response import Response
-from .models import TeacherAssignment,TeacherComment,GradingTerm
+from .models import TeacherAssignment,TeacherComment,GradingTerm,Sf9ReportCard
 from .sf9 import allowed_records,brief,alphabetical_records
 from .views import staff,audit
 
@@ -33,4 +33,15 @@ def comments(request):
         records=records.filter(school_year_id=year)
     records=list(alphabetical_records(records)[:500])
     entries=TeacherComment.objects.filter(record_id__in=[r.pk for r in records]).select_related('teacher','subject','term')
-    return Response({'records':[{**brief(r),'comments':[{'teacher_id':c.teacher_id,'teacher':c.teacher.get_full_name() or c.teacher.username,'subject':c.subject.name,'term':c.term.number,'message':c.message,'updated_at':c.updated_at.isoformat(),'editable':role=='TEACHER' and c.teacher_id==request.user.pk} for c in entries if c.record_id==r.pk]} for r in records]})
+    cards={card.record_id:card for card in Sf9ReportCard.objects.filter(record_id__in=[r.pk for r in records])}
+    result=[]
+    for record in records:
+        saved=[{'teacher_id':c.teacher_id,'teacher':c.teacher.get_full_name() or c.teacher.username,'subject':c.subject.name,'term':c.term.number,'message':c.message,'updated_at':c.updated_at.isoformat(),'editable':role=='TEACHER' and c.teacher_id==request.user.pk} for c in entries if c.record_id==record.pk]
+        card=cards.get(record.pk)
+        if card:
+            for term in [1,2,3]:
+                message=(card.data.get('term_comments') or {}).get(str(term))
+                if message:
+                    saved.append({'teacher_id':None,'source':'report_card','teacher':card.data.get('adviser') or 'Class adviser','subject':'Adviser comment','term':term,'message':message,'updated_at':card.updated_at.isoformat(),'editable':False})
+        result.append({**brief(record),'comments':saved})
+    return Response({'records':result})

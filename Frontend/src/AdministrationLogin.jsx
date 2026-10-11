@@ -311,10 +311,6 @@ function AdministrationLogin() {
             </span>
           </div>
 
-          {/* FOOTER */}
-          <footer className="admin-footer">
-            © 2026 PMRMIS–South
-          </footer>
           </div>
         </section>
       </main>

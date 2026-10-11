@@ -67,7 +67,7 @@
 .staff-shell .request-queue-refresh{display:flex;align-items:center;justify-content:center;gap:8px;height:42px;padding:0 15px;border:1px solid #ead4d6;border-radius:8px;background:#fff;color:#8d0e12;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer}
 .request-queue-refresh svg{width:15px;height:15px}.request-queue-refresh:hover{background:#fff0f0}
 .request-queue-panel .staff-table-wrap{border:1px solid #e8e9ee;border-radius:12px}
-.staff-shell .request-queue-table{table-layout:fixed;min-width:1050px;font-family:inherit;font-size:14px;line-height:1.6}
+.staff-shell .request-queue-table{table-layout:fixed;width:100%;min-width:0;font-family:inherit;font-size:14px;line-height:1.6}
 .request-queue-caption{text-align:left;padding:12px 16px;font-size:13px;color:#606b7d;border-bottom:1px solid #e8e9ee;background:#fff}
 .staff-shell .request-queue-table th{background:#f8f9fc;color:#505d72;font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;padding:14px 16px;vertical-align:middle}
 .staff-shell .request-queue-table td{padding:18px 16px;vertical-align:middle;font-weight:500;color:#263047;overflow-wrap:anywhere}
@@ -77,4 +77,8 @@
 .staff-shell .request-queue-table .staff-status{font-size:12px;font-weight:600;line-height:1.5;padding:4px 9px}
 .staff-shell .request-queue-table td button{font-family:inherit;font-size:13px;font-weight:600;line-height:1.5;border-radius:7px;padding:8px 10px;margin:0;white-space:nowrap}
 .request-queue-table tbody tr:hover{background:#fcfcfe}.request-queue-table tbody tr:last-child td{border-bottom:0}
+.staff-shell .request-queue-table th:last-child,.staff-shell .request-queue-table td:last-child{text-align:center;padding-left:4px;padding-right:4px}
+.staff-shell .request-queue-table td .request-view-icon{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;padding:0;border:1px solid #dfe1e7;background:#fff;color:#8d0e12;border-radius:8px}
+.staff-shell .request-queue-table td .request-view-icon:hover{background:#fff0f1;border-color:#8d0e12}
+.staff-shell .request-queue-table td .request-view-icon:focus-visible{outline:3px solid #d99a1d;outline-offset:2px}
 @media(max-width:600px){.staff-shell .request-queue-panel{padding:18px}.request-queue-panel>h1{font-size:21px}.staff-shell .request-queue-filters{padding:12px;gap:10px}.request-queue-filters input{min-width:0;flex-basis:100%;width:100%}.request-queue-filters select{flex:1;width:auto;min-width:0}}

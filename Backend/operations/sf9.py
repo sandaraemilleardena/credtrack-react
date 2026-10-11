@@ -12,7 +12,16 @@ from rest_framework.response import Response
 from credentials.services import Conflict
 from .views import staff, audit
 from .models import (StudentRecord, GradeLevel, ClassSection, Subject, SchoolYear,
-                     GradingTerm, TeacherAssignment, Sf9Record, Sf9Grade, Sf9FinalGrade)
+                     GradingTerm, TeacherAssignment, Sf9Record, Sf9Grade, Sf9FinalGrade, Preference)
+
+
+def record_subjects(record, subjects=None):
+    subjects=list(subjects if subjects is not None else Subject.objects.all())
+    policy=Preference.objects.filter(key=f'sf9-subjects:{record.section_id}').first()
+    if policy:
+        allowed=set(policy.data['subject_ids'])
+        subjects=[subject for subject in subjects if subject.pk in allowed]
+    return subjects
 
 
 def assignment_json(user):
@@ -81,7 +90,7 @@ def record_json(record, user, role, subjects=None, assignment=None):
     result=brief(record); a=(assignment or TeacherAssignment.objects.filter(teacher=user).first()) if role=='TEACHER' else None
     grades={(g.subject_id,g.term.number):g for g in record.grades.all()}
     finals={g.subject_id:g for g in record.final_grades.all()}
-    subjects=list(subjects if subjects is not None else Subject.objects.all())
+    subjects=record_subjects(record, subjects)
     complete={n:bool(subjects) and all((s.pk,n) in grades for s in subjects) for n in [1,2,3]}
     started=max(record.started_term,max((n for _,n in grades),default=1))
     result['started_term']=started
@@ -153,7 +162,7 @@ def write_grades(record, rows, assignment, user):
     if not isinstance(rows,list) or len(rows)>3:
         raise ValidationError('Only your three assigned subject grades may be changed.')
     saved={(g.subject_id,g.term.number):g for g in record.grades.all()}
-    subjects=set(Subject.objects.values_list('pk',flat=True))
+    subjects={subject.pk for subject in record_subjects(record)}
     state={key:('INC' if g.is_incomplete else g.value) for key,g in saved.items()}
     started=max(record.started_term,max((n for _,n in state),default=1))
     changes={}
@@ -162,6 +171,7 @@ def write_grades(record, rows, assignment, user):
         sid,term=row.get('subject'),row.get('term')
         if type(sid) is not int or type(term) is not int or term not in [1,2,3]: raise ValidationError('Choose a subject and Term 1, 2 or 3.')
         if not assignment or sid!=assignment.subject_id: raise PermissionDenied('You may edit only your assigned subject.')
+        if sid not in subjects: raise ValidationError('This subject is not part of this class curriculum.')
         if (sid,term) in changes: raise ValidationError('Duplicate subject/term entry.')
         raw=row.get('value')
         value='INC' if isinstance(raw,str) and raw.strip().upper()=='INC' else numeric(raw)
