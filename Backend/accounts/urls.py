@@ -12,8 +12,11 @@ from .password_reset import request_reset, complete_reset
 from .views import user_activity
 
 from .profile import edit_profile
+from .email_otp import verify_email_otp, resend_email_otp
 
 urlpatterns = [
+    path('otp/verify/', verify_email_otp),
+    path('otp/resend/', resend_email_otp),
     path('profile/', edit_profile),
     path("activity/", user_activity),
     path("forgot-password/", request_reset),

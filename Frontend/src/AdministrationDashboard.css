@@ -2159,3 +2159,19 @@ body:has(.administration-dashboard .sidebar.open) { overflow: hidden; }
 @media screen and (max-width: 760px) {
   .administration-dashboard .page-header { padding: 16px 16px 14px; gap: 12px; }
 }
+
+/* Keep statistic labels, values and descriptions aligned across all four cards. */
+.administration-dashboard .statistics{align-items:stretch}
+.administration-dashboard .stat-card{grid-template-columns:56px minmax(0,1fr);gap:16px;padding:24px 20px;min-height:174px;box-sizing:border-box}
+.administration-dashboard .stat-card .icon{width:56px;height:56px;align-self:center;display:grid;place-items:center}
+.administration-dashboard .stat-content{display:grid;grid-template-rows:40px 58px 38px;align-content:center;min-width:0;width:100%}
+.administration-dashboard .stat-content h4{margin:0;align-self:start;font-size:14px;font-weight:600;line-height:20px}
+.administration-dashboard .stat-value-row{display:flex;align-items:center;justify-content:flex-start;margin:0;min-height:58px}
+.administration-dashboard .stat-value-row h3{margin:0;font:800 44px/1.15 Poppins,Arial,sans-serif;letter-spacing:-1px;font-variant-numeric:tabular-nums;color:var(--ct-fg-263047,#263047)}
+.administration-dashboard .stat-content>p{margin:4px 0 0;font-size:12px;line-height:17px;align-self:start}
+@media(max-width:600px){.administration-dashboard .stat-card{padding:18px 14px;grid-template-columns:44px minmax(0,1fr);gap:12px}.administration-dashboard .stat-card .icon{width:44px;height:44px;border-radius:12px}.administration-dashboard .stat-value-row h3{font-size:36px}.administration-dashboard .stat-content{grid-template-rows:40px 50px 38px}}
+
+/* Use one 16px gap between the dashboard heading and summary cards. */
+.staff-page .administration-dashboard .page-header{padding-bottom:16px!important;margin-bottom:0!important}
+.staff-page .administration-dashboard .dashboard-content{padding-top:0!important}
+.staff-page .administration-dashboard .dashboard-content>.statistics{margin-top:0!important}

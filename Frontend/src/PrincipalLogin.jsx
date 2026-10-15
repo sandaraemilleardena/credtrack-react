@@ -1,3 +1,4 @@
+import EmailOtp from './components/EmailOtp';
 import useLoginLockout from "./auth/useLoginLockout";
 import { useState } from "react";
 import { loginUser } from "./auth/session.js";
@@ -7,6 +8,7 @@ import "./StaffLogin.css";
 
 function PrincipalLogin() {
   const navigate = useNavigate();
+  const [otp,setOtp]=useState(null);
 
   const [username, setUsername] = useState("");
   const lockout = useLoginLockout(username);
@@ -33,6 +35,7 @@ function PrincipalLogin() {
     try {
       const data = await loginUser(username.trim(), password, "PRINCIPAL");
 
+      if(data.otp_required){setOtp(data);setPassword('');return;}
       if (data.authenticated !== true) {
         setError(data.error || "Unable to establish a login session.");
         return;
@@ -273,6 +276,7 @@ function PrincipalLogin() {
         </div>
         </section>
       </main>
+    {otp&&<EmailOtp email={otp.email} role="PRINCIPAL" onClose={()=>setOtp(null)} onVerified={()=>navigate('/principal-dashboard',{replace:true})}/>}
     </div>
   );
 }

@@ -126,11 +126,9 @@ def text(values, key, required=False, maximum=2000):
 @transaction.atomic
 def student_action(request):
     request.user=get_object_or_404(User.objects.select_for_update(),pk=request.user.pk,is_active=True)
-    role = staff(request, {"ADMIN", "TEACHER"})
+    role = staff(request, {"ADMIN"})
     values = request.data
     action = values.get("action")
-    if role == "ADMIN" and (action == "import" or (action == "save" and not values.get("student", {}).get("id"))):
-        raise PermissionDenied("Teachers now create class student records.")
     if role == "TEACHER" and action != "save":
         raise PermissionDenied("Teachers may create or edit assigned class students only.")
     if action == "archive":

@@ -1,3 +1,4 @@
+import EmailOtp from './components/EmailOtp';
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./AdministrationLogin.css";
@@ -8,6 +9,7 @@ import { loginUser } from "./auth/session";
 
 function AdministrationLogin() {
   const navigate = useNavigate();
+  const [otp,setOtp]=useState(null);
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -46,6 +48,7 @@ function AdministrationLogin() {
       // CHECK DJANGO RESPONSE
       // ------------------------------------------------------
 
+      if(data.otp_required){setOtp(data);setPassword('');return;}
       if (!data.authenticated) {
         setError(
           data.error ||
@@ -314,6 +317,7 @@ function AdministrationLogin() {
           </div>
         </section>
       </main>
+    {otp&&<EmailOtp email={otp.email} role="ADMIN" onClose={()=>setOtp(null)} onVerified={()=>navigate('/admin-dashboard',{replace:true})}/>}
     </div>
   );
 }

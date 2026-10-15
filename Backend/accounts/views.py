@@ -119,6 +119,13 @@ def login_view(request):
                 status=status.HTTP_403_FORBIDDEN
             )
 
+    if role in {"ADMIN", "PRINCIPAL", "TEACHER"} or getattr(profile, 'email_otp_enabled', False):
+        from .email_otp import issue_code
+        return issue_code(request, user)
+    return finish_login(request, user, role)
+
+
+def finish_login(request, user, role):
     # --------------------------------------------------------
     # CREATE DJANGO SESSION
     # --------------------------------------------------------
@@ -138,7 +145,7 @@ def login_view(request):
                 if last is not None and now.timestamp() - last >= settings.SESSION_IDLE_TIMEOUT:
                     continue
                 return Response({"error": "This account is already signed in on another browser or device. Log out there or wait for that session to expire before signing in here.", "code": "account_in_use"}, status=409)
-        login(request, user)
+        login(request, user, backend=settings.AUTHENTICATION_BACKENDS[0])
         request.session["last_user_activity"] = timezone.now().timestamp()
         request.session.set_expiry(settings.SESSION_IDLE_TIMEOUT)
         request.session.save()

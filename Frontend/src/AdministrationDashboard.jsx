@@ -612,9 +612,9 @@ function AdministrationDashboard() {
 
                   <div className="stat-value-row">
 
-                    <h2>
+                    <h3>
                       {stat.value}
-                    </h2>
+                    </h3>
 
                     {stat.trend && (
                       <span className="trend-pill">

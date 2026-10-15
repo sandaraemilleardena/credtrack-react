@@ -1,0 +1,9 @@
+import {useState} from 'react';
+import {verifyEmailOtp,resendEmailOtp} from '../auth/session';
+import './EmailOtp.css';
+export default function EmailOtp({email,role,onVerified,onClose}){
+ const [code,setCode]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),[message,setMessage]=useState('A sign-in code has been sent to your email.');
+ async function verify(event){event.preventDefault();if(busy)return;setBusy(true);setError('');try{await verifyEmailOtp(code,role);onVerified();}catch(e){setError(e.message);}finally{setBusy(false);}}
+ async function resend(){if(busy)return;setBusy(true);setError('');try{await resendEmailOtp();setCode('');setMessage('A new code has been sent. The previous code no longer works.');}catch(e){setError(e.message);}finally{setBusy(false);}}
+ return <dialog className="email-otp-dialog" ref={el=>{if(el&&!el.open)el.showModal();}} onCancel={e=>{e.preventDefault();if(!busy)onClose();}} aria-labelledby="otp-title"><form onSubmit={verify}><h2 id="otp-title">Verify your email</h2><p>Enter the six-digit code sent to <strong>{email}</strong>.</p><p>Expires in 5 minutes. Check your Spam folder if needed.</p><label htmlFor="email-login-code">Verification code</label><input id="email-login-code" type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} required autoFocus value={code} onChange={e=>setCode(e.target.value.replace(/\D/g,''))}/>{error&&<p role="alert">{error}</p>}<p role="status">{message}</p><button type="submit" disabled={busy}>{busy?'Please wait…':'Verify & sign in'}</button><div className="email-otp-actions"><button type="button" onClick={resend} disabled={busy}>Resend code</button><button type="button" onClick={onClose} disabled={busy}>Back to sign in</button></div><small>Wait one minute between code requests. Maximum five attempts per code.</small></form></dialog>;
+}

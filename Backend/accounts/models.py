@@ -17,6 +17,8 @@ class UserProfile(models.Model):
 
     failed_login_attempts = models.PositiveSmallIntegerField(default=0)
     profile_photo = models.TextField(blank=True, default="")
+    email_otp_enabled = models.BooleanField(default=False)
+    email_otp_state = models.JSONField(default=dict, blank=True)
     temporary_locked_until = models.DateTimeField(null=True, blank=True)
     account_locked = models.BooleanField(default=False)
     locked_at = models.DateTimeField(null=True, blank=True)

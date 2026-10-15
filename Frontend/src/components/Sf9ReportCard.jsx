@@ -20,7 +20,8 @@ export function Sf9ReportCard({recordId,role='TEACHER'}){
 function Field({label,value='',onChange,disabled,printMode,type='text',maxLength=200}){return printMode?<span className="sf9-report-value">{value||' '}</span>:<input aria-label={label} type={type} value={value} maxLength={maxLength} disabled={disabled} onChange={e=>onChange?.(e.target.value)}/>;}
 export function CardPages({record,card,grades={},disabled=false,onCardChange,onGradeChange,printMode}){
  const editable=record.card_editable&&!disabled&&!printMode,fullName=[record.last_name,[record.first_name,record.middle_name].filter(Boolean).join(' ')].filter(Boolean).join(', ')||record.name;
- const field=(key,label,type='text')=><Field label={label} value={card[key]||''} onChange={v=>onCardChange?.(key,v)} disabled={!editable} printMode={printMode} type={type}/>;
+ const grade10Spj=/^Grade\s*10$/i.test(record.grade.trim())&&record.section.trim().toUpperCase()==='SPJ';
+ const field=(key,label,type='text')=><Field label={label} value={key==='school_head'&&grade10Spj?'JOCELYN E. HEDRIANA':card[key]||''} onChange={v=>onCardChange?.(key,v)} disabled={!editable||(key==='school_head'&&grade10Spj)} printMode={printMode} type={type==='date'?'text':type}/>;
  const attendance=card.attendance||{},sum=key=>{const nums=MONTHS.map(m=>attendance[m]?.[key]).filter(v=>v!==undefined&&v!==null);return nums.length?nums.reduce((a,b)=>a+b,0):'';},absent=m=>attendance[m]?.class_days!=null&&attendance[m]?.present!=null?attendance[m].class_days-attendance[m].present:'';
  const age=record.birthday?(()=>{const today=new Date(),dob=new Date(record.birthday+'T00:00:00');return today.getFullYear()-dob.getFullYear()-(today.getMonth()<dob.getMonth()||(today.getMonth()===dob.getMonth()&&today.getDate()<dob.getDate())?1:0);})():'';
  return <div className={`sf9-report-pages ${printMode?'sf9-print-pages':''}`}>

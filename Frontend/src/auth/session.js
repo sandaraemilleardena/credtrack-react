@@ -128,6 +128,19 @@ export async function loginUser(username, password, role) {
     method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
     body: JSON.stringify({ username, password, role }),
   });
+  if (data.otp_required === true) return data;
+  return completeStaffLogin(data,role);
+}
+export async function verifyEmailOtp(code,role){
+  const csrfToken=await getCsrfToken();
+  const data=await authRequest('otp/verify/',{method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':csrfToken},body:JSON.stringify({code})});
+  return completeStaffLogin(data,role);
+}
+export async function resendEmailOtp(){
+  const csrfToken=await getCsrfToken();
+  return authRequest('otp/resend/',{method:'POST',headers:{'X-CSRFToken':csrfToken}});
+}
+function completeStaffLogin(data,role){
   if (data.authenticated !== true || data.user?.role !== role) {
     enterLoginScreen();
     throw new Error('This account is not authorized for the selected role.');

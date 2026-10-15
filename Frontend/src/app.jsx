@@ -16,7 +16,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-route
 // LOGIN
 import Login from "./login";
 import FirstPage from "./First Page";
-import { hasSchoolEntry } from "./auth/schoolEntry";
+
 import AdministrationLogin from "./AdministrationLogin";
 import PrincipalLogin from "./PrincipalLogin";
 
@@ -42,7 +42,7 @@ import PrincipalActivity from "./PrincipalActivity";
 
 
 function SchoolEntry({ children }) {
-  return hasSchoolEntry() ? children : <Navigate to="/" replace />;
+  return children;
 }
 
 function UnknownRoute() {
