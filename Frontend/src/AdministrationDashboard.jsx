@@ -1,3 +1,7 @@
+import {CSM_ENABLED} from './csmConfig';
+import {useTheme} from './theme';
+import CsmSurvey from './components/CsmSurvey';
+import {fetchRequestOptions} from './api/credentials';
 import RequestReviewModal from './components/RequestReviewModal';
 import { logoutUser } from './auth/session';
 import {usePortal} from './hooks/PortalContext';
@@ -10,6 +14,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 import "./AdministrationDashboard.css";
 
 function AdministrationDashboard() {
+  const theme=useTheme();
+  const [csm,setCsm]=useState(null),[csmAnswers,setCsmAnswers]=useState({});
+  useEffect(()=>{fetchRequestOptions().then(r=>setCsm(r.csm)).catch(()=>{});},[]);
   const system=usePortal();
   const [reviewId,setReviewId]=useState(null);
   const [releasePicker,setReleasePicker]=useState(false);
@@ -88,8 +95,8 @@ function AdministrationDashboard() {
       },
       {
         id: "records",
-        title: "Upload Records",
-        description: "Import student information",
+        title: "Student Records",
+        description: "View teacher-managed enrollment",
         icon: "fa-file-arrow-up",
         accent: "blue",
       },
@@ -214,7 +221,8 @@ function AdministrationDashboard() {
    if(activeModal==='credential'){
     const student=system.data.students.find(r=>r.lrn===credentialForm.studentId.trim());
     if(!student)throw Error('Save this student in Student Records first, then enter their 12-digit LRN here.');
-    await submitCredential({submission_key:submissionKey.current,requester_type:student.status==='Graduated'?'Alumni':'Student',first_name:student.firstName,middle_name:student.middleName||'',last_name:student.lastName,verification_document:credentialForm.verificationDocument,delivery_method:credentialForm.deliveryMethod,receiving_school:credentialForm.receivingSchool,other_purpose:credentialForm.otherPurpose,lrn:student.lrn,grade_level:student.grade,section:student.section,graduation_year:student.status==='Graduated'?(student.schoolYear||'').slice(-4):'',credential:credentialForm.type,purpose:credentialForm.purpose,phone:student.contact,email:'',additional_details:'Submitted by the records office.'});
+    if(CSM_ENABLED&&!csm)throw Error('The required CSM survey has not loaded. Please refresh.');
+    await submitCredential({...(CSM_ENABLED?{csm_responses:{version:csm.version,answers:csmAnswers}}:{}),submission_key:submissionKey.current,requester_type:student.status==='Graduated'?'Alumni':'Student',first_name:student.firstName,middle_name:student.middleName||'',last_name:student.lastName,verification_document:credentialForm.verificationDocument,delivery_method:credentialForm.deliveryMethod,receiving_school:credentialForm.receivingSchool,other_purpose:credentialForm.otherPurpose,lrn:student.lrn,grade_level:student.grade,section:student.section,graduation_year:student.status==='Graduated'?(student.schoolYear||'').slice(-4):'',credential:credentialForm.type,purpose:credentialForm.purpose,phone:student.contact,email:'',additional_details:'Submitted by the records office.'});
     await system.refresh();
    }else if(activeModal==='user'){
     await system.mutate('accounts/',{action:'create',values:{username:userForm.username,name:userForm.fullName,email:userForm.email,role:userForm.role,password:userForm.password}});
@@ -343,7 +351,7 @@ function AdministrationDashboard() {
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
 
-                ctx.fillStyle = "#111827";
+                ctx.fillStyle = theme==='dark'?'#f6edf1':'#111827';
                 ctx.font =
                   "800 32px 'Poppins', sans-serif";
 
@@ -353,7 +361,7 @@ function AdministrationDashboard() {
                   centerY - 10
                 );
 
-                ctx.fillStyle = "#6b7280";
+                ctx.fillStyle = theme==='dark'?'#c9b9c3':'#6b7280';
                 ctx.font =
                   "600 9px 'Poppins', sans-serif";
 
@@ -388,7 +396,7 @@ function AdministrationDashboard() {
         chartInstance.current = null;
       }
     };
-  }, [totals.total, totals.pending, totals.released]);
+  }, [totals.total, totals.pending, totals.released,theme]);
 
   /* =========================================================
      KEYBOARD + OUTSIDE CLICK
@@ -673,7 +681,7 @@ function AdministrationDashboard() {
                   className={`action-card ${action.accent}`}
                   key={action.id}
                   onClick={() =>
-                    openModal(action.id)
+                    action.id==='records'?navigate('/admin-student-records'):openModal(action.id)
                   }
                 >
 
@@ -755,7 +763,8 @@ function AdministrationDashboard() {
 
                     <tr>
                       <th>REQUEST ID</th>
-                      <th>STUDENT</th>
+                      <th>REQUESTER</th>
+                      <th>REQUESTER TYPE</th>
                       <th>CREDENTIAL</th>
                       <th>STATUS</th>
                       <th>DATE FILED</th>
@@ -790,15 +799,14 @@ function AdministrationDashboard() {
                                   {request.student}
                                 </strong>
 
-                                <small>
-                                  Student
-                                </small>
 
                               </div>
 
                             </div>
 
                           </td>
+
+                          <td>{request.requester_type || 'Not specified'}</td>
 
                           <td>
 
@@ -1264,6 +1272,7 @@ function AdministrationDashboard() {
 
                 </div>
 
+                {CSM_ENABLED&&<CsmSurvey config={csm} answers={csmAnswers} onChange={(key,value)=>setCsmAnswers(a=>({...a,[key]:value}))}/>}
                 {modalError && <p role="alert" style={{color:'#ad0014'}}>{modalError}</p>}{modalSuccess && (
                   <SuccessMessage>
                     Credential request added

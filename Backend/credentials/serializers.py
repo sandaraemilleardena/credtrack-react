@@ -6,6 +6,14 @@ from .models import CredentialRequest, RequestEvent, SmsNotification
 
 
 class SubmissionSerializer(serializers.ModelSerializer):
+    lrn = serializers.CharField(max_length=12, required=False, allow_blank=True, default="")
+    csm_responses = serializers.JSONField(required=False, default=dict)
+
+    def validate_csm_responses(self, value):
+        if value == {}: return {}
+        from .survey import validate_responses
+        return validate_responses(value)
+
     first_name = serializers.CharField(max_length=80, error_messages={"required": "This question is required.", "blank": "This question is required."})
     middle_name = serializers.CharField(max_length=80, error_messages={"required": "This is a required question", "blank": "This is a required question"})
     last_name = serializers.CharField(max_length=80, error_messages={"required": "This question is required.", "blank": "This question is required."})
@@ -19,9 +27,10 @@ class SubmissionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CredentialRequest
-        fields = ["identity_documents", "submission_key", "requester_type", "first_name", "middle_name", "last_name", "verification_document", "psa_document", "id_document", "delivery_method", "receiving_school", "other_purpose", "lrn", "grade_level", "section", "graduation_year", "credential", "purpose", "phone", "email", "additional_details"]
+        fields = ["csm_responses", "identity_documents", "submission_key", "requester_type", "first_name", "middle_name", "last_name", "verification_document", "psa_document", "id_document", "delivery_method", "receiving_school", "other_purpose", "lrn", "grade_level", "section", "graduation_year", "credential", "purpose", "phone", "email", "additional_details"]
 
     def validate_lrn(self, value):
+        if value == "": return value
         if not re.fullmatch(r"[0-9]{12}", value):
             raise serializers.ValidationError("Enter a 12-digit LRN.")
         return value
@@ -43,11 +52,11 @@ class SubmissionSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("Use one identity verification upload area.")
             for key, file in zip(["verification_document", "psa_document", "id_document"], documents):
                 data[key] = file
-        required = ["grade_level", "section"] if data["requester_type"] == "Student" else ["graduation_year"]
+        required = ["lrn", "grade_level", "section"] if data["requester_type"] == "Student" else ["graduation_year"]
         errors = {key: "This field is required." for key in required if not data.get(key)}
         year = data.get("graduation_year", "")
-        if year and not re.fullmatch(r"[0-9]{4}", year):
-            errors["graduation_year"] = "Enter a four-digit graduation year."
+        if year and year not in {f'{n}-{n+1}' for n in range(2016,2027)} and not re.fullmatch(r"[0-9]{4}", year):
+            errors["graduation_year"] = "Select a graduation school year from 2016-2017 through 2026-2027."
         from .options import grade_sections, PURPOSES, CREDENTIALS
         from .documents import validate_document
         if data["requester_type"] == "Student":
@@ -70,7 +79,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
                 except serializers.ValidationError as exc: errors[f"{kind}_document"] = exc.detail
         if errors:
             raise serializers.ValidationError(errors)
-        data["full_name"] = " ".join(data.get(k, "") for k in ["first_name", "middle_name", "last_name"] if data.get(k))
+        data["full_name"] = " ".join(data.get(k, "") for k in ["first_name", "middle_name", "last_name"] if data.get(k) and not (k=='middle_name' and data[k].strip().upper()=='N/A'))
         return data
 
 
@@ -112,7 +121,7 @@ class RequestSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CredentialRequest
-        exclude = ["submission_key", "verification_document", "verification_sha256", "psa_document", "psa_sha256", "id_document", "id_sha256"]
+        exclude = ["csm_responses", "submission_key", "verification_document", "verification_sha256", "psa_document", "psa_sha256", "id_document", "id_sha256"]
 
 
 class ActionSerializer(serializers.Serializer):

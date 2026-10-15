@@ -49,7 +49,7 @@ async function call(path, { method = "GET", body, publicRequest = false } = {}) 
 
 export const submitCredential = values => {
   const body = new FormData();
-  Object.entries(values).forEach(([key, value]) => { if (Array.isArray(value)) value.forEach(file => body.append(key, file)); else if (value !== null && value !== undefined) body.append(key, value); });
+  Object.entries(values).forEach(([key, value]) => { if (Array.isArray(value)) value.forEach(file => body.append(key, file)); else if (value !== null && value !== undefined) body.append(key, typeof value==='object'?JSON.stringify(value):value); });
   return call("submit/", { method: "POST", body, publicRequest: true });
 };
 export const fetchRequestOptions = () => call("options/", { publicRequest: true });

@@ -148,12 +148,12 @@ function Login({ audience = "public" }) {
 
   const validateForm = () => {
     const next = {};
-    const required = ["firstName", "middleName", "lastName", "lrn", "credential", "purpose", "phone", "deliveryMethod", ...(requesterType === "Student" ? ["gradeLevel", "section"] : ["graduationYear"])];
+    const required = ["firstName", "middleName", "lastName", "credential", "purpose", "phone", "deliveryMethod", ...(requesterType === "Student" ? ["lrn", "gradeLevel", "section"] : ["graduationYear"])];
     required.forEach(key => { if (!formData[key]?.trim()) next[key] = "This is a required question"; });
-    if (formData.lrn && !/^[0-9]{12}$/.test(formData.lrn)) next.lrn = "Enter exactly 12 digits.";
+    if (requesterType === "Student" && formData.lrn && !/^[0-9]{12}$/.test(formData.lrn)) next.lrn = "Enter exactly 12 digits.";
     if (formData.phone && !/^9[0-9]{9}$/.test(formData.phone)) next.phone = "Enter 10 digits starting with 9 after +63.";
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) next.email = "Enter a valid email address.";
-    if (requesterType === "Alumni" && formData.graduationYear && !/^[0-9]{4}$/.test(formData.graduationYear)) next.graduationYear = "Enter a four-digit year.";
+    if (requesterType === "Alumni" && formData.graduationYear && !/^20[0-9]{2}-20[0-9]{2}$/.test(formData.graduationYear)) next.graduationYear = "Select your graduation school year.";
     if (formData.purpose === "Other Documents" && !formData.otherPurpose.trim()) next.otherPurpose = "This is a required question";
     if (formData.deliveryMethod === "SCHOOL_TO_SCHOOL" && !formData.receivingSchool.trim()) next.receivingSchool = "This is a required question";
     if (formData.identityDocuments.length < 1 || formData.identityDocuments.length > 3) next.identityDocuments = "Upload 1–3 supporting documents.";
@@ -188,7 +188,7 @@ function Login({ audience = "public" }) {
         requester_type: requesterType,
         first_name: formData.firstName.trim(), middle_name: formData.middleName.trim(), last_name: formData.lastName.trim(),
         other_purpose: formData.otherPurpose.trim(), delivery_method: formData.deliveryMethod, receiving_school: formData.receivingSchool.trim(), identity_documents: formData.identityDocuments,
-        lrn: formData.lrn.trim(),
+        lrn: requesterType === "Student" ? formData.lrn.trim() : "",
         grade_level: requesterType === "Student" ? formData.gradeLevel : "",
         section: requesterType === "Student" ? formData.section.trim() : "",
         graduation_year: requesterType === "Alumni" ? formData.graduationYear.trim() : "",
@@ -555,11 +555,12 @@ function Login({ audience = "public" }) {
 
                   {[['firstName', 'First Name'], ['middleName', 'Middle Name'], ['lastName', 'Last Name']].map(([name, label]) => <div className="form-field" key={name}>
                     <label htmlFor={name}>{label}<span>*</span></label>
-                    <div className="input-wrapper"><input id={name} name={name} maxLength={80} value={formData[name]} onChange={handleInputChange} onBlur={event => { if (!event.target.value.trim()) setErrors(previous => ({...previous, [name]: "This is a required question"})); }} aria-invalid={Boolean(errors[name])} /></div>
+                    <div className="input-wrapper"><input id={name} name={name} placeholder={name==="middleName"?"Enter N/A if no middle name":""} maxLength={80} value={formData[name]} onChange={handleInputChange} onBlur={event => { if (!event.target.value.trim()) setErrors(previous => ({...previous, [name]: "This is a required question"})); }} aria-invalid={Boolean(errors[name])} /></div>
                     {errors[name] && <small className="field-error" role="alert">{errors[name]}</small>}
                   </div>)}
 
                   {/* LRN */}
+                  {requesterType === "Student" && <>
 
                   <div className="form-field">
 
@@ -591,6 +592,7 @@ function Login({ audience = "public" }) {
 
                   </div>
 
+                  </>}
                   {/* =================================================
                       STUDENT ONLY — GRADE
                       ================================================= */}
@@ -682,14 +684,7 @@ function Login({ audience = "public" }) {
 
                         <i className="fas fa-calendar"></i>
 
-                        <input
-                          id="graduationYear"
-                          name="graduationYear" aria-invalid={Boolean(errors.graduationYear)}
-                          type="text"
-                          value={formData.graduationYear}
-                          onChange={handleInputChange}
-                          placeholder="Example: 2022"
-                        />
+                        <select id="graduationYear" name="graduationYear" aria-invalid={Boolean(errors.graduationYear)} value={formData.graduationYear} onChange={handleInputChange}><option value="">Select school year graduated</option>{Array.from({length:11},(_,i)=>2016+i).map(year=><option key={year} value={`${year}-${year+1}`}>{year}-{year+1}</option>)}</select>
 
                       </div>
 
@@ -994,6 +989,7 @@ function Login({ audience = "public" }) {
                     Cancel
                   </button>
 
+                  
                   <button
                     type="submit"
                     className="request-submit-button"

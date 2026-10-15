@@ -240,8 +240,8 @@ SESSION_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_SECURE = not DEBUG
 
 # Sliding expiry is renewed only by user activity, not dashboard polling.
-SESSION_COOKIE_AGE = 15 * 60
-SESSION_IDLE_TIMEOUT = 15 * 60
+SESSION_COOKIE_AGE = 10 * 60
+SESSION_IDLE_TIMEOUT = 10 * 60
 
 # Session ends when the browser is closed.
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
@@ -329,6 +329,7 @@ EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True").lower() == "true"
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "noreply@localhost")
 EMAIL_TIMEOUT = 10
+DEVELOPER_ISSUE_EMAIL = os.environ.get("DEVELOPER_ISSUE_EMAIL", "ardenadara@gmail.com")
 PRIVATE_DOCUMENT_ROOT = Path(os.environ.get("PRIVATE_DOCUMENT_ROOT", str(BASE_DIR / "private_documents")))
 DATA_UPLOAD_MAX_MEMORY_SIZE = 6 * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024

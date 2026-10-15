@@ -1,38 +1,38 @@
 /* Scoped to the shared request dialog, independent of dashboard page styles. */
-dialog.request-review-modal { box-sizing:border-box; width:min(940px,calc(100vw - 40px)); max-width:calc(100vw - 40px); max-height:calc(100dvh - 48px); padding:0; margin:auto; overflow:hidden; border:1px solid #e5dce0; border-radius:20px; background:#fff; color:#293345; font-family:'Poppins',Arial,sans-serif; font-size:14px; line-height:1.6; box-shadow:0 24px 80px #20101c40; }
+dialog.request-review-modal { box-sizing:border-box; width:min(940px,calc(100vw - 40px)); max-width:calc(100vw - 40px); max-height:calc(100dvh - 48px); padding:0; margin:auto; overflow:hidden; border:1px solid var(--ct-border-e5dce0,#e5dce0); border-radius:20px; background:var(--ct-bg-ffffff,#fff); color:var(--ct-fg-293345,#293345); font-family:'Poppins',Arial,sans-serif; font-size:14px; line-height:1.6; box-shadow:0 24px 80px #20101c40; }
 dialog.request-review-modal[open] { display:flex; flex-direction:column; }
 dialog.request-review-modal::backdrop { background:#18212e99; backdrop-filter:blur(3px); }
 dialog.request-review-modal * { box-sizing:border-box; }
-dialog.request-review-modal .request-review-header { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; flex-shrink:0; padding:22px 28px; border-top:5px solid #8d0e12; border-bottom:1px solid #e9e3e6; background:#fff; }
-dialog.request-review-modal .request-review-eyebrow { display:block; color:#8d0e12; font-size:11px; font-weight:700; letter-spacing:.12em; margin-bottom:5px; }
-dialog.request-review-modal .request-review-header h2 { margin:0; color:#252f40; font-size:21px; font-weight:700; line-height:1.4; overflow-wrap:anywhere; }
-dialog.request-review-modal .request-review-status { display:inline-flex; align-items:center; margin-top:9px; padding:4px 10px; border:1px solid #ead9b6; border-radius:6px; background:#fff8e9; color:#7c5417; font-size:12px; font-weight:600; }
+dialog.request-review-modal .request-review-header { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; flex-shrink:0; padding:22px 28px; border-top:5px solid var(--ct-border-8d0e12,#8d0e12); border-bottom:1px solid var(--ct-border-e9e3e6,#e9e3e6); background:var(--ct-bg-ffffff,#fff); }
+dialog.request-review-modal .request-review-eyebrow { display:block; color:var(--ct-fg-8d0e12,#8d0e12); font-size:11px; font-weight:700; letter-spacing:.12em; margin-bottom:5px; }
+dialog.request-review-modal .request-review-header h2 { margin:0; color:var(--ct-fg-252f40,#252f40); font-size:21px; font-weight:700; line-height:1.4; overflow-wrap:anywhere; }
+dialog.request-review-modal .request-review-status { display:inline-flex; align-items:center; margin-top:9px; padding:4px 10px; border:1px solid var(--ct-border-ead9b6,#ead9b6); border-radius:6px; background:var(--ct-bg-fff8e9,#fff8e9); color:var(--ct-fg-7c5417,#7c5417); font-size:12px; font-weight:600; }
 dialog.request-review-modal button { font-family:inherit; font-size:13px; font-weight:600; line-height:1.5; min-height:42px; cursor:pointer; }
-dialog.request-review-modal .request-review-header > button { display:inline-flex; align-items:center; gap:12px; flex-shrink:0; padding:9px 14px; border:1px solid #dddfe5; border-radius:9px; background:#fff; color:#455166; }
-dialog.request-review-modal .request-review-header > button:hover { background:#f3f4f7; }
+dialog.request-review-modal .request-review-header > button { display:inline-flex; align-items:center; gap:12px; flex-shrink:0; padding:9px 14px; border:1px solid var(--ct-border-dddfe5,#dddfe5); border-radius:9px; background:var(--ct-bg-ffffff,#fff); color:var(--ct-fg-455166,#455166); }
+dialog.request-review-modal .request-review-header > button:hover { background:var(--ct-bg-f3f4f7,#f3f4f7); }
 dialog.request-review-modal .request-review-header > button span { font-size:21px; font-weight:400; line-height:1; }
-dialog.request-review-modal .request-review-body { flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; scrollbar-gutter:stable; padding:22px 28px; background:#f6f7fa; }
-dialog.request-review-modal .request-workflow-details { padding:0; margin:0; border:0; color:#293345; font-size:14px; line-height:1.6; }
-dialog.request-review-modal .request-workflow-details > section { margin:0 0 16px; padding:18px 20px; border:1px solid #e3e6ed; border-radius:12px; background:#fff; }
-dialog.request-review-modal .request-workflow-details h3 { margin:0 0 14px; color:#303b4e; font-size:15px; font-weight:700; line-height:1.5; }
+dialog.request-review-modal .request-review-body { flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; scrollbar-gutter:stable; padding:22px 28px; background:var(--ct-bg-f6f7fa,#f6f7fa); }
+dialog.request-review-modal .request-workflow-details { padding:0; margin:0; border:0; color:var(--ct-fg-293345,#293345); font-size:14px; line-height:1.6; }
+dialog.request-review-modal .request-workflow-details > section { margin:0 0 16px; padding:18px 20px; border:1px solid var(--ct-border-e3e6ed,#e3e6ed); border-radius:12px; background:var(--ct-bg-ffffff,#fff); }
+dialog.request-review-modal .request-workflow-details h3 { margin:0 0 14px; color:var(--ct-fg-303b4e,#303b4e); font-size:15px; font-weight:700; line-height:1.5; }
 dialog.request-review-modal .request-workflow-details dl { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 28px; margin:0; }
-dialog.request-review-modal .request-workflow-details dl > div { min-width:0; padding:10px 0; border-bottom:1px solid #f0f1f4; }
-dialog.request-review-modal .request-workflow-details dt { margin:0; color:#687488; font-size:12px; font-weight:500; }
-dialog.request-review-modal .request-workflow-details dd { margin:4px 0 0; color:#263246; font-size:14px; font-weight:600; line-height:1.6; overflow-wrap:anywhere; }
+dialog.request-review-modal .request-workflow-details dl > div { min-width:0; padding:10px 0; border-bottom:1px solid var(--ct-border-f0f1f4,#f0f1f4); }
+dialog.request-review-modal .request-workflow-details dt { margin:0; color:var(--ct-fg-687488,#687488); font-size:12px; font-weight:500; }
+dialog.request-review-modal .request-workflow-details dd { margin:4px 0 0; color:var(--ct-fg-263246,#263246); font-size:14px; font-weight:600; line-height:1.6; overflow-wrap:anywhere; }
 dialog.request-review-modal .request-workflow-details p { margin:8px 0; font-size:13px; line-height:1.7; overflow-wrap:anywhere; }
 dialog.request-review-modal .request-workflow-details ol { margin:0; padding-left:22px; }
-dialog.request-review-modal .request-workflow-details li { padding:10px 0; border-bottom:1px solid #e3e6ed; }
-dialog.request-review-modal .request-workflow-details li small { display:block; margin-top:3px; color:#687488; }
-dialog.request-review-modal .request-review-footer { flex-shrink:0; padding:16px 28px 20px; border-top:1px solid #e3e6ed; background:#fff; }
-dialog.request-review-modal .request-review-footer > p { margin:0 0 12px; color:#687488; font-size:12px; line-height:1.6; }
+dialog.request-review-modal .request-workflow-details li { padding:10px 0; border-bottom:1px solid var(--ct-border-e3e6ed,#e3e6ed); }
+dialog.request-review-modal .request-workflow-details li small { display:block; margin-top:3px; color:var(--ct-fg-687488,#687488); }
+dialog.request-review-modal .request-review-footer { flex-shrink:0; padding:16px 28px 20px; border-top:1px solid var(--ct-border-e3e6ed,#e3e6ed); background:var(--ct-bg-ffffff,#fff); }
+dialog.request-review-modal .request-review-footer > p { margin:0 0 12px; color:var(--ct-fg-687488,#687488); font-size:12px; line-height:1.6; }
 dialog.request-review-modal .request-review-footer .review-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:10px; margin:0; padding:0; border:0; }
 dialog.request-review-modal .request-review-footer .review-action { padding:10px 16px; font-size:13px; font-weight:600; border-radius:9px; min-height:44px; box-shadow:none; }
-dialog.request-review-modal .request-review-footer .review-action-approve { background:#16803d; border:1px solid #16803d; color:#fff; }
-dialog.request-review-modal .request-review-footer .review-action-approve:hover:not(:disabled) { background:#126831; border-color:#126831; transform:none; }
-dialog.request-review-modal .request-review-footer .review-action-warning { background:#b94e08; border:1px solid #b94e08; color:#fff; }
-dialog.request-review-modal .request-review-footer .review-action-warning:hover:not(:disabled) { background:#943e06; border-color:#943e06; transform:none; }
-dialog.request-review-modal .request-review-footer .review-action-reject { background:#c62828; border:1px solid #c62828; color:#fff; }
-dialog.request-review-modal .request-review-footer .review-action-reject:hover:not(:disabled) { background:#a61f1f; border-color:#a61f1f; transform:none; }
+dialog.request-review-modal .request-review-footer .review-action-approve { background:var(--ct-bg-16803d,#16803d); border:1px solid var(--ct-border-16803d,#16803d); color:var(--ct-fg-ffffff,#fff); }
+dialog.request-review-modal .request-review-footer .review-action-approve:hover:not(:disabled) { background:var(--ct-bg-126831,#126831); border-color:var(--ct-border-126831,#126831); transform:none; }
+dialog.request-review-modal .request-review-footer .review-action-warning { background:var(--ct-bg-b94e08,#b94e08); border:1px solid var(--ct-border-b94e08,#b94e08); color:var(--ct-fg-ffffff,#fff); }
+dialog.request-review-modal .request-review-footer .review-action-warning:hover:not(:disabled) { background:var(--ct-bg-943e06,#943e06); border-color:var(--ct-border-943e06,#943e06); transform:none; }
+dialog.request-review-modal .request-review-footer .review-action-reject { background:var(--ct-bg-c62828,#c62828); border:1px solid var(--ct-border-c62828,#c62828); color:var(--ct-fg-ffffff,#fff); }
+dialog.request-review-modal .request-review-footer .review-action-reject:hover:not(:disabled) { background:var(--ct-bg-a61f1f,#a61f1f); border-color:var(--ct-border-a61f1f,#a61f1f); transform:none; }
 dialog.request-review-modal button:disabled { opacity:.6; cursor:not-allowed; }
 dialog.request-review-modal :is(button,input,select,textarea):focus-visible { outline:3px solid #b88b35; outline-offset:3px; }
 @media(max-width:600px) {
@@ -55,20 +55,21 @@ dialog.request-review-modal .request-review-header>button{width:36px;min-height:
 dialog.request-review-modal .request-review-body{padding:20px 24px;scrollbar-width:thin}
 dialog.request-review-modal .compact-request-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;font-size:12px}
 dialog.request-review-modal .compact-request-details>section{margin:0;padding:16px;border-radius:10px}
-dialog.request-review-modal .compact-request-details h3{font-size:12px;font-weight:600;margin:0 0 12px;padding-bottom:10px;border-bottom:1px solid #edf0f4}
+dialog.request-review-modal .compact-request-details h3{font-size:12px;font-weight:600;margin:0 0 12px;padding-bottom:10px;border-bottom:1px solid var(--ct-border-edf0f4,#edf0f4)}
 dialog.request-review-modal .compact-request-details dl{gap:0 16px}
 dialog.request-review-modal .compact-request-details dl>div{padding:8px 0}
-dialog.request-review-modal .compact-request-details dt{font-size:10px;line-height:1.5;color:#7c8493}
+dialog.request-review-modal .compact-request-details dt{font-size:10px;line-height:1.5;color:var(--ct-fg-7c8493,#7c8493)}
 dialog.request-review-modal .compact-request-details dd{font-size:12px;font-weight:500;line-height:1.6;margin-top:3px}
 dialog.request-review-modal .compact-request-details p{font-size:11px;line-height:1.6;margin:8px 0}
 dialog.request-review-modal .request-documents-card,dialog.request-review-modal .request-sms-card,dialog.request-review-modal .request-history-card{grid-column:1/-1}
 .request-document-grid{display:flex;flex-wrap:wrap;gap:12px}
-.request-sms-state{float:right;font-size:10px;font-weight:500;color:#176c38;background:#e8f5e9;padding:3px 8px;border-radius:12px}
+.request-sms-state{float:right;font-size:10px;font-weight:500;color:var(--ct-fg-176c38,#176c38);background:var(--ct-bg-e8f5e9,#e8f5e9);padding:3px 8px;border-radius:12px}
 dialog.request-review-modal .request-history-card summary{cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:600;gap:12px}
-.request-history-card summary span{font-size:10px;color:#7c8493;font-weight:400}
+.request-history-card summary span{font-size:10px;color:var(--ct-fg-7c8493,#7c8493);font-weight:400}
 dialog.request-review-modal .request-history-card ol{margin-top:12px;font-size:11px}
-dialog.request-review-modal .request-sms-refresh{padding:8px 12px;min-height:34px;border:1px solid #e0d0d2;border-radius:8px;background:#fff;color:#8d0e12;font-size:11px;margin-top:12px}
+dialog.request-review-modal .request-sms-refresh{padding:8px 12px;min-height:34px;border:1px solid var(--ct-border-e0d0d2,#e0d0d2);border-radius:8px;background:var(--ct-bg-ffffff,#fff);color:var(--ct-fg-8d0e12,#8d0e12);font-size:11px;margin-top:12px}
 dialog.request-review-modal .request-review-footer{padding:14px 24px}
 dialog.request-review-modal .review-actions{justify-content:flex-end}
 dialog.request-review-modal .review-action{font-size:12px;min-height:38px}
 @media(max-width:600px){dialog.request-review-modal .compact-request-details{grid-template-columns:1fr}dialog.request-review-modal .request-review-header,dialog.request-review-modal .request-review-body,dialog.request-review-modal .request-review-footer{padding:16px}dialog.request-review-modal .compact-request-details dd{font-size:11px}}
+.request-sms-state.request-sms-failed{color:var(--ct-fg-a32228,#a32228);background:var(--ct-bg-fff0f0,#fff0f0)}

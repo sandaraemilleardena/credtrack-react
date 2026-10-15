@@ -1,5 +1,9 @@
+import AdministrationCsm from './AdministrationCsm';
+import ThemeToggle from './components/ThemeToggle';
+import TeacherAttendance from './TeacherAttendance';
 import TeacherStudentRecords from './TeacherStudentRecords';
 import TeacherReportCard from './TeacherReportCard';
+import AdministrationSf10 from './AdministrationSf10';
 import TeacherDigitalSf9 from './TeacherDigitalSf9';
 import TeacherComments from './TeacherComments';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -51,10 +55,16 @@ function UnknownRoute() {
   return <Navigate to={login} replace />;
 }
 
+function PublicThemeToggle(){const {pathname}=useLocation();return /^\/(admin|principal|teacher)-(?!login)/.test(pathname)?null:<ThemeToggle floating/>;}
+
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/teacher-sf2" element={<StaffPortal role="TEACHER" component={TeacherAttendance}/>}/>
+        <Route path="/admin-sf2" element={<ProtectedRoute allowedRoles={["ADMIN"]}><Navigate to="/admin-sf9" replace/></ProtectedRoute>}/>
+        <Route path="/principal-sf2" element={<ProtectedRoute allowedRoles={["PRINCIPAL"]}><Navigate to="/principal-dashboard" replace/></ProtectedRoute>}/>
+        <Route path="/principal-sf9" element={<ProtectedRoute allowedRoles={["PRINCIPAL"]}><Navigate to="/principal-dashboard" replace/></ProtectedRoute>}/>
         <Route path="/principal-students" element={<ProtectedRoute allowedRoles={["PRINCIPAL"]}><Navigate to="/principal-requests" replace /></ProtectedRoute>} />
         <Route path="/principal-profile" element={<ProtectedRoute allowedRoles={["PRINCIPAL"]}><Navigate to="/principal-dashboard" replace /></ProtectedRoute>} />
         <Route path="/forgot-password" element={<PasswordReset />} />
@@ -72,7 +82,8 @@ function App() {
         <Route path="/teacher-student-records" element={<StaffPortal role="TEACHER" component={TeacherStudentRecords}/>}/>
         <Route path="/teacher-gradebook" element={<StaffPortal role="TEACHER" component={Sf9Workspace}/>}/>
         <Route path="/teacher-sf9-report" element={<StaffPortal role="TEACHER" component={TeacherReportCard}/>}/>
-        <Route path="/admin-sf9" element={<StaffPortal role="ADMIN" component={Sf9Workspace}/>}/>
+        <Route path="/admin-sf9" element={<StaffPortal role="ADMIN" component={TeacherReportCard}/>}/>
+        <Route path="/admin-csm" element={<StaffPortal role="ADMIN" component={AdministrationCsm}/>}/><Route path="/admin-sf10" element={<StaffPortal role="ADMIN" component={AdministrationSf10}/>}/>
         {/* ADMINISTRATION */}
         <Route
           path="/admin-dashboard"
@@ -122,6 +133,7 @@ function App() {
 
       <Route path="*" element={<UnknownRoute />} />
       </Routes>
+      <PublicThemeToggle />
       <DeveloperCredit />
     </BrowserRouter>
   );

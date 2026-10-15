@@ -19,7 +19,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from accounts.models import UserProfile
 from credentials.models import CredentialRequest, SmsNotification
-from credentials.sms import sms_available, philsms_balance
+from credentials.sms import sms_available, sms_balance as provider_sms_balance
 from credentials.serializers import RequestSerializer
 from credentials.services import user_role, Conflict
 from .models import StudentRecord, WorkItem, Preference, AuditEvent
@@ -34,7 +34,7 @@ SCHOOL_DEFAULTS = {
     "auditActions": True, "notifyRelease": True, "notifyNewRequest": True, "notifyApproval": True,
     "notifySecurity": True, "notifyBackup": True, "referencePrefix": "CT-[YEAR]-[5 DIGIT SEQUENCE]",
     "passwordLength": "Django password validators", "mfa": False, "lockout": "3 failures: 1 minute; 3 more: Principal unlock required",
-    "sessionTimeout": "15 minutes of inactivity", "automaticBackups": False,
+    "sessionTimeout": "10 minutes of inactivity", "automaticBackups": False,
     "backupFrequency": "Not configured", "logRetention": "No automatic deletion",
 }
 
@@ -59,9 +59,9 @@ def work_json(item):
 def account_json(user):
     profile = getattr(user, "userprofile", None)
     lock_status = "Permanently Locked" if profile and profile.account_locked else "Temporarily Locked" if profile and profile.temporary_locked_until and profile.temporary_locked_until > timezone.now() else "Active"
-    from .sf9 import assignment_json
-    return {"assignment": assignment_json(user), "lock_status": lock_status, "id": str(user.pk), "username": user.username, "name": user.get_full_name() or user.username,
-            "email": user.email, "role": {**ROLE_LABELS, "STUDENTS": "Student", "ALUMNI": "Alumni"}.get(user_role(user), "Unassigned"),
+    from .sf9 import assignment_json, assignments_json
+    return {"assignments": assignments_json(user), "assignment": assignment_json(user), "lock_status": lock_status, "id": str(user.pk), "username": user.username, "name": user.get_full_name() or user.username,
+            "email": user.email, "profile_photo": profile.profile_photo if profile else "", "is_superuser": user.is_superuser, "role": {**ROLE_LABELS, "STUDENTS": "Student", "ALUMNI": "Alumni"}.get(user_role(user), "Unassigned"),
             "status": lock_status if user.is_active else "Inactive",
             "lastSignIn": user.last_login.isoformat() if user.last_login else "Not yet signed in",
             "createdAt": user.date_joined.isoformat()}
@@ -85,8 +85,8 @@ def snapshot(request):
     role = staff(request, ROLE_LABELS)
     school, _ = Preference.objects.get_or_create(key="school", defaults={"data": SCHOOL_DEFAULTS})
     if role == "TEACHER":
-        from .sf9 import assignment_json
-        return Response({"role":role,"user":account_json(request.user),"settings":{**SCHOOL_DEFAULTS,**school.data},"assignment":assignment_json(request.user),"notifications":[],"requests":[],"students":[],"audit":[]})
+        from .sf9 import assignment_json, assignments_json
+        return Response({"role":role,"user":account_json(request.user),"settings":{**SCHOOL_DEFAULTS,**school.data},"assignments":assignments_json(request.user),"assignment":assignment_json(request.user),"notifications":[],"requests":[],"students":[],"audit":[]})
     events = AuditEvent.objects.select_related("actor")
 
     logs = [{"id": f"AUD-{event.pk}", "actor": event.actor.username if event.actor else "System",
@@ -125,9 +125,14 @@ def text(values, key, required=False, maximum=2000):
 @permission_classes([IsAuthenticated])
 @transaction.atomic
 def student_action(request):
-    staff(request, {"ADMIN"})
+    request.user=get_object_or_404(User.objects.select_for_update(),pk=request.user.pk,is_active=True)
+    role = staff(request, {"ADMIN", "TEACHER"})
     values = request.data
     action = values.get("action")
+    if role == "ADMIN" and (action == "import" or (action == "save" and not values.get("student", {}).get("id"))):
+        raise PermissionDenied("Teachers now create class student records.")
+    if role == "TEACHER" and action != "save":
+        raise PermissionDenied("Teachers may create or edit assigned class students only.")
     if action == "archive":
         ids = values.get("ids", [])
         if not isinstance(ids, list) or not ids or len(ids) > 500 or any(not isinstance(pk, int) for pk in ids):
@@ -159,14 +164,25 @@ def student_action(request):
         available = row.get("availableCredentials", [])
         if not isinstance(available, list) or len(available) > 30 or any(not isinstance(v, str) or len(v) > 160 for v in available):
             raise ValidationError("Invalid available credentials.")
-        cleaned["availableCredentials"] = list(dict.fromkeys(value.strip() for value in available if value.strip()))
+        if role != "TEACHER": cleaned["availableCredentials"] = list(dict.fromkeys(value.strip() for value in available if value.strip()))
+        from .models import ClassSection
+        if (role=="TEACHER" or cleaned["grade"] or cleaned["section"]) and not ClassSection.objects.filter(grade_level__name=cleaned["grade"],name=cleaned["section"]).exists(): raise ValidationError("Choose an existing grade and section.")
+        if role == "TEACHER":
+            from .sf9 import allowed_records,current_class_sections
+            sections,current_year=current_class_sections(request.user)
+            if cleaned['schoolYear'].replace('–','-')!=current_year or not sections.filter(grade_level__name=cleaned['grade'],name=cleaned['section']).exists():raise PermissionDenied('Choose a current class and school year.')
+            if cleaned['status']!='Active': raise PermissionDenied('Teachers may manage active enrollment only.')
+            if row.get('id') and not allowed_records(request.user,role).filter(student_id=row['id']).exists(): raise PermissionDenied('Student is outside your classes.')
         if row.get("id"):
             record = get_object_or_404(StudentRecord.objects.select_for_update(), pk=row["id"])
+            from .models import Sf9ReportCard
+            if Sf9ReportCard.objects.filter(record__student=record,issued_on__isnull=False).exists():
+                raise PermissionDenied('Student information linked to issued academic records is protected.')
             if row.get("version") != record.version:
                 raise Conflict("Student record changed. Refresh before editing.")
             if lrn and StudentRecord.objects.filter(lrn=lrn).exclude(pk=record.pk).exists():
                 raise ValidationError("A record with this LRN already exists.")
-            record.lrn, record.data = lrn, cleaned
+            record.lrn, record.data = lrn, {**record.data, **cleaned}
             record.version += 1
             record.save()
         else:
@@ -276,7 +292,26 @@ def account_action(request):
         list(User.objects.select_for_update().filter(userprofile__role__in=ROLE_LABELS).values_list("pk", flat=True))
         if not str(values.get("id", "")).isdigit(): raise ValidationError("Invalid account identifier.")
         user = get_object_or_404(User, pk=values.get("id"))
-        if user.is_superuser: raise PermissionDenied("Manage superuser accounts through Django administration.")
+        if user.is_superuser:
+            if actor_role != "PRINCIPAL" or action != "edit":
+                raise PermissionDenied("Only the Principal may edit superuser profile details. Manage access through Django administration.")
+            if role != user_role(user) or any(k in values for k in ("is_superuser", "is_staff", "is_active", "user_permissions", "groups")):
+                raise PermissionDenied("Superuser access and role cannot be changed here.")
+            user.first_name = text(values, "name", True, 150)
+            user.last_name = ""
+            username = text(values, "username", False, 150) or user.username
+            if not re.fullmatch(r"[\w.@+-]+", username) or User.objects.filter(username__iexact=username).exclude(pk=user.pk).exists():
+                raise ValidationError("Choose a valid unused username.")
+            user.username = username
+            if "email" in values:
+                email = text(values, "email", False, 254)
+                if email:
+                    try: validate_email(email)
+                    except DjangoValidationError as exc: raise ValidationError(exc.messages)
+                user.email = email
+            user.save(update_fields=["first_name", "last_name", "username", "email"])
+            audit(request, "User Access", "Updated superuser profile", user.pk, "Profile details updated; access permissions preserved.")
+            return Response({"message": "Account details saved.", "account": account_json(user)})
         if user.pk == request.user.pk: raise ValidationError("Use your own profile settings; you cannot change your own staff access here.")
         existing_role = user_role(user)
         if existing_role not in ROLE_LABELS: raise PermissionDenied("Only assigned staff accounts can be managed here.")
@@ -384,4 +419,4 @@ def student_credential_preview(request, student_id, credential_id):
 @permission_classes([IsAuthenticated])
 def sms_balance(request):
     staff(request, {"ADMIN"})
-    return Response(philsms_balance(), headers={"Cache-Control":"no-store"})
+    return Response(provider_sms_balance(), headers={"Cache-Control":"no-store"})

@@ -39,8 +39,8 @@ class OperationsTests(TestCase):
         self.as_role('ICT')
         self.assertEqual(self.post('students', {'action': 'save', 'student': row}).status_code, 403)
         self.as_role('ADMIN')
-        self.assertEqual(self.post('students', {'action': 'save', 'student': row}).status_code, 200)
-        record = StudentRecord.objects.get()
+        self.assertEqual(self.post('students', {'action': 'save', 'student': row}).status_code, 403)
+        record = StudentRecord.objects.create(lrn=row['lrn'],data=row)
         row.update(id=record.pk, version=0, firstName='Updated')
         self.assertEqual(self.post('students', {'action': 'save', 'student': row}).status_code, 200)
         self.assertEqual(self.post('students', {'action': 'save', 'student': row}).status_code, 409)
@@ -48,12 +48,12 @@ class OperationsTests(TestCase):
         record.refresh_from_db()
         self.assertEqual(record.data['status'], 'Archived')
         self.assertEqual(record.data['availableCredentials'], ['SF10'])
-        self.assertEqual(AuditEvent.objects.count(), 3)
+        self.assertEqual(AuditEvent.objects.count(), 2)
 
     def test_import_is_atomic(self):
         self.as_role('ADMIN')
         rows = [{'lrn': '123456789012', 'firstName': 'A', 'lastName': 'B'}, {'lrn': 'invalid', 'firstName': 'C', 'lastName': 'D'}]
-        self.assertEqual(self.post('students', {'action': 'import', 'rows': rows}).status_code, 400)
+        self.assertEqual(self.post('students', {'action': 'import', 'rows': rows}).status_code, 403)
         self.assertFalse(StudentRecord.objects.exists())
 
     def test_administration_reports_issue_for_backend_developers(self):
@@ -119,8 +119,9 @@ class OperationsTests(TestCase):
         self.assertEqual(StudentRecord.objects.count(), 0)
         self.assertEqual(response.data['rows'][0]['lrn'], '012345678901')
         saved = self.post('students', {'action':'import', 'rows':response.data['rows']})
-        self.assertEqual(saved.status_code, 200, saved.data)
-        self.assertEqual(StudentRecord.objects.get().data['firstName'], 'Transfer')
+        self.assertEqual(saved.status_code, 403, saved.data)
+        self.assertFalse(StudentRecord.objects.exists())
+        StudentRecord.objects.create(lrn=response.data['rows'][0]['lrn'],data=response.data['rows'][0])
         self.assertEqual(preview().status_code, 400)
         self.assertEqual(StudentRecord.objects.count(), 1)
 

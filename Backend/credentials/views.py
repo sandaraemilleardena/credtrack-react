@@ -126,7 +126,8 @@ def action(request, request_id):
 @permission_classes([AllowAny])
 def options(request):
     from .options import grade_sections, PURPOSES, CREDENTIALS
-    return Response({"grade_sections": grade_sections(), "purposes": PURPOSES, "credentials": CREDENTIALS})
+    from .survey import configuration
+    return Response({"csm": configuration(), "grade_sections": grade_sections(), "purposes": PURPOSES, "credentials": CREDENTIALS})
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])

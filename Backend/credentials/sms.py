@@ -178,6 +178,63 @@ def sync_philsms(item):
     return item
 
 
+def sms_balance():
+    if settings.SMS_PROVIDER == "PHILSMS":
+        return {**philsms_balance(), "provider": "PhilSMS"}
+    return semaphore_balance()
+
+
+def saved_semaphore_balance(key, value=None):
+    """Keep the last verified provider response across development server reloads."""
+    from operations.models import Preference
+    key = "sms:" + key[-64:]
+    if value is not None:
+        Preference.objects.update_or_create(key=key, defaults={"data": value})
+        return value
+    row = Preference.objects.filter(key=key).first()
+    return row.data if row else None
+
+
+def semaphore_balance():
+    """Read actual credits, sharing the account endpoint's two-per-minute budget."""
+    from decimal import Decimal
+    from hashlib import sha256
+    from django.core.cache import cache
+
+    data = {"provider": "Semaphore", "balance": None, "checked_at": None, "error": ""}
+    if not settings.SEMAPHORE_API_KEY:
+        return {**data, "error": "Semaphore API key is not configured."}
+    key = "semaphore-balance-" + sha256(settings.SEMAPHORE_API_KEY.encode()).hexdigest()
+    last = cache.get(key + "-last") or saved_semaphore_balance(key)
+    cached = cache.get(key)
+    if cached is not None:
+        return cached
+    if not cache.add(key + "-lock", True, 35):
+        return {**(last or data), "refreshing": True, "error": ""}
+    # A process restart must not immediately repeat a recent account request.
+    if last and last.get("checked_at"):
+        from django.utils.dateparse import parse_datetime
+        checked = parse_datetime(last["checked_at"])
+        if checked and (timezone.now() - checked).total_seconds() < 35:
+            cache.set(key, last, 35)
+            return last
+    try:
+        url = "https://api.semaphore.co/api/v4/account?" + urlencode({"apikey": settings.SEMAPHORE_API_KEY})
+        with urlopen(Request(url, method="GET"), timeout=15) as response:
+            result = json.load(response)
+        balance = Decimal(str(result["credit_balance"]))
+        if not balance.is_finite() or balance < 0:
+            raise ValueError()
+        data.update(balance=str(balance), checked_at=timezone.now().isoformat())
+        cache.set(key + "-last", data, 86400)
+        saved_semaphore_balance(key, data)
+    except Exception:
+        data = {**(last or data)}
+        data["error"] = "Unable to read Semaphore credits. Check the saved API key and provider connection."
+    cache.set(key, data, 35)
+    return data
+
+
 def philsms_balance():
     from decimal import Decimal, InvalidOperation
     from django.core.cache import cache

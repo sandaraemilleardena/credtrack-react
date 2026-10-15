@@ -16,15 +16,13 @@ class ReportCardTests(Sf9PermissionTests):
         self.assertEqual(Decimal(next(s for s in r['subjects'] if s['id']==self.math.pk)['terms'][0]['value']),85)
         self.assertFalse(r['card_editable'])
     def test_only_adviser_encodes_shared_fields_and_persistence(self):
-        self.as_role('TEACHER');self.assertEqual(self.post_card(card={'school_head':'Head'}).status_code,403)
-        self.complete_term(1)
-        self.adviser();r=self.post_card(card={'attendance':{'Jun':{'class_days':20,'present':19}},'term_comments':{'1':'Good progress.'}},grades=[{'subject':self.math.pk,'term':2,'value':'88'}])
-        self.assertEqual(r.status_code,200,r.data)
-        self.as_role('ADMIN');saved=self.client.get(self.url()).data
-        self.assertEqual(saved['card']['attendance']['Jun']['present'],19)
-        self.assertEqual(saved['card']['term_comments']['1'],'Good progress.')
-        self.assertEqual(Sf9ReportCard.objects.get(record=self.rec).updated_by,self.users['TEACHER'])
-        self.assertEqual(Decimal(next(s for s in saved['subjects'] if s['id']==self.math.pk)['terms'][1]['value']),88)
+        self.as_role('TEACHER');self.adviser()
+        r=self.post_card(card={'attendance':{'Jun':{'class_days':20,'present':19}}})
+        self.assertEqual(r.status_code,403)
+        self.assertFalse(Sf9ReportCard.objects.exists())
+        self.assertEqual(self.save().status_code,200)
+        self.assertFalse(self.client.get(self.url()).data['card_editable'])
+
     def test_adviser_still_cannot_edit_other_subject_and_batch_rolls_back(self):
         self.as_role('TEACHER');self.adviser()
         r=self.post_card(card={'school_head':'Changed'},grades=[{'subject':self.math.pk,'term':1,'value':90},{'subject':self.english.pk,'term':2,'value':90}])
@@ -37,13 +35,13 @@ class ReportCardTests(Sf9PermissionTests):
     def test_attendance_and_comment_validation(self):
         self.as_role('TEACHER');self.adviser()
         for card in [{'attendance':{'Jun':{'class_days':20,'present':21}}},{'attendance':{'Jun':{'present':1.5}}},{'attendance':{'May':{}}},{'term_comments':{'4':'Bad'}},{'admission_date':'invalid'}]:
-            self.assertEqual(self.post_card(card=card).status_code,400)
+            self.assertEqual(self.post_card(card=card).status_code,403)
         self.assertFalse(Sf9ReportCard.objects.exists())
     def test_card_unauthorized_and_stale_version(self):
         self.assertEqual(self.client.get(self.url()).status_code,403)
         self.as_role('STUDENTS');self.assertEqual(self.client.get(self.url()).status_code,403)
         self.as_role('TEACHER');self.adviser();self.save()
-        self.assertEqual(self.client.post(self.url(),{'version':0,'card':{}},format='json').status_code,409)
+        self.assertEqual(self.client.post(self.url(),{'version':0,'card':{}},format='json').status_code,403)
     def test_principal_assigns_adviser_admin_cannot(self):
         assignment={'grade_level':self.g6.pk,'section':self.a.pk,'subject':self.math.pk,'is_adviser':True}
         body={'action':'edit','values':{'id':self.users['TEACHER'].pk,'name':'Class Teacher','role':'Teacher','assignment':assignment}}
@@ -53,7 +51,6 @@ class ReportCardTests(Sf9PermissionTests):
 
     def test_subject_teacher_can_encode_only_own_card_grades(self):
         self.as_role('TEACHER')
-        r=self.post_card(grades=[{'subject':self.math.pk,'term':1,'value':91}],card={})
-        self.assertEqual(r.status_code,200,r.data)
-        self.assertEqual(self.post_card(grades=[{'subject':self.english.pk,'term':1,'value':91}],card={}).status_code,403)
-        self.assertEqual(self.post_card(card={'attendance':{'Jun':{'present':1}}}).status_code,403)
+        self.assertEqual(self.post_card(grades=[{'subject':self.math.pk,'term':1,'value':91}],card={}).status_code,403)
+        self.assertEqual(self.save(value=91).status_code,200)
+        self.assertEqual(self.save(subject=self.english).status_code,403)

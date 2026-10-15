@@ -1,0 +1,45 @@
+:root{--ct-page:#f6f7fb;--ct-surface:#fff;--ct-text:#263047;--ct-muted:#687285;--ct-border:#dce1eb;--ct-accent:#8d0e12;--ct-soft:#fff0f0;color-scheme:light}
+:root[data-theme="dark"]{--ct-page:#151116;--ct-surface:#231c24;--ct-text:#f6edf1;--ct-muted:#c9b9c3;--ct-border:#61515d;--ct-accent:#ff99aa;--ct-soft:#412932;color-scheme:dark}
+html,body,#root{background:var(--ct-page);color:var(--ct-text)}
+.theme-toggle{border:1px solid var(--ct-border);border-radius:10px;padding:10px 12px;background:var(--ct-surface);color:var(--ct-text);cursor:pointer;font:600 13px system-ui;min-height:44px;min-width:44px}
+.theme-toggle-floating{position:fixed;right:16px;bottom:16px;z-index:900;box-shadow:0 4px 16px #0003}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid #d85775;outline-offset:3px}
+input,select,textarea{box-sizing:border-box;max-width:100%;font:inherit}
+input::placeholder,textarea::placeholder{color:var(--ct-muted)}
+:disabled{opacity:.65;cursor:not-allowed}
+.csm-survey{flex:1 0 100%;min-width:0;padding:20px;border:1px solid var(--ct-border);border-radius:12px;background:var(--ct-surface);color:var(--ct-text);display:grid;gap:16px;text-align:left}
+.csm-survey label{display:grid;gap:8px}.csm-survey select,.csm-survey textarea{width:100%;padding:12px;border:1px solid var(--ct-border);border-radius:8px;background:var(--ct-surface);color:var(--ct-text)}
+.request-form-actions:has(.csm-survey){flex-wrap:wrap}.request-form-actions .csm-survey{order:-1}
+.sf9-class-menu{color:white;padding:12px 0}.sf9-class-menu summary{cursor:pointer;padding:12px}.sf9-class-menu a{flex-wrap:wrap}.sf9-class-menu a small{flex-basis:100%;font-size:11px}
+.teaching-assignments{display:grid;gap:20px}.teaching-assignments fieldset{min-width:0}
+.academic-settings{margin:20px 0;padding:16px;border:1px solid var(--ct-border);border-radius:12px}.academic-settings form{display:grid;gap:14px;margin:20px 0}.academic-settings label{display:grid;gap:8px}.academic-settings .curriculum-option{display:flex;gap:10px;align-items:center;margin:10px}.csm-config-editor{width:100%;padding:12px;background:var(--ct-surface);color:var(--ct-text);border:1px solid var(--ct-border);font:13px/1.5 monospace}
+dialog{max-width:calc(100vw - 24px);max-height:calc(100dvh - 32px);overflow:auto;box-sizing:border-box}
+.staff-panel,.staff-main,.staff-page,.staff-filters>*{min-width:0}
+.staff-filters label{display:grid;gap:6px;max-width:100%}
+.staff-filters select,.staff-filters input{width:100%;min-height:44px}
+.sf9-report-pages{overflow-x:auto}.sf9-report-page{min-width:520px}
+:root[data-theme="dark"] .role-selection-page .school-background{background-image:linear-gradient(rgba(16,12,18,.84),rgba(16,12,18,.88)),url('/BGG.png')}
+:root[data-theme="dark"] .school-role-selection .school-access-card,
+:root[data-theme="dark"] .public-role-selection .public-access-card{background:#251e28;color:#f8f3f6;border-color:#735263;box-shadow:0 12px 32px #0005}
+:root[data-theme="dark"] :is(.school-access-card,.public-access-card):hover{background:#332632;border-color:#ed829b}
+:root[data-theme="dark"] :is(.school-access-card,.public-access-card) strong{color:#fff7fb}
+:root[data-theme="dark"] :is(.school-access-description,.public-access-description){color:#dfd0da}
+:root[data-theme="dark"] :is(.school-access-label,.school-access-continue,.public-access-action){color:#ffb4c4}
+:root[data-theme="dark"] .role-selection-page .header-content :is(h1,h2){color:#fff2f7;text-shadow:0 2px 8px #0008}
+:root[data-theme="dark"] .role-selection-page :is(.role-selection-caption,.header-tagline){color:#f6edf1}
+:root[data-theme="dark"] :is(dialog,.request-modal,.request-form,.modal-form,.modal-body,.modal-card,.request-review-modal){color:var(--ct-text)}
+:root[data-theme="dark"] :is(.request-modal,.modal-card,.request-review-modal){background:var(--ct-surface)}
+:root[data-theme="dark"] :is(.request-modal,.modal-card,dialog) :is(label,legend,.form-section-title){color:var(--ct-text)}
+:root[data-theme="dark"] [role="alert"]{color:#ffb4c4!important}
+@media(max-width:1100px){.sf9-report-pages{grid-template-columns:1fr!important}}
+@media(max-width:600px){
+ .theme-toggle-label{display:none}.staff-panel{margin:10px!important;padding:14px!important}.staff-filters{display:grid;grid-template-columns:minmax(0,1fr)}
+ .staff-filters>*{width:100%;max-width:100%}.staff-topbar{height:auto;min-height:68px}.staff-tools{gap:4px!important}.staff-sms-credits{display:none}
+ .staff-sidebar{width:min(276px,85vw)}.staff-dropdown{position:fixed!important;top:74px!important;right:12px!important;width:calc(100vw - 24px)!important;box-sizing:border-box}
+ .staff-table-wrap,.teacher-records-table-wrap,.sf9-sheet-wrap{max-width:100%;overflow:auto;overscroll-behavior-x:contain}.staff-table{min-width:620px}
+ .staff-panel button,.staff-panel select,summary{min-height:44px}.staff-statistics{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .sf9-dialog{width:calc(100vw - 20px)!important;padding:14px!important}.sf9-heading,.sf9-report-toolbar{flex-wrap:wrap}.sf9-assignment{grid-template-columns:1fr!important}
+ .sf9-report-pages{display:block!important}.sf9-report-page{margin-bottom:20px}.request-form-actions{display:flex!important;flex-wrap:wrap;gap:12px}.csm-survey{padding:14px}
+ .request-form-actions>button{flex:1;min-height:44px}.staff-school{flex:0!important}.staff-stat{padding:14px}
+}
+@media print{.theme-toggle{display:none!important}.sf9-report-page{min-width:0}.sf9-report-pages{overflow:visible}}

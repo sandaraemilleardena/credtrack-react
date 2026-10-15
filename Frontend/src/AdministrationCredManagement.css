@@ -12,11 +12,11 @@
 .credential-management-page {
   --wine: #8d0e12;
   --wine-dark: #710b0e;
-  --wine-soft: #fff0f0;
-  --ink: #263047;
-  --muted: #7d8190;
-  --line: #e8e9ee;
-  --bg: #f5f6fa;
+  --wine-soft:var(--ct-bg-fff0f0,#fff0f0);
+  --ink:var(--ct-fg-263047,#263047);
+  --muted:var(--ct-fg-7d8190,#7d8190);
+  --line:var(--ct-border-e8e9ee,#e8e9ee);
+  --bg:var(--ct-bg-f5f6fa,#f5f6fa);
   --white: #fff;
   --green: #29a94d;
   --gold: #ffb800;
@@ -93,7 +93,7 @@
   padding: 0 20px;
   border-radius: 13px;
   background: var(--wine);
-  color: #fff;
+  color: var(--ct-fg-ffffff,#fff);
   font-weight: 600;
   box-shadow: 0 10px 22px rgba(141,14,18,.2);
   transition: .2s;
@@ -120,7 +120,7 @@
   overflow: hidden;
   padding: 21px;
   border-radius: 17px;
-  background: #fff;
+  background: var(--ct-bg-ffffff,#fff);
   box-shadow: var(--shadow);
 }
 
@@ -140,12 +140,12 @@
   place-items: center;
   border-radius: 16px;
   background: var(--accent);
-  color: #fff;
+  color: var(--ct-fg-ffffff,#fff);
   font-size: 21px;
 }
 
 .credential-management-page .stat span {
-  color: #737680;
+  color: var(--ct-fg-737680,#737680);
   font-size: 12px;
 }
 
@@ -156,7 +156,7 @@
 }
 
 .credential-management-page .stat small {
-  color: #9a9da7;
+  color: var(--ct-fg-9a9da7,#9a9da7);
   font-size: 10px;
 }
 
@@ -188,7 +188,7 @@
 
 .credential-management-page .panel {
   border-radius: 17px;
-  background: #fff;
+  background: var(--ct-bg-ffffff,#fff);
   box-shadow: var(--shadow);
 }
 
@@ -208,7 +208,7 @@
   position: absolute;
   top: 50%;
   left: 15px;
-  color: #9296a1;
+  color: var(--ct-fg-9296a1,#9296a1);
   transform: translateY(-50%);
 }
 
@@ -216,11 +216,11 @@
 .credential-management-page .filters select {
   width: 100%;
   height: 44px;
-  border: 1px solid #e2e3e8;
+  border: 1px solid var(--ct-border-e2e3e8,#e2e3e8);
   border-radius: 10px;
   outline: 0;
-  background: #fafafb;
-  color: #434956;
+  background: var(--ct-bg-fafafb,#fafafb);
+  color: var(--ct-fg-434956,#434956);
 }
 
 .credential-management-page .filters input {
@@ -233,16 +233,16 @@
 
 .credential-management-page .filters input:focus,
 .credential-management-page .filters select:focus {
-  border-color: #be7275;
+  border-color: var(--ct-border-be7275,#be7275);
   box-shadow: 0 0 0 3px rgba(141,14,18,.07);
 }
 
 .credential-management-page .reset {
   padding: 0 15px;
-  border: 1px solid #e2e3e8;
+  border: 1px solid var(--ct-border-e2e3e8,#e2e3e8);
   border-radius: 10px;
-  background: #fff;
-  color: #555b68;
+  background: var(--ct-bg-ffffff,#fff);
+  color: var(--ct-fg-555b68,#555b68);
 }
 
 .credential-management-page .panel-title {
@@ -280,12 +280,12 @@
 }
 
 .credential-management-page thead {
-  background: #f6f6f7;
+  background: var(--ct-bg-f6f6f7,#f6f6f7);
 }
 
 .credential-management-page th {
   padding: 13px 15px;
-  color: #555b68;
+  color: var(--ct-fg-555b68,#555b68);
   font-size: 11px;
   text-align: left;
   white-space: nowrap;
@@ -293,8 +293,8 @@
 
 .credential-management-page td {
   padding: 14px 15px;
-  border-top: 1px solid #efeff2;
-  color: #535966;
+  border-top: 1px solid var(--ct-border-efeff2,#efeff2);
+  color: var(--ct-fg-535966,#535966);
   font-size: 12px;
   white-space: nowrap;
 }
@@ -305,7 +305,7 @@
 
 .credential-management-page tbody tr:hover,
 .credential-management-page tbody tr.selected {
-  background: #fff8f8;
+  background: var(--ct-bg-fff8f8,#fff8f8);
 }
 
 .credential-management-page .student {
@@ -321,7 +321,7 @@
   flex: 0 0 auto;
   place-items: center;
   border-radius: 50%;
-  background: #f4dddd;
+  background: var(--ct-bg-f4dddd,#f4dddd);
   color: var(--wine);
   font-size: 10px;
   font-weight: 700;
@@ -329,12 +329,12 @@
 
 .credential-management-page .student strong {
   display: block;
-  color: #303747;
+  color: var(--ct-fg-303747,#303747);
   font-size: 12px;
 }
 
 .credential-management-page .student small {
-  color: #9296a0;
+  color: var(--ct-fg-9296a0,#9296a0);
   font-size: 10px;
 }
 
@@ -353,23 +353,23 @@
 }
 
 .credential-management-page .badge.pending {
-  background: #fff3d3;
-  color: #a66b00;
+  background: var(--ct-bg-fff3d3,#fff3d3);
+  color: var(--ct-fg-a66b00,#a66b00);
 }
 
 .credential-management-page .badge.approved {
-  background: #e3f6e9;
-  color: #218844;
+  background: var(--ct-bg-e3f6e9,#e3f6e9);
+  color: var(--ct-fg-218844,#218844);
 }
 
 .credential-management-page .badge.released {
-  background: #e5efff;
-  color: #145dbe;
+  background: var(--ct-bg-e5efff,#e5efff);
+  color: var(--ct-fg-145dbe,#145dbe);
 }
 
 .credential-management-page .badge.rejected {
-  background: #fde8ea;
-  color: #b62836;
+  background: var(--ct-bg-fde8ea,#fde8ea);
+  color: var(--ct-fg-b62836,#b62836);
 }
 
 .credential-management-page .actions {
@@ -381,13 +381,13 @@
   width: 31px;
   height: 31px;
   border-radius: 8px;
-  background: #f3f4f6;
-  color: #555c69;
+  background: var(--ct-bg-f3f4f6,#f3f4f6);
+  color: var(--ct-fg-555c69,#555c69);
 }
 
 .credential-management-page .actions button:hover {
   background: var(--wine);
-  color: #fff;
+  color: var(--ct-fg-ffffff,#fff);
 }
 
 .credential-management-page .table-foot {
@@ -409,13 +409,13 @@
   width: 30px;
   height: 30px;
   border-radius: 8px;
-  background: #f5f5f7;
-  color: #555b68;
+  background: var(--ct-bg-f5f5f7,#f5f5f7);
+  color: var(--ct-fg-555b68,#555b68);
 }
 
 .credential-management-page .pages .current {
   background: var(--wine);
-  color: #fff;
+  color: var(--ct-fg-ffffff,#fff);
 }
 
 .credential-management-page .side-stack {
@@ -434,7 +434,7 @@
   align-items: center;
   gap: 11px;
   padding: 13px 0;
-  border-top: 1px solid #f0f0f2;
+  border-top: 1px solid var(--ct-border-f0f0f2,#f0f0f2);
 }
 
 .credential-management-page .type-icon {
@@ -471,7 +471,7 @@
   grid-template-columns: 34px 1fr;
   gap: 10px;
   padding: 12px 0;
-  border-top: 1px solid #f0f0f2;
+  border-top: 1px solid var(--ct-border-f0f0f2,#f0f0f2);
 }
 
 .credential-management-page .event i {
@@ -480,7 +480,7 @@
   height: 34px;
   place-items: center;
   border-radius: 50%;
-  background: #f3f4f6;
+  background: var(--ct-bg-f3f4f6,#f3f4f6);
   color: var(--wine);
   font-size: 12px;
 }
@@ -498,7 +498,7 @@
 }
 
 .credential-management-page .event time {
-  color: #a2a5ad;
+  color: var(--ct-fg-a2a5ad,#a2a5ad);
   font-size: 9px;
 }
 
@@ -522,7 +522,7 @@
   width: min(440px,100%);
   height: 100vh;
   overflow-y: auto;
-  background: #fff;
+  background: var(--ct-bg-ffffff,#fff);
   box-shadow: -18px 0 45px rgba(16,18,28,.16);
   transform: translateX(105%);
   transition: .3s;
@@ -549,8 +549,8 @@
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: #f4f4f6;
-  color: #444b59;
+  background: var(--ct-bg-f4f4f6,#f4f4f6);
+  color: var(--ct-fg-444b59,#444b59);
 }
 
 .credential-management-page .request-profile {
@@ -585,7 +585,7 @@
 .credential-management-page .detail {
   padding: 13px;
   border-radius: 11px;
-  background: #f7f7f9;
+  background: var(--ct-bg-f7f7f9,#f7f7f9);
 }
 
 .credential-management-page .detail span {
@@ -651,7 +651,7 @@
   gap: 10px;
   padding: 17px 22px;
   border-top: 1px solid var(--line);
-  background: #fff;
+  background: var(--ct-bg-ffffff,#fff);
 }
 
 .credential-management-page .decision button {
@@ -661,13 +661,13 @@
 }
 
 .credential-management-page .reject {
-  background: #fde8ea;
-  color: #b62836;
+  background: var(--ct-bg-fde8ea,#fde8ea);
+  color: var(--ct-fg-b62836,#b62836);
 }
 
 .credential-management-page .approve {
   background: var(--green);
-  color: #fff;
+  color: var(--ct-fg-ffffff,#fff);
 }
 
 .credential-management-page .toast {
@@ -680,8 +680,8 @@
   gap: 10px;
   padding: 14px 18px;
   border-radius: 12px;
-  background: #242a38;
-  color: #fff;
+  background: var(--ct-bg-242a38,#242a38);
+  color: var(--ct-fg-ffffff,#fff);
   box-shadow: 0 15px 35px rgba(0,0,0,.2);
   font-size: 12px;
   opacity: 0;
@@ -783,11 +783,11 @@
 .credential-management-page {
   --wine: #8d0e12;
   --wine-dark: #710b0e;
-  --wine-soft: #fff0f0;
-  --ink: #263047;
-  --muted: #7d8190;
-  --line: #e8e9ee;
-  --bg: #f5f6fa;
+  --wine-soft:var(--ct-bg-fff0f0,#fff0f0);
+  --ink:var(--ct-fg-263047,#263047);
+  --muted:var(--ct-fg-7d8190,#7d8190);
+  --line:var(--ct-border-e8e9ee,#e8e9ee);
+  --bg:var(--ct-bg-f5f6fa,#f5f6fa);
   --white: #fff;
   --green: #29a94d;
   --gold: #ffb800;
@@ -864,7 +864,7 @@
   padding: 0 20px;
   border-radius: 13px;
   background: var(--wine);
-  color: #fff;
+  color: var(--ct-fg-ffffff,#fff);
   font-weight: 600;
   box-shadow: 0 10px 22px rgba(141,14,18,.2);
   transition: .2s;
@@ -891,7 +891,7 @@
   overflow: hidden;
   padding: 21px;
   border-radius: 17px;
-  background: #fff;
+  background: var(--ct-bg-ffffff,#fff);
   box-shadow: var(--shadow);
 }
 
@@ -911,12 +911,12 @@
   place-items: center;
   border-radius: 16px;
   background: var(--accent);
-  color: #fff;
+  color: var(--ct-fg-ffffff,#fff);
   font-size: 21px;
 }
 
 .credential-management-page .stat span {
-  color: #737680;
+  color: var(--ct-fg-737680,#737680);
   font-size: 12px;
 }
 
@@ -927,7 +927,7 @@
 }
 
 .credential-management-page .stat small {
-  color: #9a9da7;
+  color: var(--ct-fg-9a9da7,#9a9da7);
   font-size: 10px;
 }
 
@@ -955,7 +955,7 @@
 
 .credential-management-page .panel {
   border-radius: 17px;
-  background: #fff;
+  background: var(--ct-bg-ffffff,#fff);
   box-shadow: var(--shadow);
 }
 
@@ -975,7 +975,7 @@
   position: absolute;
   top: 50%;
   left: 15px;
-  color: #9296a1;
+  color: var(--ct-fg-9296a1,#9296a1);
   transform: translateY(-50%);
 }
 
@@ -983,11 +983,11 @@
 .credential-management-page .filters select {
   width: 100%;
   height: 44px;
-  border: 1px solid #e2e3e8;
+  border: 1px solid var(--ct-border-e2e3e8,#e2e3e8);
   border-radius: 10px;
   outline: 0;
-  background: #fafafb;
-  color: #434956;
+  background: var(--ct-bg-fafafb,#fafafb);
+  color: var(--ct-fg-434956,#434956);
 }
 
 .credential-management-page .filters input {
@@ -1000,16 +1000,16 @@
 
 .credential-management-page .filters input:focus,
 .credential-management-page .filters select:focus {
-  border-color: #be7275;
+  border-color: var(--ct-border-be7275,#be7275);
   box-shadow: 0 0 0 3px rgba(141,14,18,.07);
 }
 
 .credential-management-page .reset {
   padding: 0 15px;
-  border: 1px solid #e2e3e8;
+  border: 1px solid var(--ct-border-e2e3e8,#e2e3e8);
   border-radius: 10px;
-  background: #fff;
-  color: #555b68;
+  background: var(--ct-bg-ffffff,#fff);
+  color: var(--ct-fg-555b68,#555b68);
 }
 
 .credential-management-page .panel-title {
@@ -1047,12 +1047,12 @@
 }
 
 .credential-management-page thead {
-  background: #f6f6f7;
+  background: var(--ct-bg-f6f6f7,#f6f6f7);
 }
 
 .credential-management-page th {
   padding: 13px 15px;
-  color: #555b68;
+  color: var(--ct-fg-555b68,#555b68);
   font-size: 11px;
   text-align: left;
   white-space: nowrap;
@@ -1060,8 +1060,8 @@
 
 .credential-management-page td {
   padding: 14px 15px;
-  border-top: 1px solid #efeff2;
-  color: #535966;
+  border-top: 1px solid var(--ct-border-efeff2,#efeff2);
+  color: var(--ct-fg-535966,#535966);
   font-size: 12px;
   white-space: nowrap;
 }
@@ -1072,7 +1072,7 @@
 
 .credential-management-page tbody tr:hover,
 .credential-management-page tbody tr.selected {
-  background: #fff8f8;
+  background: var(--ct-bg-fff8f8,#fff8f8);
 }
 
 .credential-management-page .student {
@@ -1088,7 +1088,7 @@
   flex: 0 0 auto;
   place-items: center;
   border-radius: 50%;
-  background: #f4dddd;
+  background: var(--ct-bg-f4dddd,#f4dddd);
   color: var(--wine);
   font-size: 10px;
   font-weight: 700;
@@ -1096,12 +1096,12 @@
 
 .credential-management-page .student strong {
   display: block;
-  color: #303747;
+  color: var(--ct-fg-303747,#303747);
   font-size: 12px;
 }
 
 .credential-management-page .student small {
-  color: #9296a0;
+  color: var(--ct-fg-9296a0,#9296a0);
   font-size: 10px;
 }
 
@@ -1120,23 +1120,23 @@
 }
 
 .credential-management-page .badge.pending {
-  background: #fff3d3;
-  color: #a66b00;
+  background: var(--ct-bg-fff3d3,#fff3d3);
+  color: var(--ct-fg-a66b00,#a66b00);
 }
 
 .credential-management-page .badge.approved {
-  background: #e3f6e9;
-  color: #218844;
+  background: var(--ct-bg-e3f6e9,#e3f6e9);
+  color: var(--ct-fg-218844,#218844);
 }
 
 .credential-management-page .badge.released {
-  background: #e5efff;
-  color: #145dbe;
+  background: var(--ct-bg-e5efff,#e5efff);
+  color: var(--ct-fg-145dbe,#145dbe);
 }
 
 .credential-management-page .badge.rejected {
-  background: #fde8ea;
-  color: #b62836;
+  background: var(--ct-bg-fde8ea,#fde8ea);
+  color: var(--ct-fg-b62836,#b62836);
 }
 
 .credential-management-page .actions {
@@ -1148,13 +1148,13 @@
   width: 31px;
   height: 31px;
   border-radius: 8px;
-  background: #f3f4f6;
-  color: #555c69;
+  background: var(--ct-bg-f3f4f6,#f3f4f6);
+  color: var(--ct-fg-555c69,#555c69);
 }
 
 .credential-management-page .actions button:hover {
   background: var(--wine);
-  color: #fff;
+  color: var(--ct-fg-ffffff,#fff);
 }
 
 .credential-management-page .table-foot {
@@ -1176,13 +1176,13 @@
   width: 30px;
   height: 30px;
   border-radius: 8px;
-  background: #f5f5f7;
-  color: #555b68;
+  background: var(--ct-bg-f5f5f7,#f5f5f7);
+  color: var(--ct-fg-555b68,#555b68);
 }
 
 .credential-management-page .pages .current {
   background: var(--wine);
-  color: #fff;
+  color: var(--ct-fg-ffffff,#fff);
 }
 
 .credential-management-page .side-stack {
@@ -1201,7 +1201,7 @@
   align-items: center;
   gap: 11px;
   padding: 13px 0;
-  border-top: 1px solid #f0f0f2;
+  border-top: 1px solid var(--ct-border-f0f0f2,#f0f0f2);
 }
 
 .credential-management-page .type-icon {
@@ -1238,7 +1238,7 @@
   grid-template-columns: 34px 1fr;
   gap: 10px;
   padding: 12px 0;
-  border-top: 1px solid #f0f0f2;
+  border-top: 1px solid var(--ct-border-f0f0f2,#f0f0f2);
 }
 
 .credential-management-page .event i {
@@ -1247,7 +1247,7 @@
   height: 34px;
   place-items: center;
   border-radius: 50%;
-  background: #f3f4f6;
+  background: var(--ct-bg-f3f4f6,#f3f4f6);
   color: var(--wine);
   font-size: 12px;
 }
@@ -1265,7 +1265,7 @@
 }
 
 .credential-management-page .event time {
-  color: #a2a5ad;
+  color: var(--ct-fg-a2a5ad,#a2a5ad);
   font-size: 9px;
 }
 
@@ -1289,7 +1289,7 @@
   width: min(440px,100%);
   height: 100vh;
   overflow-y: auto;
-  background: #fff;
+  background: var(--ct-bg-ffffff,#fff);
   box-shadow: -18px 0 45px rgba(16,18,28,.16);
   transform: translateX(105%);
   transition: .3s;
@@ -1316,8 +1316,8 @@
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: #f4f4f6;
-  color: #444b59;
+  background: var(--ct-bg-f4f4f6,#f4f4f6);
+  color: var(--ct-fg-444b59,#444b59);
 }
 
 .credential-management-page .request-profile {
@@ -1352,7 +1352,7 @@
 .credential-management-page .detail {
   padding: 13px;
   border-radius: 11px;
-  background: #f7f7f9;
+  background: var(--ct-bg-f7f7f9,#f7f7f9);
 }
 
 .credential-management-page .detail span {
@@ -1418,7 +1418,7 @@
   gap: 10px;
   padding: 17px 22px;
   border-top: 1px solid var(--line);
-  background: #fff;
+  background: var(--ct-bg-ffffff,#fff);
 }
 
 .credential-management-page .decision button {
@@ -1429,7 +1429,7 @@
 
 .credential-management-page .approve {
   background: var(--green);
-  color: #fff;
+  color: var(--ct-fg-ffffff,#fff);
 }
 
 .credential-management-page .toast {
@@ -1442,8 +1442,8 @@
   gap: 10px;
   padding: 14px 18px;
   border-radius: 12px;
-  background: #242a38;
-  color: #fff;
+  background: var(--ct-bg-242a38,#242a38);
+  color: var(--ct-fg-ffffff,#fff);
   box-shadow: 0 15px 35px rgba(0,0,0,.2);
   font-size: 12px;
   opacity: 0;
@@ -1593,18 +1593,18 @@
   --navy-900: #8d0e12;
   --navy-850: #9f1519;
   --navy-800: #ad2024;
-  --ink-950: #263047;
-  --ink-800: #353c4b;
-  --ink-600: #5b6270;
-  --ink-500: #686d79;
-  --line: #e8e9ee;
-  --line-strong: #dfe1e7;
-  --surface: #ffffff;
-  --surface-soft: #f5f6fa;
-  --surface-blue: #fff0f0;
+  --ink-950:var(--ct-fg-263047,#263047);
+  --ink-800:var(--ct-fg-353c4b,#353c4b);
+  --ink-600:var(--ct-fg-5b6270,#5b6270);
+  --ink-500:var(--ct-fg-686d79,#686d79);
+  --line:var(--ct-border-e8e9ee,#e8e9ee);
+  --line-strong:var(--ct-border-dfe1e7,#dfe1e7);
+  --surface:var(--ct-bg-ffffff,#ffffff);
+  --surface-soft:var(--ct-bg-f5f6fa,#f5f6fa);
+  --surface-blue:var(--ct-bg-fff0f0,#fff0f0);
   --brand: #8d0e12;
   --brand-hover: #710b0e;
-  --brand-soft: #fff0f0;
+  --brand-soft:var(--ct-bg-fff0f0,#fff0f0);
   --focus-ring: #b24a50;
   --blue: var(--brand);
   --blue-dark: #710b0e;
@@ -1752,12 +1752,12 @@
   gap: 10px;
   margin: 18px 16px 8px;
   padding: 12px;
-  border: 1px solid #efdcdd;
+  border: 1px solid var(--ct-border-efdcdd,#efdcdd);
   border-radius: 14px;
-  background: #fff8f8;
+  background: var(--ct-bg-fff8f8,#fff8f8);
 }
 
-.credential-management-page .system-card-icon { display: grid; width: 36px; height: 36px; place-items: center; border-radius: 10px; color: var(--brand); background: #f6e4e5; }
+.credential-management-page .system-card-icon { display: grid; width: 36px; height: 36px; place-items: center; border-radius: 10px; color: var(--brand); background: var(--ct-bg-f6e4e5,#f6e4e5); }
 
 .credential-management-page .sidebar-system-card strong,
 .credential-management-page .sidebar-system-card span { display: block; }
@@ -1767,7 +1767,7 @@
 .credential-management-page .sidebar-system-card div > span { margin-top: 3px; color: var(--ink-500); font-size: 0.68rem; }
 
 .credential-management-page .online-dot,
-.credential-management-page .status-pulse { display: inline-block; flex: 0 0 auto; width: 8px; height: 8px; border-radius: 50%; background: #21865c; box-shadow: 0 0 0 4px #e6f4ed; }
+.credential-management-page .status-pulse { display: inline-block; flex: 0 0 auto; width: 8px; height: 8px; border-radius: 50%; background: var(--ct-bg-21865c,#21865c); box-shadow: 0 0 0 4px #e6f4ed; }
 
 .credential-management-page :is(.sidebar-navigation, .nav) { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 20px 14px; scrollbar-width: thin; scrollbar-color: #d8c6c8 transparent; }
 
@@ -1796,18 +1796,18 @@
   transition: color var(--ease), background var(--ease), border-color var(--ease);
 }
 
-.credential-management-page :is(.menu-link, .nav > li > a, .nav > li > button):not(:disabled):not([aria-disabled="true"]):hover { color: var(--brand); background: #fbf0f1; }
+.credential-management-page :is(.menu-link, .nav > li > a, .nav > li > button):not(:disabled):not([aria-disabled="true"]):hover { color: var(--brand); background: var(--ct-bg-fbf0f1,#fbf0f1); }
 
 .credential-management-page :is(.menu-item, .nav > li).active :is(.menu-link, .nav > li > a, .nav > li > button),
 .credential-management-page :is(.menu-link, .nav > li > a, .nav > li > button)[aria-current="page"] {
-  color: #fff;
+  color: var(--ct-fg-ffffff,#fff);
   border-color: var(--brand);
   background: var(--brand);
   box-shadow: 0 5px 12px rgba(141, 14, 18, 0.14);
 }
 
 .credential-management-page :is(.menu-item, .nav > li).active :is(.menu-link, .nav > li > a, .nav > li > button):hover,
-.credential-management-page :is(.menu-link, .nav > li > a, .nav > li > button)[aria-current="page"]:hover { color: #fff; background: var(--brand-hover); }
+.credential-management-page :is(.menu-link, .nav > li > a, .nav > li > button)[aria-current="page"]:hover { color: var(--ct-fg-ffffff,#fff); background: var(--brand-hover); }
 
 .credential-management-page :is(.menu-link, .nav > li > a, .nav > li > button):disabled,
 .credential-management-page :is(.menu-link, .nav > li > a, .nav > li > button)[aria-disabled="true"] { color: var(--ink-500); background: transparent; cursor: not-allowed; box-shadow: none; }
@@ -1821,12 +1821,12 @@
 
 .credential-management-page .active-indicator { color: currentColor; font-size: 0.65rem; }
 
-.credential-management-page .coming-soon { padding: 3px 6px; border-radius: 6px; color: #69616a; background: #f0edf0; font-size: 0.6rem; font-weight: 600; }
+.credential-management-page .coming-soon { padding: 3px 6px; border-radius: 6px; color: var(--ct-fg-69616a,#69616a); background: var(--ct-bg-f0edf0,#f0edf0); font-size: 0.6rem; font-weight: 600; }
 
-.credential-management-page .sidebar-profile { display: grid; grid-template-columns: 38px minmax(0,1fr) auto; flex-shrink: 0; align-items: center; gap: 10px; padding: 16px 20px; padding-bottom: max(16px, env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: #fcfafb; }
+.credential-management-page .sidebar-profile { display: grid; grid-template-columns: 38px minmax(0,1fr) auto; flex-shrink: 0; align-items: center; gap: 10px; padding: 16px 20px; padding-bottom: max(16px, env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: var(--ct-bg-fcfafb,#fcfafb); }
 
 .credential-management-page .profile-avatar,
-.credential-management-page .admin-avatar { display: grid; flex: 0 0 auto; place-items: center; width: 38px; height: 38px; border: 1px solid #efdcdd; border-radius: 12px; color: var(--brand); background: #f8e9ea; font-size: 0.75rem; font-weight: 700; }
+.credential-management-page .admin-avatar { display: grid; flex: 0 0 auto; place-items: center; width: 38px; height: 38px; border: 1px solid var(--ct-border-efdcdd,#efdcdd); border-radius: 12px; color: var(--brand); background: var(--ct-bg-f8e9ea,#f8e9ea); font-size: 0.75rem; font-weight: 700; }
 
 .credential-management-page .admin-avatar.large { width: 45px; height: 45px; }
 
@@ -1841,7 +1841,7 @@
 .credential-management-page .profile-details small,
 .credential-management-page :is(.admin-menu-info, .admin-copy) small { margin-top: 3px; color: var(--ink-500); font-size: 0.67rem; }
 
-.credential-management-page .profile-status { color: #21865c; font-size: 0.5rem; }
+.credential-management-page .profile-status { color: var(--ct-fg-21865c,#21865c); font-size: 0.5rem; }
 
 .credential-management-page .sidebar-overlay { position: fixed; inset: 0; z-index: 40; display: none; border: 0; background: rgba(26, 20, 28, 0.42); backdrop-filter: blur(3px); }
 
@@ -1858,7 +1858,7 @@
   height: var(--topbar-height);
   padding: 0 clamp(20px, 3vw, 30px);
   border-bottom: 1px solid var(--line);
-  background: rgba(255,255,255,0.97);
+  background: var(--ct-alpha-rgba255255255097,rgba(255,255,255,0.97));
   box-shadow: 0 3px 14px rgba(38,48,71,0.025);
   backdrop-filter: blur(16px);
 }
@@ -1876,12 +1876,12 @@
 
 .credential-management-page :is(.school-name-subtitle, .school span) { margin-top: 3px; color: var(--ink-500); font-size: 0.69rem; }
 
-.credential-management-page .system-status { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border: 1px solid #e0eee6; border-radius: 12px; background: #f6fbf8; }
+.credential-management-page .system-status { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border: 1px solid var(--ct-border-e0eee6,#e0eee6); border-radius: 12px; background: var(--ct-bg-f6fbf8,#f6fbf8); }
 
 .credential-management-page .system-status strong,
 .credential-management-page .system-status small { display: block; }
 
-.credential-management-page .system-status strong { color: #236647; font-size: 0.72rem; font-weight: 600; }
+.credential-management-page .system-status strong { color: var(--ct-fg-236647,#236647); font-size: 0.72rem; font-weight: 600; }
 
 .credential-management-page .system-status small { margin-top: 2px; color: var(--ink-500); font-size: 0.63rem; }
 
@@ -1895,14 +1895,14 @@
 .credential-management-page :is(.notification, .icon-btn):hover,
 .credential-management-page :is(.notification, .icon-btn).active,
 .credential-management-page :is(.menu-button, .menu-btn):hover,
-.credential-management-page :is(.close-sidebar, .mobile-close):hover { color: var(--brand); border-color: #e4bfc2; background: var(--brand-soft); }
+.credential-management-page :is(.close-sidebar, .mobile-close):hover { color: var(--brand); border-color: var(--ct-border-e4bfc2,#e4bfc2); background: var(--brand-soft); }
 
-.credential-management-page :is(.notification-badge, .icon-btn b) { position: absolute; right: -4px; top: -5px; display: grid; min-width: 19px; height: 19px; place-items: center; padding: 0 4px; border: 2px solid #fff; border-radius: 12px; color: #fff; background: var(--brand); font-size: 0.6rem; font-weight: 700; }
+.credential-management-page :is(.notification-badge, .icon-btn b) { position: absolute; right: -4px; top: -5px; display: grid; min-width: 19px; height: 19px; place-items: center; padding: 0 4px; border: 2px solid var(--ct-border-ffffff,#fff); border-radius: 12px; color: var(--ct-fg-ffffff,#fff); background: var(--brand); font-size: 0.6rem; font-weight: 700; }
 
 .credential-management-page :is(.admin-menu, .admin) { display: grid; grid-template-columns: 38px minmax(0,1fr) auto; align-items: center; gap: 10px; min-width: 176px; min-height: 48px; padding: 4px 10px 4px 4px; border: 1px solid transparent; border-radius: 14px; color: var(--ink-800); background: transparent; text-align: left; cursor: pointer; transition: background var(--ease), border-color var(--ease); }
 
 .credential-management-page :is(.admin-menu, .admin):hover,
-.credential-management-page :is(.admin-menu, .admin).active { border-color: var(--line); background: #fcf8f8; }
+.credential-management-page :is(.admin-menu, .admin).active { border-color: var(--line); background: var(--ct-bg-fcf8f8,#fcf8f8); }
 
 .credential-management-page .admin-chevron { color: var(--ink-500); font-size: 0.65rem; transition: transform var(--ease); }
 
@@ -1916,7 +1916,7 @@
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.98);
+  background: var(--ct-alpha-rgba255255255098,rgba(255, 255, 255, 0.98));
   box-shadow: var(--shadow-float);
   animation: pop-in 180ms ease-out;
 }
@@ -1964,7 +1964,7 @@
   grid-template-columns: 40px 1fr;
   gap: 12px;
   padding: 15px 20px;
-  border-bottom: 1px solid #eef1f5;
+  border-bottom: 1px solid var(--ct-border-eef1f5,#eef1f5);
   transition: background var(--ease);
 }
 
@@ -1985,9 +1985,9 @@
 
 .credential-management-page .notification-icon.blue { color: var(--blue); background: var(--surface-blue); }
 
-.credential-management-page .notification-icon.green { color: var(--green); background: #eaf9f3; }
+.credential-management-page .notification-icon.green { color: var(--green); background: var(--ct-bg-eaf9f3,#eaf9f3); }
 
-.credential-management-page .notification-icon.purple { color: var(--purple); background: #f1edff; }
+.credential-management-page .notification-icon.purple { color: var(--purple); background: var(--ct-bg-f1edff,#f1edff); }
 
 .credential-management-page .notification-copy strong,
 .credential-management-page .notification-copy span,
@@ -2008,7 +2008,7 @@
 
 .credential-management-page .notification-copy small {
   margin-top: 5px;
-  color: #929fb0;
+  color: var(--ct-fg-929fb0,#929fb0);
   font-size: 0.64rem;
 }
 
@@ -2021,7 +2021,7 @@
   padding: 13px;
   border: 0;
   color: var(--blue);
-  background: #fafcff;
+  background: var(--ct-bg-fafcff,#fafcff);
   font-size: 0.77rem;
   font-weight: 700;
   cursor: pointer;
@@ -2055,8 +2055,8 @@
   margin: 8px 6px;
   padding: 10px 12px;
   border-radius: 10px;
-  color: #197352;
-  background: #eefaf5;
+  color: var(--ct-fg-197352,#197352);
+  background: var(--ct-bg-eefaf5,#eefaf5);
   font-size: 0.71rem;
   font-weight: 600;
 }
@@ -2075,20 +2075,20 @@
   padding: 11px;
   border: 0;
   border-radius: 10px;
-  color: #b4232c;
+  color: var(--ct-fg-b4232c,#b4232c);
   background: transparent;
   text-align: left;
   cursor: pointer;
 }
 
-.credential-management-page .admin-dropdown > button:hover { background: #fff2f3; }
+.credential-management-page .admin-dropdown > button:hover { background: var(--ct-bg-fff2f3,#fff2f3); }
 
 .credential-management-page .admin-dropdown > button strong,
 .credential-management-page .admin-dropdown > button small { display: block; }
 
 .credential-management-page .admin-dropdown > button strong { font-size: 0.76rem; }
 
-.credential-management-page .admin-dropdown > button small { margin-top: 2px; color: #8b5a5f; font-size: 0.65rem; }
+.credential-management-page .admin-dropdown > button small { margin-top: 2px; color: var(--ct-fg-8b5a5f,#8b5a5f); font-size: 0.65rem; }
 
 @keyframes pop-in {
 from { opacity: 0; transform: translateY(-7px) scale(0.98); }
@@ -2277,11 +2277,11 @@ body:has(.credential-management-page .sidebar.open) { overflow: hidden; }
   --maroon: #8d0e12;
   --maroon-dark: #710b0e;
   --maroon-deep: #5e0b0f;
-  --maroon-light: #fff0f0;
+  --maroon-light:var(--ct-bg-fff0f0,#fff0f0);
   --sidebar-width: 276px;
   --topbar-height: 78px;
   width: 100%;
-  background: #f5f6fa;
+  background: var(--ct-bg-f5f6fa,#f5f6fa);
   font-family: "Poppins", "Inter", "Segoe UI", Arial, sans-serif;
   font-size: 14px;
   line-height: 1.5;
@@ -2289,7 +2289,7 @@ body:has(.credential-management-page .sidebar.open) { overflow: hidden; }
 }
 
 .credential-management-page .sidebar {
-  color: #fff;
+  color: var(--ct-fg-ffffff,#fff);
   background: var(--maroon-dark);
   border-right: 0;
   box-shadow: none;
@@ -2310,7 +2310,7 @@ body:has(.credential-management-page .sidebar.open) { overflow: hidden; }
 .credential-management-page .brand-copy > strong {
   display: block;
   margin: 0;
-  color: #fff;
+  color: var(--ct-fg-ffffff,#fff);
   font-size: 20px;
   font-weight: 800;
   line-height: 1.1;
@@ -2330,12 +2330,12 @@ body:has(.credential-management-page .sidebar.open) { overflow: hidden; }
   height: 35px;
   border: 0;
   border-radius: 9px;
-  color: #fff;
+  color: var(--ct-fg-ffffff,#fff);
   background: rgba(255,255,255,.1);
   font-size: 14px;
 }
 
-.credential-management-page :is(.close-sidebar, .mobile-close):hover { background: rgba(255,255,255,.18); }
+.credential-management-page :is(.close-sidebar, .mobile-close):hover { background: var(--ct-alpha-rgba25525525518,rgba(255,255,255,.18)); }
 
 .credential-management-page :is(.sidebar-navigation, .nav) {
   padding: 17px 13px 18px;
@@ -2370,7 +2370,7 @@ body:has(.credential-management-page .sidebar.open) { overflow: hidden; }
 }
 
 .credential-management-page :is(.menu-link, .nav > li > a, .nav > li > button):not(:disabled):not([aria-disabled="true"]):hover {
-  color: #fff;
+  color: var(--ct-fg-ffffff,#fff);
   background: rgba(255,255,255,.1);
   transform: translateX(1px);
 }
@@ -2394,20 +2394,20 @@ body:has(.credential-management-page .sidebar.open) { overflow: hidden; }
 .credential-management-page :is(.menu-item, .nav > li).active :is(.menu-link, .nav > li > a, .nav > li > button):hover,
 .credential-management-page :is(.menu-link, .nav > li > a, .nav > li > button).active:hover,
 .credential-management-page :is(.menu-link, .nav > li > a, .nav > li > button)[aria-current="page"]:hover {
-  color: #fff;
-  background: linear-gradient(135deg, #a91b20, #8d0e12);
+  color: var(--ct-fg-ffffff,#fff);
+  background: linear-gradient(135deg, var(--ct-bg-a91b20,#a91b20), var(--ct-bg-8d0e12,#8d0e12));
   box-shadow: inset 3px 0 0 rgba(255,255,255,.8), 0 8px 18px rgba(0,0,0,.12);
 }
 
 .credential-management-page :is(.menu-item, .nav > li).active :is(.menu-icon, .nav > li > a > i, .nav > li > button > i),
 .credential-management-page :is(.menu-link, .nav > li > a, .nav > li > button).active :is(.menu-icon, .nav > li > a > i, .nav > li > button > i),
-.credential-management-page :is(.menu-link, .nav > li > a, .nav > li > button)[aria-current="page"] :is(.menu-icon, .nav > li > a > i, .nav > li > button > i) { color: #fff; background: transparent; }
+.credential-management-page :is(.menu-link, .nav > li > a, .nav > li > button)[aria-current="page"] :is(.menu-icon, .nav > li > a > i, .nav > li > button > i) { color: var(--ct-fg-ffffff,#fff); background: transparent; }
 
 .credential-management-page :is(.menu-link, .nav > li > a, .nav > li > button):disabled,
 .credential-management-page :is(.menu-link, .nav > li > a, .nav > li > button)[aria-disabled="true"] { color: rgba(255,255,255,.55); box-shadow: none; cursor: not-allowed; }
 
 .credential-management-page .coming-soon,
-.credential-management-page .nav-badge { padding: 3px 6px; border-radius: 50px; color: #986400; background: #fff1d3; font-size: 10px; font-weight: 700; }
+.credential-management-page .nav-badge { padding: 3px 6px; border-radius: 50px; color: var(--ct-fg-986400,#986400); background: var(--ct-bg-fff1d3,#fff1d3); font-size: 10px; font-weight: 700; }
 
 .credential-management-page .sidebar-system-card {
   order: 2;
@@ -2418,11 +2418,11 @@ body:has(.credential-management-page .sidebar.open) { overflow: hidden; }
   background: rgba(255,255,255,.07);
 }
 
-.credential-management-page .sidebar-system-card strong { color: #fff; font-size: 10px; }
+.credential-management-page .sidebar-system-card strong { color: var(--ct-fg-ffffff,#fff); font-size: 10px; }
 
 .credential-management-page .sidebar-system-card div > span { color: rgba(255,255,255,.68); font-size: 9px; }
 
-.credential-management-page .system-card-icon { color: #fff; background: rgba(255,255,255,.1); }
+.credential-management-page .system-card-icon { color: var(--ct-fg-ffffff,#fff); background: rgba(255,255,255,.1); }
 
 .credential-management-page .sidebar-profile {
   order: 3;
@@ -2432,11 +2432,11 @@ body:has(.credential-management-page .sidebar.open) { overflow: hidden; }
   background: transparent;
 }
 
-.credential-management-page .profile-details strong { color: #fff; font-size: 11px; }
+.credential-management-page .profile-details strong { color: var(--ct-fg-ffffff,#fff); font-size: 11px; }
 
 .credential-management-page .profile-details small { color: rgba(255,255,255,.68); font-size: 10px; }
 
-.credential-management-page .sidebar .profile-avatar { color: #fff; border-color: rgba(255,255,255,.15); background: rgba(255,255,255,.1); }
+.credential-management-page .sidebar .profile-avatar { color: var(--ct-fg-ffffff,#fff); border-color: rgba(255,255,255,.15); background: rgba(255,255,255,.1); }
 
 .credential-management-page .sidebar :focus-visible { outline-color: #fff; }
 
@@ -2447,7 +2447,7 @@ body:has(.credential-management-page .sidebar.open) { overflow: hidden; }
   min-height: var(--topbar-height);
   gap: 20px;
   padding: 0 30px;
-  background: rgba(255,255,255,.98);
+  background: var(--ct-alpha-rgba25525525598,rgba(255,255,255,.98));
   border-bottom: 1px solid var(--line);
   box-shadow: 0 5px 20px rgba(36,42,57,.04);
   backdrop-filter: blur(10px);
@@ -2464,16 +2464,16 @@ body:has(.credential-management-page .sidebar.open) { overflow: hidden; }
 
 .credential-management-page :is(.school-name-title, .school strong) { max-width: 760px; color: var(--maroon); font-size: 15px; font-weight: 700; text-transform: uppercase; }
 
-.credential-management-page :is(.school-name-subtitle, .school span) { display: block; margin-top: 2px; color: #7d8190; font-size: 10px; }
+.credential-management-page :is(.school-name-subtitle, .school span) { display: block; margin-top: 2px; color: var(--ct-fg-7d8190,#7d8190); font-size: 10px; }
 
 .credential-management-page :is(.menu-button, .menu-btn) { width: 40px; height: 40px; flex: 0 0 40px; color: var(--maroon); border-radius: 10px; font-size: 14px; }
 
-.credential-management-page :is(.notification, .icon-btn) { width: 42px; height: 42px; color: #555b68; background: #fafafa; border-radius: 50%; font-size: 14px; }
+.credential-management-page :is(.notification, .icon-btn) { width: 42px; height: 42px; color: var(--ct-fg-555b68,#555b68); background: var(--ct-bg-fafafa,#fafafa); border-radius: 50%; font-size: 14px; }
 
 .credential-management-page :is(.notification, .icon-btn):hover,
-.credential-management-page :is(.notification, .icon-btn).active { color: var(--maroon); background: var(--maroon-light); border-color: #efd4d4; }
+.credential-management-page :is(.notification, .icon-btn).active { color: var(--maroon); background: var(--maroon-light); border-color: var(--ct-border-efd4d4,#efd4d4); }
 
-.credential-management-page :is(.notification-badge, .icon-btn b) { top: -4px; right: -3px; min-width: 20px; height: 20px; background: #dc3545; border-radius: 50%; font-size: 9px; }
+.credential-management-page :is(.notification-badge, .icon-btn b) { top: -4px; right: -3px; min-width: 20px; height: 20px; background: var(--ct-bg-dc3545,#dc3545); border-radius: 50%; font-size: 9px; }
 
 .credential-management-page :is(.admin-menu, .admin) {
   grid-template-columns: 43px minmax(0,1fr) auto;
@@ -2487,9 +2487,9 @@ body:has(.credential-management-page .sidebar.open) { overflow: hidden; }
 }
 
 .credential-management-page :is(.admin-menu, .admin):hover,
-.credential-management-page :is(.admin-menu, .admin).active { background: #f8f8fa; }
+.credential-management-page :is(.admin-menu, .admin).active { background: var(--ct-bg-f8f8fa,#f8f8fa); }
 
-.credential-management-page .admin-avatar { width: 43px; height: 43px; border: 1px solid var(--line); border-radius: 50%; color: var(--maroon); background: #fff; font-size: 11px; font-weight: 800; }
+.credential-management-page .admin-avatar { width: 43px; height: 43px; border: 1px solid var(--line); border-radius: 50%; color: var(--maroon); background: var(--ct-bg-ffffff,#fff); font-size: 11px; font-weight: 800; }
 
 .credential-management-page .admin-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
 
@@ -2603,17 +2603,17 @@ body:has(.credential-management-page .sidebar.open) { overflow: hidden; }
 .credential-management-page .subnav { display: none; margin: 4px 0 5px 35px; padding-left: 13px; border-left: 1px solid rgba(255,255,255,.2); list-style: none; }
 .credential-management-page .open > .subnav { display: block; }
 .credential-management-page .subnav a { display: flex; align-items: center; min-height: 38px; padding: 8px 12px; border-radius: 8px; color: rgba(255,255,255,.78); font-size: 12px; }
-.credential-management-page .subnav a:hover { color: #fff; background: rgba(255,255,255,.1); }
-.credential-management-page .subnav a[aria-current="page"] { color: #fff; background: #8d0e12; }
+.credential-management-page .subnav a:hover { color: var(--ct-fg-ffffff,#fff); background: rgba(255,255,255,.1); }
+.credential-management-page .subnav a[aria-current="page"] { color: var(--ct-fg-ffffff,#fff); background: var(--ct-bg-8d0e12,#8d0e12); }
 .credential-management-page .academic-year { display: none; }
 .credential-management-page .school { display: block; }
 .credential-management-page .school strong { display: block; }
 .credential-management-page .topbar-left { min-width: 0; }
 .credential-management-page .brand > div:not(.brand-logo):not(.seal) { min-width: 0; }
-.credential-management-page .brand > div > h2 { color: #fff; font-size: 20px; font-weight: 800; line-height: 1.1; letter-spacing: 0; }
+.credential-management-page .brand > div > h2 { color: var(--ct-fg-ffffff,#fff); font-size: 20px; font-weight: 800; line-height: 1.1; letter-spacing: 0; }
 .credential-management-page .admin > div:not(.admin-avatar) { min-width: 0; }
-.credential-management-page .admin strong { display: block; overflow: hidden; color: #353c4b; font-size: 11px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
-.credential-management-page .admin small { display: block; margin-top: 2px; color: #686d79; font-size: 9px; }
+.credential-management-page .admin strong { display: block; overflow: hidden; color: var(--ct-fg-353c4b,#353c4b); font-size: 11px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.credential-management-page .admin small { display: block; margin-top: 2px; color: var(--ct-fg-686d79,#686d79); font-size: 9px; }
 .credential-management-page .seal { object-fit: contain; }
 .credential-management-page img.school-seal { object-fit: contain; }
 @media (max-width: 1024px) {
@@ -2644,15 +2644,15 @@ body:has(.credential-management-page .sidebar.open) { overflow: hidden; }
 }
 
 .credential-management-page .actions .view { width: auto; min-width: 54px; padding: 8px 12px; }
-.credential-management-page .decision .verification-pending { background: #fff1db; color: #9a4700; border: 1px solid #e5a04a; }
+.credential-management-page .decision .verification-pending { background: var(--ct-bg-fff1db,#fff1db); color: var(--ct-fg-9a4700,#9a4700); border: 1px solid var(--ct-border-e5a04a,#e5a04a); }
 
 /* Centered request details: scoped to this panel so the portal shell stays intact. */
 .credential-management-page .drawer {
   top: 50%; left: 50%; right: auto; bottom: auto;
   width: min(860px, calc(100vw - 48px)); height: auto; max-height: calc(100dvh - 48px);
   padding: 0; display: flex; flex-direction: column; overflow: hidden;
-  border: 1px solid #eadfe1; border-radius: 22px;
-  background: #faf8f9; box-shadow: 0 28px 90px #25101c40;
+  border: 1px solid var(--ct-border-eadfe1,#eadfe1); border-radius: 22px;
+  background: var(--ct-bg-faf8f9,#faf8f9); box-shadow: 0 28px 90px #25101c40;
   transform: translate(-50%, -47%); opacity: 0; visibility: hidden; pointer-events: none;
   transition: opacity .18s ease, transform .18s ease, visibility .18s;
 }
@@ -2661,43 +2661,43 @@ body:has(.credential-management-page .sidebar.open) { overflow: hidden; }
 }
 .credential-management-page .overlay.show { background: #21142180; backdrop-filter: blur(4px); }
 .credential-management-page .drawer .drawer-head {
-  flex: 0 0 auto; padding: 25px 32px 23px; background: #fff; border-bottom: 1px solid #ece2e5;
-  border-top: 5px solid #a41020; gap: 20px;
+  flex: 0 0 auto; padding: 25px 32px 23px; background: var(--ct-bg-ffffff,#fff); border-bottom: 1px solid var(--ct-border-ece2e5,#ece2e5);
+  border-top: 5px solid var(--ct-border-a41020,#a41020); gap: 20px;
 }
-.credential-management-page .drawer .details-eyebrow { display: block; color: #a41020; font-size: 10px; font-weight: 800; letter-spacing: 1.8px; }
-.credential-management-page .drawer .drawer-head h2 { margin: 5px 0 3px; color: #401923; font-size: 25px; font-weight: 800; line-height: 1.3; }
-.credential-management-page .drawer .workflow-drawer-reference { margin: 0; color: #79707a; font-size: 12px; font-weight: 500; }
-.credential-management-page .drawer .close { flex-shrink: 0; width: 40px; height: 40px; border: 1px solid #e8dce0; background: #faf5f6; color: #8d1020; }
-.credential-management-page .drawer .close:hover { background: #f3e5e8; }
+.credential-management-page .drawer .details-eyebrow { display: block; color: var(--ct-fg-a41020,#a41020); font-size: 10px; font-weight: 800; letter-spacing: 1.8px; }
+.credential-management-page .drawer .drawer-head h2 { margin: 5px 0 3px; color: var(--ct-fg-401923,#401923); font-size: 25px; font-weight: 800; line-height: 1.3; }
+.credential-management-page .drawer .workflow-drawer-reference { margin: 0; color: var(--ct-fg-79707a,#79707a); font-size: 12px; font-weight: 500; }
+.credential-management-page .drawer .close { flex-shrink: 0; width: 40px; height: 40px; border: 1px solid var(--ct-border-e8dce0,#e8dce0); background: var(--ct-bg-faf5f6,#faf5f6); color: var(--ct-fg-8d1020,#8d1020); }
+.credential-management-page .drawer .close:hover { background: var(--ct-bg-f3e5e8,#f3e5e8); }
 .credential-management-page .drawer .request-details-body { overflow-y: auto; overscroll-behavior: contain; min-height: 0; padding: 26px 32px 30px; scrollbar-gutter: stable; }
-.credential-management-page .drawer .request-profile { padding: 18px 20px; margin: 0 0 22px; gap: 15px; background: #f3e8eb; border: 1px solid #e9d5db; border-radius: 14px; }
-.credential-management-page .drawer .request-profile .avatar { flex-shrink: 0; width: 48px; height: 48px; background: #9d1425; color: #fff; border-radius: 14px; font-weight: 800; display: grid; place-items: center; }
-.credential-management-page .drawer .request-profile h3 { font-size: 17px; line-height: 1.5; font-weight: 750; color: #401923; margin: 0; }
-.credential-management-page .drawer .request-profile p { margin: 4px 0 0; font-size: 12px; color: #74606a; }
-.credential-management-page .drawer .request-workflow-details { padding: 0; border: 0; margin: 0; font-size: 14px; line-height: 1.7; color: #344054; }
-.credential-management-page .drawer .request-workflow-details > section { margin: 0 0 18px; padding: 20px 22px; border: 1px solid #e8e1e5; border-radius: 14px; background: #fff; }
-.credential-management-page .drawer .request-workflow-details h3 { color: #491d29; font-size: 15px; line-height: 1.5; font-weight: 800; margin: 0 0 16px; }
-.credential-management-page .drawer .request-workflow-details > section > h3 { border-bottom: 1px solid #f0e8eb; padding-bottom: 12px; }
+.credential-management-page .drawer .request-profile { padding: 18px 20px; margin: 0 0 22px; gap: 15px; background: var(--ct-bg-f3e8eb,#f3e8eb); border: 1px solid var(--ct-border-e9d5db,#e9d5db); border-radius: 14px; }
+.credential-management-page .drawer .request-profile .avatar { flex-shrink: 0; width: 48px; height: 48px; background: var(--ct-bg-9d1425,#9d1425); color: var(--ct-fg-ffffff,#fff); border-radius: 14px; font-weight: 800; display: grid; place-items: center; }
+.credential-management-page .drawer .request-profile h3 { font-size: 17px; line-height: 1.5; font-weight: 750; color: var(--ct-fg-401923,#401923); margin: 0; }
+.credential-management-page .drawer .request-profile p { margin: 4px 0 0; font-size: 12px; color: var(--ct-fg-74606a,#74606a); }
+.credential-management-page .drawer .request-workflow-details { padding: 0; border: 0; margin: 0; font-size: 14px; line-height: 1.7; color: var(--ct-fg-344054,#344054); }
+.credential-management-page .drawer .request-workflow-details > section { margin: 0 0 18px; padding: 20px 22px; border: 1px solid var(--ct-border-e8e1e5,#e8e1e5); border-radius: 14px; background: var(--ct-bg-ffffff,#fff); }
+.credential-management-page .drawer .request-workflow-details h3 { color: var(--ct-fg-491d29,#491d29); font-size: 15px; line-height: 1.5; font-weight: 800; margin: 0 0 16px; }
+.credential-management-page .drawer .request-workflow-details > section > h3 { border-bottom: 1px solid var(--ct-border-f0e8eb,#f0e8eb); padding-bottom: 12px; }
 .credential-management-page .drawer .request-workflow-details dl { gap: 20px 32px; margin: 0; }
 .credential-management-page .drawer .request-workflow-details dl > div { min-width: 0; }
-.credential-management-page .drawer .request-workflow-details dt { font-size: 11px; font-weight: 650; color: #82727c; letter-spacing: .3px; }
-.credential-management-page .drawer .request-workflow-details dd { margin: 5px 0 0; font-size: 13px; color: #283343; font-weight: 550; line-height: 1.65; overflow-wrap: anywhere; }
+.credential-management-page .drawer .request-workflow-details dt { font-size: 11px; font-weight: 650; color: var(--ct-fg-82727c,#82727c); letter-spacing: .3px; }
+.credential-management-page .drawer .request-workflow-details dd { margin: 5px 0 0; font-size: 13px; color: var(--ct-fg-283343,#283343); font-weight: 550; line-height: 1.65; overflow-wrap: anywhere; }
 .credential-management-page .drawer .request-workflow-details p { margin: 10px 0; font-size: 13px; line-height: 1.75; }
-.credential-management-page .drawer .request-workflow-details a { color: #9b1426; font-weight: 650; text-underline-offset: 3px; }
+.credential-management-page .drawer .request-workflow-details a { color: var(--ct-fg-9b1426,#9b1426); font-weight: 650; text-underline-offset: 3px; }
 .credential-management-page .drawer .request-workflow-details :is(.verification-confirmed,.verification-pending) { padding: 10px 14px; border-radius: 8px; font-size: 11px; font-weight: 750; line-height: 1.6; }
-.credential-management-page .drawer .request-workflow-details ol { list-style: none; margin: 0 0 20px 6px; padding: 0 0 0 22px; border-left: 2px solid #e6d7dd; }
+.credential-management-page .drawer .request-workflow-details ol { list-style: none; margin: 0 0 20px 6px; padding: 0 0 0 22px; border-left: 2px solid var(--ct-border-e6d7dd,#e6d7dd); }
 .credential-management-page .drawer .request-workflow-details li { position: relative; padding: 0 0 22px 0; }
-.credential-management-page .drawer .request-workflow-details li::before { content: ''; position: absolute; left: -28px; top: 6px; width: 10px; height: 10px; background: #a41020; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 0 2px #eadce2; }
+.credential-management-page .drawer .request-workflow-details li::before { content: ''; position: absolute; left: -28px; top: 6px; width: 10px; height: 10px; background: var(--ct-bg-a41020,#a41020); border: 2px solid var(--ct-border-ffffff,#fff); border-radius: 50%; box-shadow: 0 0 0 2px #eadce2; }
 .credential-management-page .drawer .request-workflow-details li strong { font-size: 12px; font-weight: 700; }
-.credential-management-page .drawer .request-workflow-details li small { margin-top: 4px; color: #8b7e88; font-size: 11px; }
-.credential-management-page .drawer .workflow-note { margin: 20px 0 12px; font-size: 13px; font-weight: 750; color: #491d29; }
-.credential-management-page .drawer .workflow-note textarea { background: #fff; font-weight: 400; line-height: 1.6; padding: 14px; border-color: #ded2d8; }
-.credential-management-page .drawer .decision.workflow-actions { position: static; margin: 20px 0 0; padding: 18px 0 0; background: transparent; border-color: #e7dbe0; gap: 10px; }
+.credential-management-page .drawer .request-workflow-details li small { margin-top: 4px; color: var(--ct-fg-8b7e88,#8b7e88); font-size: 11px; }
+.credential-management-page .drawer .workflow-note { margin: 20px 0 12px; font-size: 13px; font-weight: 750; color: var(--ct-fg-491d29,#491d29); }
+.credential-management-page .drawer .workflow-note textarea { background: var(--ct-bg-ffffff,#fff); font-weight: 400; line-height: 1.6; padding: 14px; border-color: var(--ct-border-ded2d8,#ded2d8); }
+.credential-management-page .drawer .decision.workflow-actions { position: static; margin: 20px 0 0; padding: 18px 0 0; background: transparent; border-color: var(--ct-border-e7dbe0,#e7dbe0); gap: 10px; }
 .credential-management-page .drawer .decision button { padding: 13px 18px; display: inline-flex; align-items: center; justify-content: center; gap: 9px; font-size: 13px; min-height: 46px; }
-.credential-management-page .drawer .request-details-body > section:not(.request-workflow-details) { margin: 18px 0; padding: 18px; border: 1px dashed #d8c2ca; border-radius: 12px; background: #fff; font-size: 12px; }
+.credential-management-page .drawer .request-details-body > section:not(.request-workflow-details) { margin: 18px 0; padding: 18px; border: 1px dashed var(--ct-border-d8c2ca,#d8c2ca); border-radius: 12px; background: var(--ct-bg-ffffff,#fff); font-size: 12px; }
 .credential-management-page .drawer .request-details-body > section:not(.request-workflow-details) label { display: block; font-weight: 650; }
 .credential-management-page .drawer input[type=file] { display: block; width: 100%; margin: 12px 0; font-size: 12px; }
-.credential-management-page .drawer .request-details-body > section:not(.request-workflow-details) button { padding: 10px 15px; border-radius: 8px; background: #941427; color: #fff; font-weight: 650; }
+.credential-management-page .drawer .request-details-body > section:not(.request-workflow-details) button { padding: 10px 15px; border-radius: 8px; background: var(--ct-bg-941427,#941427); color: var(--ct-fg-ffffff,#fff); font-weight: 650; }
 @media(max-width:600px) {
   .credential-management-page .drawer { width: calc(100vw - 24px); max-height: calc(100dvh - 24px); border-radius: 16px; }
   .credential-management-page .drawer .drawer-head { padding: 19px 20px; }
@@ -2713,9 +2713,9 @@ body:has(.credential-management-page .sidebar.open) { overflow: hidden; }
   transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 .credential-management-page .drawer .decision.workflow-actions button:not(:disabled):hover {
-  background: #ffe2ae;
-  color: #783900;
-  border-color: #d58b25;
+  background: var(--ct-bg-ffe2ae,#ffe2ae);
+  color: var(--ct-fg-783900,#783900);
+  border-color: var(--ct-border-d58b25,#d58b25);
   box-shadow: 0 5px 14px rgba(154, 71, 0, 0.16);
   transform: translateY(-2px);
   cursor: pointer;

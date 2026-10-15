@@ -108,13 +108,14 @@ class GradingTerm(models.Model):
 
 class TeacherAssignment(models.Model):
     is_adviser = models.BooleanField(default=False)
-    teacher = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='teaching_assignment')
+    teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='teaching_assignments')
+    school_year = models.ForeignKey(SchoolYear, null=True, blank=True, on_delete=models.PROTECT)
     grade_level = models.ForeignKey(GradeLevel, on_delete=models.PROTECT)
     section = models.ForeignKey(ClassSection, null=True, blank=True, on_delete=models.PROTECT)
     subject = models.ForeignKey(Subject, on_delete=models.PROTECT)
     updated_at = models.DateTimeField(auto_now=True)
     class Meta:
-        constraints = [models.UniqueConstraint(fields=['section'], condition=models.Q(is_adviser=True), name='one_adviser_per_section'), models.CheckConstraint(condition=models.Q(is_adviser=False) | models.Q(section__isnull=False), name='adviser_requires_section')]
+        constraints = [models.UniqueConstraint(fields=['teacher','grade_level','section','subject','school_year'], name='unique_teacher_class_subject_year'), models.UniqueConstraint(fields=['section','school_year'], condition=models.Q(is_adviser=True), name='one_adviser_per_section_year'), models.CheckConstraint(condition=models.Q(is_adviser=False) | models.Q(section__isnull=False), name='adviser_requires_section')]
 
 
 class Sf9Record(models.Model):
@@ -163,7 +164,52 @@ class TeacherComment(models.Model):
 
 
 class Sf9ReportCard(models.Model):
+    issued_on = models.DateField(null=True, blank=True)
     record = models.OneToOneField(Sf9Record,on_delete=models.CASCADE,related_name='report_card')
     data = models.JSONField(default=dict)
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL,null=True,on_delete=models.SET_NULL)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+class AttendanceEntry(models.Model):
+    class Status(models.TextChoices):
+        PRESENT = 'PRESENT', 'Present'
+        ABSENT = 'ABSENT', 'Absent'
+        LATE = 'LATE', 'Late (counted present)'
+        EXCUSED = 'EXCUSED', 'Excused absence'
+
+    record = models.ForeignKey(Sf9Record, on_delete=models.PROTECT, related_name='attendance_entries')
+    date = models.DateField()
+    status = models.CharField(max_length=12, choices=Status.choices)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['record', 'date'], name='unique_student_attendance_date')]
+
+
+class AttendanceMonth(models.Model):
+    section = models.ForeignKey(ClassSection, on_delete=models.PROTECT)
+    school_year = models.ForeignKey(SchoolYear, on_delete=models.PROTECT)
+    month = models.PositiveSmallIntegerField()
+    school_days = models.PositiveSmallIntegerField()
+    version = models.PositiveIntegerField(default=0)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['section','school_year','month'],name='unique_class_attendance_month'),
+            models.CheckConstraint(condition=models.Q(month__in=[6,7,8,9,10,11,12,1,2,3,4]),name='attendance_summary_month'),
+            models.CheckConstraint(condition=models.Q(school_days__lte=31),name='attendance_school_days_range')]
+
+
+class MonthlyAttendance(models.Model):
+    record = models.ForeignKey(Sf9Record, on_delete=models.PROTECT, related_name='monthly_attendance')
+    reporting_month = models.ForeignKey(AttendanceMonth, on_delete=models.PROTECT, related_name='learner_entries')
+    present = models.PositiveSmallIntegerField()
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['record','reporting_month'],name='unique_learner_attendance_month'),
+            models.CheckConstraint(condition=models.Q(present__lte=31),name='monthly_attendance_present_range')]

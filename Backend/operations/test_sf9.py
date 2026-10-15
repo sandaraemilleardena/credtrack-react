@@ -102,11 +102,12 @@ class Sf9PermissionTests(TestCase):
         self.assertEqual(self.save(subject=self.math,record=self.records[2]).status_code,403)
     def test_unauthorized_users_cannot_read_or_write(self):
         self.assertEqual(self.client.get(self.detail()).status_code,403)
-        for role in ['PRINCIPAL','STUDENTS']:
-            self.as_role(role);self.assertEqual(self.client.get(self.detail()).status_code,403);self.assertEqual(self.save().status_code,403)
+        self.as_role('STUDENTS');self.assertEqual(self.client.get(self.detail()).status_code,403);self.assertEqual(self.save().status_code,403)
+        self.as_role('PRINCIPAL');self.assertEqual(self.client.get(self.detail()).status_code,200);self.assertEqual(self.save().status_code,403)
+
     def test_teacher_cannot_modify_student_or_accounts(self):
         self.as_role('TEACHER')
-        self.assertEqual(self.client.post('/api/operations/students/',{'action':'save','student':{}},format='json').status_code,403)
+        self.assertEqual(self.client.post('/api/operations/students/',{'action':'save','student':{}},format='json').status_code,400)
         self.assertEqual(self.client.post('/api/operations/accounts/',{'action':'edit','values':{'id':self.users['TEACHER'].pk,'role':'Teacher'}},format='json').status_code,403)
         self.assertEqual(self.client.post('/api/operations/sf9/catalog/',{'kind':'subject','name':'Unauthorized'},format='json').status_code,403)
     def test_validation_and_atomic_batch(self):
@@ -128,7 +129,7 @@ class Sf9PermissionTests(TestCase):
         result=self.client.post(self.detail(),{'version':0,'grades':[{'subject':self.math.pk,'term':1,'value':40}]},format='json')
         self.assertEqual(result.status_code,409);self.assertEqual(Sf9Grade.objects.get().value,85)
     def test_blank_lrns_are_independent_and_later_editable(self):
-        self.as_role('ADMIN');ids=[]
+        self.as_role('TEACHER');ids=[]
         for name in ['First','Second']:
             result=self.client.post('/api/operations/students/',{'action':'save','student':{'lrn':'','firstName':name,'lastName':'Learner','grade':'Grade 6','section':'SPJ','schoolYear':'2026-2027'}},format='json')
             self.assertEqual(result.status_code,200,result.data);ids.append(StudentRecord.objects.get(data__firstName=name).pk)
@@ -137,9 +138,9 @@ class Sf9PermissionTests(TestCase):
         self.as_role('ADMIN')
         values={'username':'teacher-new','name':'New Teacher','email':'new@example.test','password':'Random!Grade-92-test','role':'Teacher','assignment':{'grade_level':self.g6.pk,'section':self.c.pk,'subject':self.math.pk}}
         r=self.client.post('/api/operations/accounts/',{'action':'create','values':values},format='json');self.assertEqual(r.status_code,400);self.assertFalse(User.objects.filter(username='teacher-new').exists())
-        values['assignment']['section']=self.a.pk
+        values['assignment']['section']=self.b.pk
         r=self.client.post('/api/operations/accounts/',{'action':'create','values':values},format='json');self.assertEqual(r.status_code,200,r.data)
-        u=User.objects.get(username='teacher-new');self.assertTrue(u.check_password(values['password']));self.assertEqual(u.teaching_assignment.subject,self.math)
+        u=User.objects.get(username='teacher-new');self.assertTrue(u.check_password(values['password']));self.assertEqual(u.teaching_assignments.get().subject,self.math)
         values.update(username='bad-admin',role='Principal');self.assertEqual(self.client.post('/api/operations/accounts/',{'action':'create','values':values},format='json').status_code,403)
     def test_teacher_snapshot_does_not_expose_school_requests_or_accounts(self):
         self.as_role('TEACHER');r=self.client.get('/api/operations/snapshot/');self.assertEqual(r.status_code,200,r.data);self.assertNotIn('accounts',r.data);self.assertEqual(r.data['requests'],[])
@@ -156,8 +157,12 @@ class Sf9PermissionTests(TestCase):
         file=SimpleUploadedFile('roster.csv',b'LRN,First Name,Last Name,Grade,Section,School Year\n,Alpha,Learner,Grade 6,SPJ,2026-2027\n,Beta,Learner,Grade 6,SPJ,2026-2027\n',content_type='text/csv')
         r=self.client.post('/api/operations/students/preview/',{'file':file},format='multipart')
         self.assertEqual(r.status_code,200,r.data)
-        r=self.client.post('/api/operations/students/',{'action':'import','rows':r.data['rows']},format='json');self.assertEqual(r.status_code,200,r.data)
+        rows=r.data['rows']
+        self.assertEqual(self.client.post('/api/operations/students/',{'action':'import','rows':rows},format='json').status_code,403)
+        self.as_role('TEACHER')
+        for row in rows:self.assertEqual(self.client.post('/api/operations/students/',{'action':'save','student':row},format='json').status_code,200)
         self.assertEqual(StudentRecord.objects.filter(lrn__isnull=True).count(),2)
+
     def test_deactivation_revokes_teacher_access(self):
         self.as_role('ADMIN');r=self.client.post('/api/operations/accounts/',{'action':'deactivate','values':{'id':self.users['TEACHER'].pk}},format='json');self.assertEqual(r.status_code,200,r.data)
         self.as_role('TEACHER');self.assertEqual(self.save().status_code,404)
@@ -242,17 +247,13 @@ class Sf9PermissionTests(TestCase):
 
     def test_card_writer_cannot_bypass_term_gate_and_inc_resolution(self):
         self.as_role('TEACHER')
-        def post(term,value):
-            self.rec.refresh_from_db()
-            return self.client.post(self.detail()+'card/',{'version':self.rec.version,'grades':[{'subject':self.math.pk,'term':term,'value':value}]},format='json')
-        self.assertEqual(post(2,80).status_code,400)
-        self.assertEqual(post(1,'INC').status_code,200)
+        self.assertEqual(self.client.post(self.detail()+'card/',{'version':0,'grades':[{'subject':self.math.pk,'term':1,'value':80}]},format='json').status_code,403)
+        self.assertEqual(self.save(term=2,value=80).status_code,400)
+        self.assertEqual(self.save(term=1,value='INC').status_code,200)
         self.complete_term(1)
-        self.assertEqual(post(2,80).status_code,200)
-        self.assertEqual(post(1,'').status_code,403)
-        self.assertEqual(post(1,90).status_code,200)
-        self.assertEqual(post(1,91).status_code,403)
-        self.assertEqual(post(2,85.5).status_code,400)
+        self.assertEqual(self.save(term=2,value=80).status_code,200)
+        self.assertEqual(self.save(term=1,value=90).status_code,200)
+        self.assertEqual(self.save(term=1,value=91).status_code,403)
 
     def test_legacy_decimal_is_preserved_and_unchanged_submission_allowed(self):
         self.as_role('TEACHER')

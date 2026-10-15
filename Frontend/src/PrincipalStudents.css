@@ -12,12 +12,12 @@
   --ps-maroon: #8d0e12;
   --ps-maroon-dark: #710b0e;
   --ps-maroon-deep: #5e0b0f;
-  --ps-maroon-light: #fff0f0;
+  --ps-maroon-light:var(--ct-bg-fff0f0,#fff0f0);
 
-  --ps-ink: #263047;
-  --ps-muted: #7d8190;
-  --ps-line: #e8e9ee;
-  --ps-bg: #f5f6fa;
+  --ps-ink:var(--ct-fg-263047,#263047);
+  --ps-muted:var(--ct-fg-7d8190,#7d8190);
+  --ps-line:var(--ct-border-e8e9ee,#e8e9ee);
+  --ps-bg:var(--ct-bg-f5f6fa,#f5f6fa);
   --ps-white: #ffffff;
 
   --ps-green: #29a94d;
@@ -84,7 +84,7 @@
   overflow-y: auto;
 
   background: var(--ps-maroon-dark);
-  color: #ffffff;
+  color: var(--ct-fg-ffffff,#ffffff);
 
   box-shadow: 10px 0 30px rgba(33, 11, 13, 0.12);
 
@@ -98,7 +98,7 @@
 }
 
 .principal-students-sidebar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.18);
+  background: var(--ct-alpha-rgba255255255018,rgba(255, 255, 255, 0.18));
   border-radius: 10px;
 }
 
@@ -126,7 +126,7 @@
   border-radius: 50%;
   object-fit: contain;
 
-  background: #ffffff;
+  background: var(--ct-bg-ffffff,#ffffff);
   padding: 3px;
 }
 
@@ -137,7 +137,7 @@
 .principal-students-brand-text h2 {
   margin: 0;
 
-  color: #ffffff;
+  color: var(--ct-fg-ffffff,#ffffff);
 
   font-size: 21px;
   line-height: 1.1;
@@ -167,7 +167,7 @@
   border-radius: 9px;
 
   background: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
+  color: var(--ct-fg-ffffff,#ffffff);
 
   place-items: center;
 }
@@ -190,7 +190,7 @@
 
   background: rgba(255, 255, 255, 0.08);
 
-  color: #ffdca0;
+  color: var(--ct-fg-ffdca0,#ffdca0);
 
   font-size: 10px;
   font-weight: 700;
@@ -236,17 +236,17 @@
 
 .principal-students-nav button:hover {
   background: rgba(255, 255, 255, 0.09);
-  color: #ffffff;
+  color: var(--ct-fg-ffffff,#ffffff);
 }
 
 .principal-students-nav li.active button {
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.17),
+    var(--ct-alpha-rgba255255255017,rgba(255, 255, 255, 0.17)),
     rgba(255, 255, 255, 0.09)
   );
 
-  color: #ffffff;
+  color: var(--ct-fg-ffffff,#ffffff);
 
   box-shadow:
     inset 3px 0 0 #ffffff,
@@ -264,7 +264,7 @@
 
   border-radius: 50%;
 
-  background: #ffffff;
+  background: var(--ct-bg-ffffff,#ffffff);
 }
 
 .principal-students-nav i {
@@ -293,8 +293,8 @@
 
   border-radius: 50%;
 
-  background: #ffca62;
-  color: #633f00;
+  background: var(--ct-bg-ffca62,#ffca62);
+  color: var(--ct-fg-633f00,#633f00);
 
   font-size: 10px;
   font-weight: 700;
@@ -309,7 +309,7 @@
 
 .principal-students-nav .logout-item button:hover {
   background: rgba(220, 53, 69, 0.16);
-  color: #ffb7bd;
+  color: var(--ct-fg-ffb7bd,#ffb7bd);
 }
 
 /* =========================================================
@@ -354,7 +354,7 @@
 
   border-bottom: 1px solid var(--ps-line);
 
-  background: rgba(255, 255, 255, 0.98);
+  background: var(--ct-alpha-rgba255255255098,rgba(255, 255, 255, 0.98));
 
   box-shadow: 0 5px 20px rgba(36, 42, 57, 0.04);
 }
@@ -389,7 +389,7 @@
   border: 1px solid var(--ps-line);
   border-radius: 10px;
 
-  background: #ffffff;
+  background: var(--ct-bg-ffffff,#ffffff);
   color: var(--ps-maroon);
 }
 
@@ -461,9 +461,9 @@
   border: 1px solid var(--ps-line);
   border-radius: 50%;
 
-  background: #fafafa;
+  background: var(--ct-bg-fafafa,#fafafa);
 
-  color: #555c6b;
+  color: var(--ct-fg-555c6b,#555c6b);
 
   transition: 0.2s ease;
 }
@@ -486,11 +486,11 @@
 
   place-items: center;
 
-  border: 2px solid #ffffff;
+  border: 2px solid var(--ct-border-ffffff,#ffffff);
   border-radius: 50%;
 
   background: var(--ps-red);
-  color: #ffffff;
+  color: var(--ct-fg-ffffff,#ffffff);
 
   font-size: 9px;
 }
@@ -512,7 +512,7 @@
   border: 1px solid var(--ps-line);
   border-radius: 15px;
 
-  background: #ffffff;
+  background: var(--ct-bg-ffffff,#ffffff);
 
   box-shadow: 0 18px 45px rgba(31, 38, 57, 0.14);
 
@@ -582,7 +582,7 @@
 
   padding: 13px 16px;
 
-  border-bottom: 1px solid #f0f1f4;
+  border-bottom: 1px solid var(--ct-border-f0f1f4,#f0f1f4);
 }
 
 .notification-item:last-child {
@@ -605,17 +605,17 @@
 }
 
 .notification-icon.approval {
-  background: #fff0f0;
+  background: var(--ct-bg-fff0f0,#fff0f0);
   color: var(--ps-maroon);
 }
 
 .notification-icon.info {
-  background: #eef4ff;
+  background: var(--ct-bg-eef4ff,#eef4ff);
   color: var(--ps-blue);
 }
 
 .notification-icon.security {
-  background: #e9f8ee;
+  background: var(--ct-bg-e9f8ee,#e9f8ee);
   color: var(--ps-green);
 }
 
@@ -642,7 +642,7 @@
 .notification-item small {
   margin-top: 4px;
 
-  color: #a0a3ad;
+  color: var(--ct-fg-a0a3ad,#a0a3ad);
 
   font-size: 9px;
 }
@@ -727,7 +727,7 @@
   border: 1px solid var(--ps-line);
   border-radius: 14px;
 
-  background: #ffffff;
+  background: var(--ct-bg-ffffff,#ffffff);
 
   box-shadow: 0 18px 45px rgba(31, 38, 57, 0.14);
 
@@ -783,9 +783,9 @@
 
   padding: 12px 15px;
 
-  background: #ffffff;
+  background: var(--ct-bg-ffffff,#ffffff);
 
-  color: #4c5361;
+  color: var(--ct-fg-4c5361,#4c5361);
 
   font-size: 11px;
 
@@ -793,12 +793,12 @@
 }
 
 .principal-students-profile-dropdown > button:hover {
-  background: #faf4f4;
+  background: var(--ct-bg-faf4f4,#faf4f4);
   color: var(--ps-maroon);
 }
 
 .principal-students-profile-dropdown .profile-logout:hover {
-  background: #fff0f0;
+  background: var(--ct-bg-fff0f0,#fff0f0);
   color: var(--ps-red);
 }
 
@@ -832,8 +832,8 @@
   background:
     linear-gradient(
       135deg,
-      #ffffff 0%,
-      #fffafb 100%
+      var(--ct-bg-ffffff,#ffffff) 0%,
+      var(--ct-bg-fffafb,#fffafb) 100%
     );
 
   box-shadow: var(--ps-shadow);
@@ -882,12 +882,12 @@
 
   padding: 11px 14px;
 
-  border: 1px solid #f0dcae;
+  border: 1px solid var(--ct-border-f0dcae,#f0dcae);
   border-radius: 11px;
 
-  background: #fff7e7;
+  background: var(--ct-bg-fff7e7,#fff7e7);
 
-  color: #805b0a;
+  color: var(--ct-fg-805b0a,#805b0a);
 }
 
 .principal-students-access-note > i {
@@ -906,7 +906,7 @@
 .principal-students-access-note span {
   margin-top: 2px;
 
-  color: #9b7a36;
+  color: var(--ct-fg-9b7a36,#9b7a36);
 
   font-size: 9px;
 }
@@ -940,10 +940,10 @@
 
   overflow: hidden;
 
-  border: 1px solid #f0f0f3;
+  border: 1px solid var(--ct-border-f0f0f3,#f0f0f3);
   border-radius: 16px;
 
-  background: #ffffff;
+  background: var(--ct-bg-ffffff,#ffffff);
 
   box-shadow: var(--ps-shadow);
 
@@ -1009,7 +1009,7 @@
   border-radius: 13px;
 
   background: var(--summary-color);
-  color: #ffffff;
+  color: var(--ct-fg-ffffff,#ffffff);
 
   font-size: 17px;
 }
@@ -1043,7 +1043,7 @@
 
   margin-top: 2px;
 
-  color: #a0a3ad;
+  color: var(--ct-fg-a0a3ad,#a0a3ad);
 
   font-size: 8px;
 }
@@ -1066,10 +1066,10 @@
 
   padding: 15px;
 
-  border: 1px solid #eeeeF2;
+  border: 1px solid var(--ct-border-eeeef2,#eeeeF2);
   border-radius: 16px;
 
-  background: #ffffff;
+  background: var(--ct-bg-ffffff,#ffffff);
 
   box-shadow: var(--ps-shadow);
 }
@@ -1085,10 +1085,10 @@
 
   outline: none;
 
-  border: 1px solid #dedfe4;
+  border: 1px solid var(--ct-border-dedfe4,#dedfe4);
   border-radius: 10px;
 
-  background: #ffffff;
+  background: var(--ct-bg-ffffff,#ffffff);
 
   color: var(--ps-ink);
 
@@ -1108,12 +1108,12 @@
 }
 
 .principal-students-control input::placeholder {
-  color: #a0a3ad;
+  color: var(--ct-fg-a0a3ad,#a0a3ad);
 }
 
 .principal-students-control input:focus,
 .principal-students-control select:focus {
-  border-color: #be7275;
+  border-color: var(--ct-border-be7275,#be7275);
 
   box-shadow:
     0 0 0 3px rgba(141, 14, 18, 0.07);
@@ -1127,7 +1127,7 @@
 
   z-index: 2;
 
-  color: #969aa5;
+  color: var(--ct-fg-969aa5,#969aa5);
 
   transform: translateY(-50%);
 
@@ -1142,9 +1142,9 @@
   border: 1px solid var(--ps-line);
   border-radius: 10px;
 
-  background: #ffffff;
+  background: var(--ct-bg-ffffff,#ffffff);
 
-  color: #555b68;
+  color: var(--ct-fg-555b68,#555b68);
 
   font-size: 10px;
   font-weight: 600;
@@ -1153,9 +1153,9 @@
 }
 
 .principal-students-reset-button:hover {
-  border-color: #cfcfd5;
+  border-color: var(--ct-border-cfcfd5,#cfcfd5);
 
-  background: #fafafa;
+  background: var(--ct-bg-fafafa,#fafafa);
 
   color: var(--ps-maroon);
 }
@@ -1167,10 +1167,10 @@
 .principal-students-records-panel {
   overflow: hidden;
 
-  border: 1px solid #eeeeF2;
+  border: 1px solid var(--ct-border-eeeef2,#eeeeF2);
   border-radius: 17px;
 
-  background: #ffffff;
+  background: var(--ct-bg-ffffff,#ffffff);
 
   box-shadow: var(--ps-shadow);
 }
@@ -1223,7 +1223,7 @@
   border: 1px solid var(--ps-maroon);
   border-radius: 9px;
 
-  background: #ffffff;
+  background: var(--ct-bg-ffffff,#ffffff);
 
   color: var(--ps-maroon);
 
@@ -1236,7 +1236,7 @@
 .principal-students-export-button:hover {
   background: var(--ps-maroon);
 
-  color: #ffffff;
+  color: var(--ct-fg-ffffff,#ffffff);
 }
 
 /* =========================================================
@@ -1259,7 +1259,7 @@
 }
 
 .principal-students-table thead {
-  background: #f6f6f8;
+  background: var(--ct-bg-f6f6f8,#f6f6f8);
 }
 
 .principal-students-table th,
@@ -1272,7 +1272,7 @@
 }
 
 .principal-students-table th {
-  color: #555b68;
+  color: var(--ct-fg-555b68,#555b68);
 
   font-size: 9px;
   font-weight: 700;
@@ -1281,9 +1281,9 @@
 }
 
 .principal-students-table td {
-  border-top: 1px solid #eeeef2;
+  border-top: 1px solid var(--ct-border-eeeef2,#eeeef2);
 
-  color: #4f5664;
+  color: var(--ct-fg-4f5664,#4f5664);
 
   font-size: 10px;
 }
@@ -1293,7 +1293,7 @@
 }
 
 .principal-students-table tbody tr:hover {
-  background: #fffafa;
+  background: var(--ct-bg-fffafa,#fffafa);
 }
 
 .student-lrn {
@@ -1374,18 +1374,18 @@
 }
 
 .status-active {
-  background: #e3f6e9;
-  color: #218844;
+  background: var(--ct-bg-e3f6e9,#e3f6e9);
+  color: var(--ct-fg-218844,#218844);
 }
 
 .status-graduate {
-  background: #fff1d3;
-  color: #986400;
+  background: var(--ct-bg-fff1d3,#fff1d3);
+  color: var(--ct-fg-986400,#986400);
 }
 
 .status-archived {
-  background: #eceef2;
-  color: #646b78;
+  background: var(--ct-bg-eceef2,#eceef2);
+  color: var(--ct-fg-646b78,#646b78);
 }
 
 .credential-count {
@@ -1395,7 +1395,7 @@
 
   gap: 5px;
 
-  color: #606776;
+  color: var(--ct-fg-606776,#606776);
 
   font-size: 9px;
 }
@@ -1424,7 +1424,7 @@
 
   background: var(--ps-maroon);
 
-  color: #ffffff;
+  color: var(--ct-fg-ffffff,#ffffff);
 
   font-size: 9px;
   font-weight: 600;
@@ -1505,7 +1505,7 @@
 
   background: var(--ps-maroon);
 
-  color: #ffffff;
+  color: var(--ct-fg-ffffff,#ffffff);
 
   font-size: 10px;
 }
@@ -1554,7 +1554,7 @@
 
   overflow-y: auto;
 
-  background: #ffffff;
+  background: var(--ct-bg-ffffff,#ffffff);
 
   box-shadow:
     -18px 0 45px rgba(16, 18, 28, 0.16);
@@ -1577,7 +1577,7 @@
 }
 
 .principal-students-drawer::-webkit-scrollbar-thumb {
-  background: #d9dade;
+  background: var(--ct-bg-d9dade,#d9dade);
 
   border-radius: 10px;
 }
@@ -1624,9 +1624,9 @@
 
   border-radius: 50%;
 
-  background: #f4f4f6;
+  background: var(--ct-bg-f4f4f6,#f4f4f6);
 
-  color: #444b59;
+  color: var(--ct-fg-444b59,#444b59);
 
   transition: 0.2s ease;
 }
@@ -1666,8 +1666,8 @@
   background:
     linear-gradient(
       135deg,
-      #f8dddd,
-      #fff0f0
+      var(--ct-bg-f8dddd,#f8dddd),
+      var(--ct-bg-fff0f0,#fff0f0)
     );
 
   color: var(--ps-maroon);
@@ -1709,7 +1709,7 @@
 
   border-radius: 10px;
 
-  background: #f7f7f9;
+  background: var(--ct-bg-f7f7f9,#f7f7f9);
 }
 
 .principal-students-detail span {
@@ -1878,12 +1878,12 @@
 
   padding: 13px;
 
-  border: 1px solid #dce8fb;
+  border: 1px solid var(--ct-border-dce8fb,#dce8fb);
   border-radius: 10px;
 
-  background: #eef4ff;
+  background: var(--ct-bg-eef4ff,#eef4ff);
 
-  color: #42628d;
+  color: var(--ct-fg-42628d,#42628d);
 }
 
 .read-only-icon {
@@ -1898,7 +1898,7 @@
 
   border-radius: 8px;
 
-  background: #dfeaff;
+  background: var(--ct-bg-dfeaff,#dfeaff);
 
   color: var(--ps-blue);
 
@@ -1908,7 +1908,7 @@
 .principal-students-read-only-note strong {
   display: block;
 
-  color: #385a86;
+  color: var(--ct-fg-385a86,#385a86);
 
   font-size: 10px;
 }
@@ -1916,7 +1916,7 @@
 .principal-students-read-only-note p {
   margin-top: 3px;
 
-  color: #607b9e;
+  color: var(--ct-fg-607b9e,#607b9e);
 
   font-size: 9px;
 
@@ -1945,9 +1945,9 @@
 
   border-radius: 10px;
 
-  background: #242a38;
+  background: var(--ct-bg-242a38,#242a38);
 
-  color: #ffffff;
+  color: var(--ct-fg-ffffff,#ffffff);
 
   font-size: 10px;
 
@@ -1970,7 +1970,7 @@
 }
 
 .principal-students-toast i {
-  color: #65d883;
+  color: var(--ct-fg-65d883,#65d883);
 }
 
 /* =========================================================

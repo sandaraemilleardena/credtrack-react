@@ -9,7 +9,7 @@ test('idle deadline, activity renewal, and cross-tab input', () => {
   time=IDLE_TIMEOUT_MS-1; session.check(); assert.equal(expired,0);
   time=IDLE_TIMEOUT_MS; session.check(); assert.equal(expired,1);
   session.check(); assert.equal(expired,1);
-  session.start(); time+=600000; session.activity(); time+=1000; session.check(); assert.equal(kept,1);
+  session.start(); time+=300000; session.activity(); time+=1000; session.check(); assert.equal(kept,1);
   time+=IDLE_TIMEOUT_MS-1001; session.check(); assert.equal(expired,1);
   time+=1; session.check(); assert.equal(expired,2);
   session.start(); time+=500000; session.activity(time,true); time+=1000; session.check(); assert.equal(kept,2);
@@ -23,17 +23,17 @@ test('late input and polling cannot revive expired sessions', () => {
 });
 
 test('refresh resumes the remaining idle time without broadcasting fake activity', () => {
- let time=800000,expired=0,broadcasts=0;
+ let time=500000,expired=0,broadcasts=0;
  const session=createIdleSession({now:()=>time,keepAlive:()=>{},expire:()=>expired++,broadcast:()=>broadcasts++});
  session.start(0,false);session.check();assert.equal(expired,0);assert.equal(broadcasts,0);
- time=899999;session.check();assert.equal(expired,0);
- time=900000;session.check();assert.equal(expired,1);
+ time=IDLE_TIMEOUT_MS-1;session.check();assert.equal(expired,0);
+ time=IDLE_TIMEOUT_MS;session.check();assert.equal(expired,1);
 });
-test('continuous real activity keeps the session alive beyond fifteen minutes', () => {
+test('continuous real activity keeps the session alive beyond ten minutes', () => {
  let time=0,expired=0,kept=0;
  const session=createIdleSession({now:()=>time,keepAlive:()=>kept++,expire:()=>expired++});
  session.start();
  for(let i=0;i<40;i++){time+=30000;session.activity();session.check();}
  assert.equal(expired,0);assert.ok(kept>0);
- time+=900000;session.check();assert.equal(expired,1);
+ time+=IDLE_TIMEOUT_MS;session.check();assert.equal(expired,1);
 });

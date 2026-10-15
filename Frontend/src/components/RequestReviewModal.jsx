@@ -39,7 +39,8 @@ export default function RequestReviewModal({request: incoming,role,onClose,onUpd
    <RequestWorkflowDetails request={request}/>{sf10Student&&(sf10Student.credentialFiles||[]).some(file=>/^SF10.*(?:Front|Back)/i.test(file.title))&&<section><h3>Requested SF10</h3><OriginalSf9Card student={sf10Student} documentType="SF10"/></section>}{role==="ADMIN"&&request.sms&&<button type="button" disabled={busy} onClick={checkSms} className="request-sms-refresh">Refresh SMS Status</button>}
 
    {releaseOpen && request.status === "APPROVED" && <ReleaseSmsForm request={request} schedule={schedule} onChange={setSchedule} disabled={busy} smsEnabled={smsEnabled}/>}
-   {success && <p role="status" className="verification-confirmed">{success}</p>}
+   {success && request.sms?.status!=='FAILED' && <p role="status" className="verification-confirmed">{success}</p>}
+   {request.sms?.status==='FAILED' && <p role="alert" className="request-workflow-error">The request remains approved and its release schedule is saved. Semaphore reported that the SMS failed; the requester has not been notified by this message.</p>}
    {error && <p role="alert" className="request-workflow-error">{error}</p>}
    </div>
    {actionsFor(role, request).length > 0 && <footer className="request-review-footer"><div className="review-actions">{actionsFor(role, request).map(([action,label])=><button type="button" key={action} className={`review-action ${action === 'approve' ? 'review-action-approve' : 'review-action-release'}`} disabled={busy} onClick={()=>act(action)}>{busy?'Saving…':action==='ready'?(releaseOpen?(smsEnabled?'Confirm ready & send SMS':'Confirm ready & queue SMS'):'Schedule release & notify requester'):label}</button>)}</div></footer>}

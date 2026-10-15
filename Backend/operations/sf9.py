@@ -10,9 +10,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.response import Response
 from credentials.services import Conflict
+from .curriculum import subject_names
 from .views import staff, audit
 from .models import (StudentRecord, GradeLevel, ClassSection, Subject, SchoolYear,
-                     GradingTerm, TeacherAssignment, Sf9Record, Sf9Grade, Sf9FinalGrade, Preference)
+                     GradingTerm, TeacherAssignment, Sf9Record, Sf9Grade, Sf9FinalGrade, Preference, Sf9ReportCard)
 
 
 def record_subjects(record, subjects=None):
@@ -21,35 +22,97 @@ def record_subjects(record, subjects=None):
     if policy:
         allowed=set(policy.data['subject_ids'])
         subjects=[subject for subject in subjects if subject.pk in allowed]
+    else:
+        names=subject_names(record.section.grade_level.name)
+        if names:
+            # Keep historical graded subjects visible when adopting a new curriculum.
+            used=set(record.grades.values_list('subject_id',flat=True)) | set(record.final_grades.values_list('subject_id',flat=True))
+            subjects=[s for s in subjects if s.name in names or s.pk in used]
+            subjects.sort(key=lambda s:names.index(s.name) if s.name in names else len(names))
     return subjects
 
 
+def assignments_json(user):
+    return [{'id':a.pk,'grade_level':a.grade_level_id,'section':a.section_id,
+        'subject':a.subject_id,'school_year':a.school_year_id,
+        'grade_name':a.grade_level.name,'section_name':a.section.name if a.section else 'All sections',
+        'school_year_name':a.school_year.name if a.school_year else 'Legacy: all school years',
+        'subject_name':a.subject.name,'is_adviser':a.is_adviser}
+        for a in TeacherAssignment.objects.filter(teacher=user).select_related('grade_level','section','subject','school_year')]
+
+
 def assignment_json(user):
-    a = TeacherAssignment.objects.select_related('grade_level','section','subject').filter(teacher=user).first()
-    return None if not a else {'grade_level':a.grade_level_id,'section':a.section_id,'subject':a.subject_id,
-        'grade_name':a.grade_level.name,'section_name':a.section.name if a.section else 'All sections', 'subject_name':a.subject.name,'is_adviser':a.is_adviser}
+    rows=assignments_json(user)
+    return rows[0] if rows else None
+
+
+def current_class_sections(user=None):
+    from django.db.models import Q
+    policy=Preference.objects.filter(key='current-class-sections').first()
+    configuration=policy.data if policy else {}
+    sections=ClassSection.objects.all()
+    for grade,ids in configuration.get('grade_sections',{}).items():
+        sections=sections.filter(~Q(grade_level_id=int(grade))|Q(pk__in=ids))
+    if user is not None:
+        scope=Preference.objects.filter(key=f'teacher-grade-scope:{user.pk}').first()
+        if scope:sections=sections.filter(grade_level_id__in=scope.data.get('grade_ids',[]))
+    return sections, configuration.get('school_year')
+
+
+def matching_assignments(user, record):
+    from django.db.models import Q
+    return TeacherAssignment.objects.filter(teacher=user).filter(
+        Q(school_year=record.school_year)|Q(school_year__isnull=True)).filter(
+        grade_level=record.section.grade_level).filter(Q(section=record.section)|Q(section__isnull=True))
 
 
 def save_assignment(user, values, allow_adviser=False):
-    a = values.get('assignment')
-    if not isinstance(a,dict): raise ValidationError('Assign a grade level and subject to the teacher.')
-    if type(a.get('grade_level')) is not int or type(a.get('subject')) is not int or (a.get('section') is not None and type(a.get('section')) is not int): raise ValidationError('Select valid assignment identifiers.')
-    grade = get_object_or_404(GradeLevel, pk=a.get('grade_level'))
-    subject = get_object_or_404(Subject, pk=a.get('subject'))
-    section = get_object_or_404(ClassSection, pk=a['section']) if a.get('section') else None
-    if section and section.grade_level_id != grade.pk: raise ValidationError('Section must belong to the assigned grade level.')
-    previous=TeacherAssignment.objects.filter(teacher=user).first()
-    adviser=a.get('is_adviser',previous.is_adviser if previous else False)
-    if type(adviser) is not bool: raise ValidationError('Invalid adviser assignment.')
-    if not allow_adviser and (adviser or (previous and previous.is_adviser)): raise PermissionDenied('Only the Principal may manage class adviser assignments.')
-    if adviser and not section: raise ValidationError('Assign a specific section to the class adviser.')
-    if adviser and TeacherAssignment.objects.filter(grade_level=grade,section=section,is_adviser=True).exclude(teacher=user).exists(): raise ValidationError('This class already has an adviser. Update the current adviser first.')
-    from django.db import IntegrityError, transaction
-    try:
-        with transaction.atomic():
-            TeacherAssignment.objects.update_or_create(teacher=user, defaults={'grade_level':grade,'section':section,'subject':subject,'is_adviser':adviser})
-    except IntegrityError:
-        raise ValidationError('This class already has an adviser.')
+    from django.db.models import Q
+    rows=values.get('assignments')
+    legacy=rows is None
+    if isinstance(rows,list) and rows and all(isinstance(r,dict) and set(r)=={'subject'} for r in rows):
+        if not allow_adviser:raise PermissionDenied('Only the Principal may assign teacher subjects.')
+        subjects=[r['subject'] for r in rows]
+        if any(type(s) is not int for s in subjects) or len(set(subjects))!=len(subjects):raise ValidationError('Choose distinct subjects.')
+        sections,current_year=current_class_sections()
+        year=get_object_or_404(SchoolYear,name=current_year)
+        rows=[{'grade_level':grade.pk,'section':None,'school_year':year.pk,'subject':subject.pk} for grade in GradeLevel.objects.all() for subject in Subject.objects.filter(pk__in=subjects) if subject_names(grade.name) is None or subject.name in subject_names(grade.name)]
+    if legacy: rows=[values.get('assignment')]
+    if not isinstance(rows,list) or not 1<=len(rows)<=100:
+        raise ValidationError('Provide 1 to 100 teaching assignments.')
+    list(GradeLevel.objects.select_for_update().order_by('pk'))
+    existing=list(TeacherAssignment.objects.filter(teacher=user))
+    clean=[]
+    for a in rows:
+        if not isinstance(a,dict): raise ValidationError('Invalid assignment.')
+        for key in ['grade_level','subject']:
+            if type(a.get(key)) is not int: raise ValidationError('Choose a valid grade and subject.')
+        for key in ['section','school_year']:
+            if a.get(key) is not None and type(a[key]) is not int: raise ValidationError('Invalid assignment identifier.')
+        if not legacy and not a.get('school_year'): raise ValidationError('Select a school year for every assignment.')
+        grade=get_object_or_404(GradeLevel,pk=a['grade_level'])
+        subject=get_object_or_404(Subject,pk=a['subject'])
+        names=subject_names(grade.name)
+        if names and subject.name not in names:
+            raise ValidationError(f'{subject.name} is not part of the {grade.name} subject list.')
+        section=get_object_or_404(ClassSection,pk=a['section']) if a.get('section') else None
+        year=get_object_or_404(SchoolYear,pk=a['school_year']) if a.get('school_year') else None
+        if section and section.grade_level_id!=grade.pk: raise ValidationError('Section must belong to its grade level.')
+        adviser=a.get('is_adviser',False)
+        if type(adviser) is not bool: raise ValidationError('Invalid adviser assignment.')
+        if not allow_adviser and (adviser or any(x.is_adviser for x in existing)):
+            raise PermissionDenied('Only the Principal may manage adviser assignments.')
+        if adviser and not section: raise ValidationError('Advisers require a specific section.')
+        for prev in clean:
+            overlapping=(prev['school_year'] is None or year is None or prev['school_year']==year) and (prev['section'] is None or section is None or prev['section']==section)
+            if prev['grade_level']==grade and overlapping and prev['subject']==subject:
+                raise ValidationError('Duplicate or overlapping assignment.')
+        if adviser and TeacherAssignment.objects.filter(section=section,is_adviser=True).exclude(teacher=user).filter(Q(school_year=year)|Q(school_year__isnull=True) if year else Q()).exists():
+            raise ValidationError('This class already has an adviser for the school year.')
+        if adviser and any(x['is_adviser'] and x['section']==section and (x['school_year']==year or x['school_year'] is None or year is None) for x in clean): raise ValidationError('Select adviser on only one subject row for this class/year.')
+        clean.append(dict(grade_level=grade,section=section,subject=subject,school_year=year,is_adviser=adviser))
+    TeacherAssignment.objects.filter(teacher=user).delete()
+    TeacherAssignment.objects.bulk_create([TeacherAssignment(teacher=user,**row) for row in clean])
 
 
 def sync_student(student):
@@ -68,10 +131,9 @@ def sync_student(student):
 def allowed_records(user, role):
     qs = Sf9Record.objects.select_related('student','section__grade_level','school_year').prefetch_related(Prefetch('grades',queryset=Sf9Grade.objects.select_related('term','updated_by')),Prefetch('final_grades',queryset=Sf9FinalGrade.objects.select_related('updated_by')))
     if role != 'TEACHER': return qs
-    a = TeacherAssignment.objects.filter(teacher=user).first()
-    if not a: return qs.none()
-    qs=qs.filter(section__grade_level=a.grade_level, student__data__status='Active')
-    return qs.filter(section=a.section) if a.section_id else qs
+    sections,year=current_class_sections(user)
+    qs=qs.filter(section__in=sections,student__data__status='Active')
+    return qs.filter(school_year__name=year) if year else qs.none()
 
 
 def alphabetical_records(qs):
@@ -83,11 +145,14 @@ def brief(record):
     return {'id':record.pk,'student_id':record.student_id,'lrn':record.student.lrn,
         'name':' '.join(d.get(k,'') for k in ['firstName','middleName','lastName']).strip(),
         'last_name':d.get('lastName',''),'first_name':d.get('firstName',''),'middle_name':d.get('middleName',''),'sex':d.get('sex',''),'birthday':d.get('birthday',''),'grade':record.section.grade_level.name,'section':record.section.name,
-        'school_year':record.school_year.name,'version':record.version}
+        'school_year':record.school_year.name,'section_id':record.section_id,'school_year_id':record.school_year_id,'student_version':record.student.version,'version':record.version}
 
 
 def record_json(record, user, role, subjects=None, assignment=None):
-    result=brief(record); a=(assignment or TeacherAssignment.objects.filter(teacher=user).first()) if role=='TEACHER' else None
+    result=brief(record); assigned=set(matching_assignments(user,record).values_list('subject_id',flat=True)) if role=='TEACHER' else set()
+    finalized=Sf9ReportCard.objects.filter(record=record,issued_on__isnull=False).exists()
+    if finalized: assigned=set()
+    if role=='TEACHER': result['student_data']=record.student.data
     grades={(g.subject_id,g.term.number):g for g in record.grades.all()}
     finals={g.subject_id:g for g in record.final_grades.all()}
     subjects=record_subjects(record, subjects)
@@ -99,9 +164,9 @@ def record_json(record, user, role, subjects=None, assignment=None):
         if not g: return None
         display='INC' if getattr(g,'is_incomplete',False) else str(int(g.value)) if g.value==g.value.to_integral_value() else str(g.value)
         return {'value':display,'updated_by':(g.updated_by.get_full_name() or g.updated_by.username) if g.updated_by else 'Former personnel','updated_at':g.updated_at.isoformat()}
-    result['subjects']=[{'id':s.pk,'name':s.name,'editable':bool(role=='TEACHER' and a and a.subject_id==s.pk),
+    result['subjects']=[{'id':s.pk,'name':s.name,'editable':bool(role=='TEACHER' and s.pk in assigned),
         'terms':[value(grades.get((s.pk,n))) for n in [1,2,3]],'final':value(finals.get(s.pk)),
-        'term_editable':[bool(role=='TEACHER' and a and a.subject_id==s.pk and ((result['term_unlocked'][n-1] and n>=started) or (n<started and getattr(grades.get((s.pk,n)),'is_incomplete',False)))) for n in [1,2,3]],
+        'term_editable':[bool(role=='TEACHER' and s.pk in assigned and ((result['term_unlocked'][n-1] and n>=started) or (n<started and getattr(grades.get((s.pk,n)),'is_incomplete',False)))) for n in [1,2,3]],
         'status':'Complete' if all((s.pk,n) in grades and not grades[(s.pk,n)].is_incomplete for n in [1,2,3]) else 'Incomplete'} for s in subjects]
     result['general_average']=str(record.general_average) if record.general_average is not None else None
     result['final_mode']='School-confirmed final grades; no automatic formula configured.'
@@ -124,18 +189,32 @@ def catalog(request):
         elif kind=='subject': Subject.objects.get_or_create(name=name.strip(),defaults={'position':Subject.objects.count()})
         else: raise ValidationError('Choose section or subject.')
         audit(request,'SF9','Created '+kind,detail=name.strip())
-    return Response({'grade_levels':list(GradeLevel.objects.values('id','name')),
-        'sections':list(ClassSection.objects.values('id','name','grade_level_id')),
-        'subjects':list(Subject.objects.values('id','name')),'school_years':list(SchoolYear.objects.values('id','name')),
-        'assignment':assignment_json(request.user),'terms':[1,2,3],'minimum':0,'maximum':100,
+    policy=Preference.objects.filter(key='current-class-sections').first()
+    configuration=policy.data if policy else {}
+    configured=configuration.get('grade_sections',{})
+    all_sections=list(ClassSection.objects.values('id','name','grade_level_id'))
+    sections=[s for s in all_sections if str(s['grade_level_id']) not in configured or s['id'] in configured[str(s['grade_level_id'])]]
+    if role=='TEACHER':
+        allowed,_=current_class_sections(request.user)
+        allowed_ids=set(allowed.values_list('pk',flat=True))
+        sections=[s for s in sections if s['id'] in allowed_ids]
+    current_sections=[next(s for s in sections if s['id']==sid) for ids in configured.values() for sid in ids if any(s['id']==sid for s in sections)]
+    return Response({'current_school_year':configuration.get('school_year'),'current_sections':current_sections,'grade_levels':list(GradeLevel.objects.values('id','name')),
+        'sections':sections,
+        'subjects':list(Subject.objects.values('id','name')),
+        'grade_subjects':{str(g.pk):list(Subject.objects.filter(name__in=subject_names(g.name)).values_list('pk',flat=True)) for g in GradeLevel.objects.all() if subject_names(g.name)},
+        'school_years':list(SchoolYear.objects.values('id','name')),
+        'assignments':assignments_json(request.user),'assignment':assignment_json(request.user),'terms':[1,2,3],'minimum':0,'maximum':100,
         'final_mode':'manual','policy_note':'Final grades may be confirmed by Administration. General average calculation is not enabled.'})
 
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def records(request):
-    role=staff(request,{'ADMIN','TEACHER'})
+    role=staff(request,{'ADMIN','PRINCIPAL','TEACHER'})
     qs=allowed_records(request.user,role)
+    if request.query_params.get('scope') == 'current':
+        qs=qs.filter(school_year__name='2026-2027',student__data__status='Active',student__data__schoolYear='2026-2027')
     if request.query_params.get('student_id'):
         if not request.query_params['student_id'].isdigit(): raise ValidationError('Invalid student identifier.')
         qs=qs.filter(student_id=request.query_params['student_id'])
@@ -159,8 +238,10 @@ def numeric(value):
 
 def write_grades(record, rows, assignment, user):
     """Caller holds the record lock; validate the entire batch before persisting it."""
-    if not isinstance(rows,list) or len(rows)>3:
+    if not isinstance(rows,list) or len(rows)>300:
         raise ValidationError('Only your three assigned subject grades may be changed.')
+    if Sf9ReportCard.objects.filter(record=record,issued_on__isnull=False).exists(): raise PermissionDenied('Issued academic records are locked.')
+    assigned=set(matching_assignments(user,record).values_list('subject_id',flat=True))
     saved={(g.subject_id,g.term.number):g for g in record.grades.all()}
     subjects={subject.pk for subject in record_subjects(record)}
     state={key:('INC' if g.is_incomplete else g.value) for key,g in saved.items()}
@@ -170,7 +251,7 @@ def write_grades(record, rows, assignment, user):
         if not isinstance(row,dict) or set(row)-{'subject','term','value'}: raise ValidationError('Invalid grade entry.')
         sid,term=row.get('subject'),row.get('term')
         if type(sid) is not int or type(term) is not int or term not in [1,2,3]: raise ValidationError('Choose a subject and Term 1, 2 or 3.')
-        if not assignment or sid!=assignment.subject_id: raise PermissionDenied('You may edit only your assigned subject.')
+        if sid not in assigned: raise PermissionDenied('You may edit only your assigned subject.')
         if sid not in subjects: raise ValidationError('This subject is not part of this class curriculum.')
         if (sid,term) in changes: raise ValidationError('Duplicate subject/term entry.')
         raw=row.get('value')
@@ -211,7 +292,7 @@ def write_grades(record, rows, assignment, user):
 def record_detail(request,record_id):
     from django.contrib.auth.models import User
     request.user = get_object_or_404(User.objects.select_for_update(of=('self',)).select_related('userprofile'),pk=request.user.pk,is_active=True)
-    role=staff(request,{'ADMIN','TEACHER'})
+    role=staff(request,{'ADMIN','PRINCIPAL','TEACHER'})
     # Lock the authoritative assignment before any grade writes. Account edits lock it too.
     a=TeacherAssignment.objects.select_for_update().filter(teacher=request.user).first() if role=='TEACHER' else None
     record=get_object_or_404(allowed_records(request.user,role).select_for_update(of=('self',)),pk=record_id)

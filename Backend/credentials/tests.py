@@ -32,7 +32,9 @@ class WorkflowTests(TestCase):
         self.principal = self.staff("principal", "PRINCIPAL")
         self.ict = self.staff("ict", "ICT")
         self.client = APIClient()
+        import json
         self.payload = {
+            "csm_responses":json.dumps({"version":"temporary-1","answers":{"placeholder_acknowledgment":"Acknowledged"}}),
             "submission_key": str(uuid.uuid4()), "requester_type": "Student",
             "first_name": "Workflow", "middle_name": "Middle", "last_name": "Test", "delivery_method": "ON_SITE", "lrn": "123456789012", "grade_level": "Grade 10",
             "section": "Sample", "credential": "SF10", "purpose": "College admission", "phone": "09123456789",

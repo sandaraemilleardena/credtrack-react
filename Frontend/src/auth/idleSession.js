@@ -1,4 +1,4 @@
-export const IDLE_TIMEOUT_MS = 15 * 60 * 1000;
+export const IDLE_TIMEOUT_MS = 10 * 60 * 1000;
 
 // Polling/focus checks never call activity(). Only real user input renews this clock.
 export function createIdleSession({ now = Date.now, keepAlive, expire, broadcast }) {

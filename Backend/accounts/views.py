@@ -11,6 +11,9 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from .models import UserProfile
+from django.db import transaction
+from django.contrib.sessions.models import Session
+from django.utils.crypto import constant_time_compare
 
 
 # ============================================================
@@ -120,7 +123,25 @@ def login_view(request):
     # CREATE DJANGO SESSION
     # --------------------------------------------------------
 
-    login(request, user)
+    # Serialize logins to the same account, including the first session save.
+    with transaction.atomic():
+        UserProfile.objects.select_for_update().get(user=user)
+        if role in {"ADMIN", "PRINCIPAL", "TEACHER"}:
+            now = timezone.now()
+            for existing in Session.objects.filter(expire_date__gt=now).exclude(session_key=request.session.session_key or ""):
+                data = existing.get_decoded()
+                if str(data.get("_auth_user_id")) != str(user.pk):
+                    continue
+                if not constant_time_compare(data.get("_auth_user_hash", ""), user.get_session_auth_hash()):
+                    continue
+                last = data.get("last_user_activity")
+                if last is not None and now.timestamp() - last >= settings.SESSION_IDLE_TIMEOUT:
+                    continue
+                return Response({"error": "This account is already signed in on another browser or device. Log out there or wait for that session to expire before signing in here.", "code": "account_in_use"}, status=409)
+        login(request, user)
+        request.session["last_user_activity"] = timezone.now().timestamp()
+        request.session.set_expiry(settings.SESSION_IDLE_TIMEOUT)
+        request.session.save()
 
     # --------------------------------------------------------
     # Return authenticated user information

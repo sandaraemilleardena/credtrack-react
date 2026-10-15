@@ -1,0 +1,4 @@
+import CsmSurvey from './CsmSurvey';
+export default function CsmModal({config,answers,onChange,onSubmit,onClose,busy,error}){
+ return <dialog className="csm-dialog" aria-label="Client Satisfaction Measurement questionnaire" ref={el=>{if(el&&!el.open)el.showModal();}} onCancel={e=>{e.preventDefault();if(!busy)onClose();}}><form onSubmit={onSubmit}><header><h1>Client Satisfaction Measurement (CSM)</h1><button type="button" disabled={busy} aria-label="Close questionnaire" onClick={onClose}>×</button></header><div className="csm-dialog-body"><CsmSurvey config={config} answers={answers} onChange={onChange}/>{error&&<p role="alert">{error}</p>}</div><footer><button type="button" onClick={onClose} disabled={busy}>Back to request</button><button type="submit" disabled={busy||!config}>{busy?'Submitting…':'Submit questionnaire & request'}</button></footer></form></dialog>;
+}

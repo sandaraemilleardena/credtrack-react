@@ -115,9 +115,9 @@ class FinalRevisionTests(TestCase):
         from credentials.serializers import SubmissionSerializer
         from .models import Preference
         Preference.objects.update_or_create(key='grade_sections',defaults={'data':{'Grade 10':['Sample']}})
-        payload={'submission_key':str(uuid.uuid4()),'requester_type':'Student','first_name':'Test','middle_name':'Middle','last_name':'Learner','delivery_method':'ON_SITE','lrn':'123456789012','grade_level':'Grade 10','section':'Sample','credential':'SF10','purpose':'College admission','phone':'09123456789'}
+        payload={'csm_responses':'{"version":"temporary-1","answers":{"placeholder_acknowledgment":"Acknowledged"}}','submission_key':str(uuid.uuid4()),'requester_type':'Student','first_name':'Test','middle_name':'Middle','last_name':'Learner','delivery_method':'ON_SITE','lrn':'123456789012','grade_level':'Grade 10','section':'Sample','credential':'SF10','purpose':'College admission','phone':'09123456789'}
         for count in [0,1,3,4]:
-            data={**payload,'identity_documents':[SimpleUploadedFile(f'document-{i}.pdf',b'Private document') for i in range(count)]}
+            data={**payload,'csm_responses':__import__('json').loads(payload['csm_responses']),'identity_documents':[SimpleUploadedFile(f'document-{i}.pdf',b'Private document') for i in range(count)]}
             serializer=SubmissionSerializer(data=data)
             self.assertEqual(serializer.is_valid(),1<=count<=3,serializer.errors)
         self.client.force_authenticate(None)

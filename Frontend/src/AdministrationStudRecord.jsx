@@ -247,10 +247,6 @@ function AdministrationStudRecord() {
     );
   };
 
-  const openAddStudent = () => {
-    setStudentForm(emptyStudent);
-    setShowAddModal(true);
-  };
 
   const handleFormChange = (event) => {
     const { name, value } = event.target;
@@ -396,10 +392,10 @@ function AdministrationStudRecord() {
               <button
                 type="button"
                 className="btn-primary"
-                onClick={openAddStudent}
+                disabled title="Teachers add students through their assigned class records"
               >
                 <i className="fas fa-user-plus" />
-                Add Student
+                Teacher-managed enrollment
               </button>
 
             </div>
