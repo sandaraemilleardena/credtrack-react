@@ -21,9 +21,11 @@ MONTHS=[6,7,8,9,10,11,12,1,2,3,4]
 
 def summary(record):
     result={}
-    for entry in record.monthly_attendance.select_related('reporting_month'):
-        period=entry.reporting_month
-        result[calendar.month_abbr[period.month]]={'class_days':period.school_days,'present':entry.present,'absent':period.school_days-entry.present}
+    entries={entry.reporting_month_id:entry for entry in record.monthly_attendance.all()}
+    for period in AttendanceMonth.objects.filter(section=record.section,school_year=record.school_year):
+        entry=entries.get(period.pk)
+        present=entry.present if entry else None
+        result[calendar.month_abbr[period.month]]={'class_days':period.school_days,'present':present,'absent':period.school_days-present if present is not None else None}
     return result
 
 
@@ -31,10 +33,16 @@ def classes_for(user,role):
     from .sf9 import current_class_sections
     sections,current_year=current_class_sections(user)
     year=SchoolYear.objects.filter(name=current_year).first()
+    if role == 'TEACHER':
+        assigned=TeacherAssignment.objects.filter(teacher=user)
+        if year:
+            assigned=assigned.filter(Q(school_year=year)|Q(school_year__isnull=True))
+        sections=sections.filter(grade_level_id__in=assigned.values('grade_level_id'))
     pairs=[(section.pk,year.pk) for section in sections] if year else []
     sections={s.pk:s for s in ClassSection.objects.select_related('grade_level')}
     years={y.pk:y for y in SchoolYear.objects.all()}
-    return [{'section':sid,'school_year':yid,'grade':sections[sid].grade_level.name,'section_name':sections[sid].name,'school_year_name':years[yid].name} for sid,yid in sorted(set(pairs))]
+    rows=[{'section':sid,'school_year':yid,'grade':sections[sid].grade_level.name,'section_name':sections[sid].name,'school_year_name':years[yid].name} for sid,yid in sorted(set(pairs))]
+    return sorted(rows,key=lambda row:(sections[row['section']].grade_level_id,row['section_name']))
 
 
 @api_view(['GET','POST'])
