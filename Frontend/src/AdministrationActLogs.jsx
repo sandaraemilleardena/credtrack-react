@@ -289,12 +289,12 @@ function AdministrationActLogs() {
             </div>
 
             {/* Filters */}
-            <div className="filters">
-              <div className="search">
+            <div className="filters audit-filter-bar">
+              <div className="search"><label className="audit-filter-label" htmlFor="audit-search">Search activities</label>
                 <i className="fas fa-search"></i>
 
                 <input
-                  type="search"
+                  id="audit-search" type="search"
                   placeholder="Search actor, action, target, or event ID..."
                   value={search}
                   onChange={(e) =>
@@ -303,8 +303,7 @@ function AdministrationActLogs() {
                 />
               </div>
 
-              <select
-                value={roleFilter}
+              <label className="audit-filter-field">Role<select value={roleFilter}
                 onChange={(e) =>
                   setRoleFilter(e.target.value)
                 }
@@ -319,10 +318,9 @@ function AdministrationActLogs() {
                 <option value="Principal">
                   Principal
                 </option>
-              </select>
+              </select></label>
 
-              <select
-                value={moduleFilter}
+              <label className="audit-filter-field">Module<select value={moduleFilter}
                 onChange={(e) =>
                   setModuleFilter(e.target.value)
                 }
@@ -341,10 +339,9 @@ function AdministrationActLogs() {
                   User Management
                 </option>
                 <option value="System">System</option>
-              </select>
+              </select></label>
 
-              <select
-                value={levelFilter}
+              <label className="audit-filter-field">Level<select value={levelFilter}
                 onChange={(e) =>
                   setLevelFilter(e.target.value)
                 }
@@ -354,7 +351,7 @@ function AdministrationActLogs() {
                 <option value="Success">Success</option>
                 <option value="Warning">Warning</option>
                 <option value="Critical">Critical</option>
-              </select>
+              </select></label>
 
               <input
                 type="date"
@@ -392,7 +389,7 @@ function AdministrationActLogs() {
 
                 <tbody>
                   {filteredLogs.length > 0 ? (
-                    filteredLogs.map((log) => (
+                    filteredLogs.slice((currentPage-1)*20,currentPage*20).map((log) => (
                       <tr key={log.id}>
                         <td>
                           <strong>{log.time}</strong>

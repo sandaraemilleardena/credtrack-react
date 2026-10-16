@@ -120,6 +120,12 @@ def login_view(request):
             )
 
     if role in {"ADMIN", "PRINCIPAL", "TEACHER"} or getattr(profile, 'email_otp_enabled', False):
+        from .otp_grace import trusted
+        if trusted(request, user):
+            response = finish_login(request, user, role)
+            if response.status_code == 200:
+                request.session['email_otp_verified'] = True
+            return response
         from .email_otp import issue_code
         return issue_code(request, user)
     return finish_login(request, user, role)
@@ -182,15 +188,20 @@ def finish_login(request, user, role):
 @csrf_protect
 def logout_view(request):
 
+    verified_user = request.user if request.user.is_authenticated and request.session.get('email_otp_verified') else None
     logout(request)
 
-    return Response(
+    response = Response(
         {
             "authenticated": False,
             "message": "Logged out successfully."
         },
         status=status.HTTP_200_OK
     )
+    if verified_user:
+        from .otp_grace import remember_logout
+        remember_logout(response, verified_user)
+    return response
 
 
 # ============================================================

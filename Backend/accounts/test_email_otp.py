@@ -63,3 +63,27 @@ class EmailOtpTests(TestCase):
             self.assertEqual(mail.outbox[-1].to,['southcredtrack@gmail.com'])
             self.assertEqual(self.verify(self.code()).data['user']['role'],role)
             self.client.post('/api/auth/logout/')
+    def test_verified_logout_allows_password_signin_for_fifteen_minutes(self):
+        self.start();self.assertEqual(self.verify(self.code()).status_code,200)
+        self.client.post('/api/auth/logout/')
+        sent=len(mail.outbox)
+        response=self.start()
+        self.assertTrue(response.data['authenticated'])
+        self.assertEqual(len(mail.outbox),sent)
+
+    def test_grace_expires_and_other_browser_still_needs_otp(self):
+        self.start();self.verify(self.code());self.client.post('/api/auth/logout/')
+        SecurityRateLimit.objects.all().delete()
+        with patch('django.core.signing.time.time',return_value=timezone.now().timestamp()+901):
+            self.assertTrue(self.start().data['otp_required'])
+        SecurityRateLimit.objects.all().delete()
+        other=APIClient()
+        result=other.post('/api/auth/login/',{'username':self.user.username,'password':'Trial-password-784!','role':'ADMIN'},format='json')
+        self.assertTrue(result.data['otp_required'])
+
+    def test_password_change_invalidates_grace(self):
+        self.start();self.verify(self.code());self.client.post('/api/auth/logout/')
+        self.user.set_password('Changed-password-819!');self.user.save()
+        SecurityRateLimit.objects.all().delete()
+        result=self.client.post('/api/auth/login/',{'username':self.user.username,'password':'Changed-password-819!','role':'ADMIN'},format='json')
+        self.assertTrue(result.data['otp_required'])

@@ -2758,3 +2758,10 @@ body:has(.student-records-page .sidebar.open) { overflow: hidden; }
 .sample-student-notice { padding:10px; background:var(--ct-bg-fff0ce,#fff0ce); color:var(--ct-fg-794b00,#794b00); font-weight:700; }
 .student-credential-list small { display:block; color:var(--ct-fg-9d2139,#9d2139); margin:6px 0 18px; }
 .student-records-page .action-view { width:auto; min-width:70px; gap:6px; padding:8px 12px; }
+
+/* Keep the View label inside the button and align all row actions. */
+.student-records-page .row-actions{display:flex;align-items:center;justify-content:flex-start;gap:8px;flex-wrap:nowrap}
+.student-records-page .row-actions button{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;height:40px;line-height:1;padding:0;box-sizing:border-box;vertical-align:middle}
+.student-records-page .row-actions .action-view{width:auto;min-width:84px;gap:7px;padding:0 12px;white-space:nowrap;font-size:12px;font-weight:600}
+.student-records-page .row-actions .action-edit,.student-records-page .row-actions .action-delete{width:40px}
+.student-records-page .row-actions button i{display:inline-block;line-height:1;margin:0;font-size:14px}

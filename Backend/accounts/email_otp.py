@@ -65,6 +65,7 @@ def verify_email_otp(request):
         from .views import finish_login
         response=finish_login(request,user,profile.role)
         if response.status_code==200:
+            request.session['email_otp_verified']=True
             profile.email_otp_state={};profile.save(update_fields=['email_otp_state'])
             request.session.pop('email_otp_challenge',None)
         return response

@@ -6,7 +6,7 @@ import './components/RequestWorkflowDetails.css';
 import {fetchRequestOptions} from './api/credentials';
 import { logoutUser } from './auth/session';
 import {usePortal} from './hooks/PortalContext';
-import {downloadCSV, operation} from './api/operations';
+import {operation} from './api/operations';
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./AdministrationStudRecord.css";
@@ -284,11 +284,8 @@ function AdministrationStudRecord() {
   const confirmDelete=()=>currentStudent&&archiveRecords([currentStudent.id]);
   const handleBulkDelete=()=>selectedIds.length&&archiveRecords(selectedIds);
 
-  const exportCSV=()=>downloadCSV('CredTrack_Student_Records.csv',[['LRN','First Name','Middle Name','Last Name','Sex','Birthday','Grade','Section','Status','School Year','Guardian','Contact','Address','Available Credentials'],...filteredStudents.map(r=>[r.lrn,r.firstName,r.middleName,r.lastName,r.sex,r.birthday,r.grade,r.section,r.status,r.schoolYear,r.guardian,r.contact,r.address,(r.availableCredentials||[]).join(';')])]);
 
-  const printStudents = () => {
-    window.print();
-  };
+
 
   const handleExcelFile=async(file)=>{if(!file)return;setExcelFile(null);setExcelRows([]);if(!/\.(xlsx|xls|csv)$/i.test(file.name)){showToast('Choose an Excel (.xlsx, .xls) or CSV file.');return;}if(file.size>10*1024*1024){showToast('File limit is 10 MB.');return;}try{const body=new FormData();body.append('file',file);showToast('Reading and checking spreadsheet…');const result=await operation('students/preview/',body);setExcelFile(file);setExcelRows(result.rows);setExcelStep(2);}catch(e){showToast(e.message);}};
 
@@ -387,18 +384,7 @@ function AdministrationStudRecord() {
 
             </div>
 
-            <div className="page-actions">
-
-              <button
-                type="button"
-                className="btn-primary"
-                disabled title="Teachers add students through their assigned class records"
-              >
-                <i className="fas fa-user-plus" />
-                Teacher-managed enrollment
-              </button>
-
-            </div>
+            
 
           </section>
 
@@ -554,23 +540,9 @@ function AdministrationStudRecord() {
                   Archive Selected
                 </button>
 
-                <button
-                  type="button"
-                  className="btn-light"
-                  onClick={exportCSV}
-                >
-                  <i className="fas fa-file-export" />
-                  Export
-                </button>
+                
 
-                <button
-                  type="button"
-                  className="btn-light"
-                  onClick={printStudents}
-                >
-                  <i className="fas fa-print" />
-                  Print
-                </button>
+                
 
               </div>
 

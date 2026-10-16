@@ -107,7 +107,7 @@ function AdministrationLogin() {
   };
 
   const handleBack = () => {
-    navigate("/");
+    navigate("/login/school");
   };
 
   return (
@@ -299,7 +299,7 @@ function AdministrationLogin() {
               aria-hidden="true"
             ></i>
 
-            Back to Role Selection
+            Back to Choose Workspace
           </button>
 
           {/* SECURITY */}

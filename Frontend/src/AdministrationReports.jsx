@@ -57,7 +57,8 @@ function AdministrationReports() {
   const [dateTo, setDateTo] = useState(localDay(new Date()));
   const [credentialFilter, setCredentialFilter] =
     useState("All Credentials");
-  const items=system.data.requests.filter(r=>(!dateFrom||localDay(r.created_at)>=dateFrom)&&(!dateTo||localDay(r.created_at)<=dateTo)&&(credentialFilter==='All Credentials'||r.credential.toLowerCase().includes(credentialFilter.toLowerCase()))).filter(r=>reportType==='Released Credentials Report'?r.status==='RELEASED':reportType==='Credential Completion Report'?Boolean(r.approved_at):true);
+  const [applied,setApplied]=useState({reportType:'Credential Requests Summary',dateFrom:new Date().getFullYear()+'-01-01',dateTo:localDay(new Date()),credentialFilter:'All Credentials'});
+  const items=system.data.requests.filter(r=>(!applied.dateFrom||localDay(r.created_at)>=applied.dateFrom)&&(!applied.dateTo||localDay(r.created_at)<=applied.dateTo)&&(applied.credentialFilter==='All Credentials'||r.credential.toLowerCase().includes(applied.credentialFilter.toLowerCase()))).filter(r=>applied.reportType==='Released Credentials Report'?r.status==='RELEASED':applied.reportType==='Credential Completion Report'?Boolean(r.approved_at):true);
   const openStatistic=(category)=>{const params=new URLSearchParams({category});if(dateFrom)params.set('date_from',dateFrom);if(dateTo)params.set('date_to',dateTo);if(credentialFilter!=='All Credentials')params.set('credential',credentialFilter);navigate('/admin-credential-management?'+params);};
   const totals=metrics(items), monthly=monthlyCounts(items);
   const popular=Object.entries(items.reduce((all,r)=>({...all,[r.credential]:(all[r.credential]||0)+1}),{})).sort((a,b)=>b[1]-a[1])[0]||['None yet',0];
@@ -139,34 +140,18 @@ function AdministrationReports() {
       return;
     }
 
+    setApplied({reportType,dateFrom,dateTo,credentialFilter});
+    setReportPage(1);
+    setSelectedTemplate(reportType);
     setChartTitle(reportType);
     setChartPeriod(formattedPeriod);
     notify("Report generated successfully");
   };
 
-  const selectTemplate = (report) => {
-    setSelectedTemplate(report);
-    setReportType(report);
-
-    const from = new Date(`${dateFrom}T00:00:00`);
-    const to = new Date(`${dateTo}T00:00:00`);
-
-    if (from > to) {
-      notify("Date From must be before Date To");
-      return;
-    }
-
-    setChartTitle(report);
-    setChartPeriod(formattedPeriod);
-    notify("Report generated successfully");
-  };
-
-  const handlePrint = () => {
-    window.print();
-  };
+  const selectTemplate = (report) => {setSelectedTemplate(report);setReportType(report);notify('Report type selected. Click Generate to apply it.');};
 
   const handleExport = (format) => {
-    if(format==='PDF'){window.print();return;}downloadCSV('CredTrack_Transactions.csv',[['Reference','Requester','Credential','Submitted','Turnaround','Status'],...rows]);notify('Transaction report exported as CSV (opens in Excel).');
+    downloadCSV('CredTrack_Transactions.csv',[['Reference','Requester','Credential','Submitted','Turnaround','Status'],...rows]);notify('Transaction report exported as CSV (opens in Excel).');
   };
 
   const handleLogout = async () => {
@@ -192,46 +177,15 @@ function AdministrationReports() {
             <div>
               <h1>Reports</h1>
               <p>
-                Generate, review, and export credential performance
+                Generate and review credential performance
                 reports.
               </p>
             </div>
 
-            <div className="head-actions">
-              <button
-                type="button"
-                className="outline"
-                onClick={handlePrint}
-              >
-                <i className="fas fa-print"></i>
-                Print
-              </button>
 
-              <button
-                type="button"
-                className="primary"
-                onClick={() =>
-                  notify("PDF report prepared for export")
-                }
-              >
-                <i className="fas fa-file-pdf"></i>
-                Export PDF
-              </button>
-            </div>
           </section>
 
-          <section className="reports-overview" aria-label="Reports overview">
-            <div className="overview-copy">
-              <span className="overview-label"><i className="fas fa-school" /> SCHOOL REPORTING CENTER</span>
-              <strong>Clear credential insights for confident school decisions.</strong>
-              <span>Track request activity, release performance, and document processing from one reporting workspace.</span>
-            </div>
-            <div className="overview-metrics">
-              <button onClick={()=>openStatistic("total")}><b>{totals.total}</b><span>Requests in period</span></button>
-              <div><b>{totals.total?Math.round(totals.released/totals.total*100):0}%</b><span>Completion rate</span></div>
-              <div><b>{totals.average}d</b><span>Average processing</span></div>
-            </div>
-          </section>
+
 
           {/* Report Builder */}
           <section className="report-builder">
@@ -542,13 +496,7 @@ function AdministrationReports() {
                   Excel
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() => handleExport("PDF")}
-                >
-                  <i className="fas fa-file-pdf"></i>
-                  PDF
-                </button>
+                
               </div>
             </div>
 
