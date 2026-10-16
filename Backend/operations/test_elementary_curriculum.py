@@ -14,7 +14,7 @@ class ElementaryCurriculumTests(TestCase):
     def record(self, number):
         grade = GradeLevel.objects.get(name=f'Grade {number}')
         section, _ = ClassSection.objects.get_or_create(grade_level=grade, name='Curriculum Test')
-        student = StudentRecord.objects.create(lrn=f'98765432100{number}', data={})
+        student = StudentRecord.objects.create(lrn=f'9876543210{number:02d}', data={})
         return Sf9Record.objects.create(student=student, section=section, school_year=self.year)
 
     def test_all_six_grade_subject_lists_and_order(self):
@@ -35,3 +35,9 @@ class ElementaryCurriculumTests(TestCase):
         grade = GradeLevel.objects.get(name='Grade 1')
         with self.assertRaises(ValidationError):
             save_assignment(self.user, {'assignments':[{'grade_level':grade.pk, 'subject':Subject.objects.get(name='Science').pk, 'school_year':self.year.pk}]}, allow_adviser=True)
+
+    def test_every_spj_grade_includes_journalism(self):
+        for grade in range(1,11):
+            record=self.record(grade)
+            record.section=ClassSection.objects.get_or_create(grade_level=record.section.grade_level,name='SPJ')[0];record.save()
+            self.assertIn('Journalism',[s.name for s in record_subjects(record)])

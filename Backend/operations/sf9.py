@@ -18,6 +18,7 @@ from .models import (StudentRecord, GradeLevel, ClassSection, Subject, SchoolYea
 
 def record_subjects(record, subjects=None):
     subjects=list(subjects if subjects is not None else Subject.objects.all())
+    all_subjects=list(subjects)
     policy=Preference.objects.filter(key=f'sf9-subjects:{record.section_id}').first()
     if policy:
         allowed=set(policy.data['subject_ids'])
@@ -29,6 +30,8 @@ def record_subjects(record, subjects=None):
             used=set(record.grades.values_list('subject_id',flat=True)) | set(record.final_grades.values_list('subject_id',flat=True))
             subjects=[s for s in subjects if s.name in names or s.pk in used]
             subjects.sort(key=lambda s:names.index(s.name) if s.name in names else len(names))
+    if record.section.name.strip().upper() == 'SPJ':
+        subjects += [s for s in all_subjects if s.name == 'Journalism' and s not in subjects]
     return subjects
 
 
@@ -93,9 +96,11 @@ def save_assignment(user, values, allow_adviser=False):
         grade=get_object_or_404(GradeLevel,pk=a['grade_level'])
         subject=get_object_or_404(Subject,pk=a['subject'])
         names=subject_names(grade.name)
-        if names and subject.name not in names:
+        if names and subject.name not in names and subject.name != 'Journalism':
             raise ValidationError(f'{subject.name} is not part of the {grade.name} subject list.')
         section=get_object_or_404(ClassSection,pk=a['section']) if a.get('section') else None
+        if subject.name == 'Journalism' and section and section.name.strip().upper() != 'SPJ':
+            raise ValidationError('Journalism is available only for SPJ sections.')
         year=get_object_or_404(SchoolYear,pk=a['school_year']) if a.get('school_year') else None
         if section and section.grade_level_id!=grade.pk: raise ValidationError('Section must belong to its grade level.')
         adviser=a.get('is_adviser',False)
@@ -202,7 +207,7 @@ def catalog(request):
     return Response({'current_school_year':configuration.get('school_year'),'current_sections':current_sections,'grade_levels':list(GradeLevel.objects.values('id','name')),
         'sections':sections,
         'subjects':list(Subject.objects.values('id','name')),
-        'grade_subjects':{str(g.pk):list(Subject.objects.filter(name__in=subject_names(g.name)).values_list('pk',flat=True)) for g in GradeLevel.objects.all() if subject_names(g.name)},
+        'grade_subjects':{str(g.pk):list(Subject.objects.filter(name__in=subject_names(g.name)+['Journalism']).values_list('pk',flat=True)) for g in GradeLevel.objects.all() if subject_names(g.name)},
         'school_years':list(SchoolYear.objects.values('id','name')),
         'assignments':assignments_json(request.user),'assignment':assignment_json(request.user),'terms':[1,2,3],'minimum':0,'maximum':100,
         'final_mode':'manual','policy_note':'Final grades may be confirmed by Administration. General average calculation is not enabled.'})

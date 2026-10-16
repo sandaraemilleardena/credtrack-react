@@ -9,8 +9,10 @@ CURRICULUM = {
     5: ['Filipino', 'English', 'Mathematics', 'Science', 'GMRC', 'Araling Panlipunan', 'EPP', 'MAPEH', 'Music and Arts', 'PE and Health'],
     6: ['Filipino', 'English', 'Mathematics', 'Science', 'GMRC', 'Araling Panlipunan', 'TLE', 'MAPEH', 'Music and Arts', 'PE and Health'],
 }
+for grade in range(7,11):
+    CURRICULUM[grade] = list(CURRICULUM[6])
 
 
 def subject_names(grade_name):
-    match = re.fullmatch(r'(?:grade\s*)?([1-6])', grade_name.strip(), re.IGNORECASE)
+    match = re.fullmatch(r'(?:grade\s*)?(10|[1-9])', grade_name.strip(), re.IGNORECASE)
     return CURRICULUM.get(int(match[1])) if match else None
